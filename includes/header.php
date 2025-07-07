@@ -245,7 +245,7 @@
 
 <body>
     <header class="header">
-        <a href="#" class="logo">
+        <a href="index.php" class="logo">
             <!-- Replaced placeholder with header-home.png -->
             <img src="images/header.png" alt="RALTT Logo">
             <!-- Removed the text as the image now contains the branding -->
@@ -260,7 +260,7 @@
                     <a href="referral_code.php"><i class="fas fa-users"></i> Referral Code</a>
                 </div>
             </div>
-            <a href="#products">Products</a>
+            <a href="product.php">Products</a>
             <a href="#aboutus">About Us</a>
         </nav>
 
