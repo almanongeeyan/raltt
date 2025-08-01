@@ -408,32 +408,156 @@ include 'includes/header.php';
                 text-align: center;
             }
         }
+
+        .distributor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 32px;
+            justify-items: center;
+            align-items: center;
+            padding: 32px 0 0 0;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 32px rgba(148, 72, 27, 0.06);
+        }
+
+        .distributor-grid img {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            background: #f7f7f7;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(148, 72, 27, 0.10);
+            transition:
+                transform 0.22s cubic-bezier(.4, 0, .2, 1),
+                box-shadow 0.22s cubic-bezier(.4, 0, .2, 1),
+                background 0.18s;
+            padding: 16px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .distributor-grid img:hover,
+        .distributor-grid img:focus {
+            transform: scale(1.13) rotate(-2deg);
+            box-shadow: 0 8px 32px rgba(148, 72, 27, 0.18);
+            background: #fff8f3;
+            border: 2px solid #94481b44;
+            z-index: 2;
+        }
+
+        @media (max-width: 700px) {
+            .distributor-grid {
+                grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+                gap: 18px;
+            }
+
+            .distributor-grid img {
+                width: 70px;
+                height: 70px;
+                padding: 8px;
+            }
+        }
+
+        .distributor-tile-grid {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 36px 36px;
+            justify-items: center;
+            align-items: center;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 8px 40px rgba(148, 72, 27, 0.08);
+            padding: 40px 32px 40px 32px;
+        }
+
+        .distributor-tile {
+            width: 150px;
+            height: 150px;
+            background: #f8f8f8;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 16px rgba(148, 72, 27, 0.10);
+            transition:
+                box-shadow 0.22s cubic-bezier(.4, 0, .2, 1),
+                transform 0.22s cubic-bezier(.4, 0, .2, 1),
+                background 0.18s;
+            cursor: pointer;
+            border: 2.5px solid transparent;
+            position: relative;
+        }
+
+        .distributor-tile img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            transition:
+                transform 0.22s cubic-bezier(.4, 0, .2, 1),
+                filter 0.18s;
+            filter: grayscale(20%) brightness(0.97);
+        }
+
+        .distributor-tile:hover,
+        .distributor-tile:focus {
+            background: #fff8f3;
+            box-shadow: 0 8px 32px rgba(148, 72, 27, 0.18);
+            border: 2.5px solid #94481b44;
+            z-index: 2;
+            transform: scale(1.07) translateY(-4px);
+        }
+
+        .distributor-tile:hover img,
+        .distributor-tile:focus img {
+            transform: scale(1.13) rotate(-2deg);
+            filter: none;
+        }
+
+        @media (max-width: 900px) {
+            .distributor-tile-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 22px 18px;
+                padding: 28px 8px 28px 8px;
+            }
+
+            .distributor-tile {
+                width: 100px;
+                height: 100px;
+                border-radius: 14px;
+            }
+
+            .distributor-tile img {
+                width: 60px;
+                height: 60px;
+            }
+        }
     </style>
 
     <!-- Trusted Distributors Section -->
-    <section class="trusted-section" style="margin: 80px auto 0; max-width: 1200px; text-align: center;">
-        <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.3em;">
+    <section class="trusted-section" style="width:100%; margin: 80px 0 0 0; text-align: center; display: flex; flex-direction: column; align-items: center;">
+        <h1 style="font-size: 2.7rem; font-weight: bold; margin-bottom: 0.3em; letter-spacing: -1px;">
             Trusted by over <span style="color: #94481b;">50+ distributors</span>
         </h1>
-        <div style="color: #888; font-size: 1.15rem; margin-bottom: 32px;">
+        <div style="color: #888; font-size: 1.2rem; margin-bottom: 32px;">
             Low prices vs. other tile trade retailers
         </div>
-        <div class="distributor-carousel-outer">
-            <div class="distributor-carousel" id="distributor-carousel">
-                <!-- Example logos, replace src with your actual distributor logo images -->
-                <img src="images/distributors/logo1.jpg" alt="Distributor 1">
-                <img src="images/distributors/logo2.jpg" alt="Distributor 2">
-                <img src="images/distributors/logo3.jpg" alt="Distributor 3">
-                <img src="images/distributors/logo4.jpg" alt="Distributor 4">
-                <img src="images/distributors/logo5.jpg" alt="Distributor 5">
-                <img src="images/distributors/logo6.jpg" alt="Distributor 6">
-                <img src="images/distributors/logo7.jpg" alt="Distributor 7">
-                <img src="images/distributors/logo8.jpg" alt="Distributor 8">
-                <img src="images/distributors/logo9.jpg" alt="Distributor 9">
-                <img src="images/distributors/logo10.jpg" alt="Distributor 10">
-                <img src="images/distributors/logo11.jpg" alt="Distributor 11">
-                <!-- Add more as needed -->
-            </div>
+        <div class="distributor-tile-grid">
+            <div class="distributor-tile"><img src="images/distributors/logo1.jpg" alt="Distributor 1"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo2.jpg" alt="Distributor 2"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo3.jpg" alt="Distributor 3"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo4.jpg" alt="Distributor 4"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo5.jpg" alt="Distributor 5"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo6.jpg" alt="Distributor 6"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo7.jpg" alt="Distributor 7"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo8.jpg" alt="Distributor 8"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo9.jpg" alt="Distributor 9"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo10.jpg" alt="Distributor 10"></div>
+            <div class="distributor-tile"><img src="images/distributors/logo11.jpg" alt="Distributor 11"></div>
+            <!-- Add more as needed -->
         </div>
     </section>
 
