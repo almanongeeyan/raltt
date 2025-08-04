@@ -7,7 +7,7 @@ include 'includes/header.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animal Bite Clinic</title>
+    <title>Rich Anne Lea Tiles Trading - Tile Visualizer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,587 +15,733 @@ include 'includes/header.php';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        .home-section,
+        /* Container for all sections */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section */
+        .home-section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            max-height: 800px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .home-section img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: white;
+            text-align: center;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .hero-content::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 120vw;         /* Increased from 90vw */
+            max-width: 1000px;    /* Increased from 700px */
+            height: 120vw;        /* Increased from 90vw */
+            max-height: 1000px;   /* Increased from 700px */
+            background: radial-gradient(circle, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0) 100%);
+            z-index: -1;
+            pointer-events: none;
+            border-radius: 50%;
+            filter: blur(2px);
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-content p {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            margin-bottom: 2rem;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .hero-content button {
+            background: #94481b;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .hero-content button:hover {
+            background: #b35923;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Video Text Section */
         .video-text-section {
-            flex-grow: 1;
-            /* Allow these sections to take up available space */
+            padding: 60px 0;
+            width: 100%;
         }
-    </style>
-</head>
 
-<body>
+        .video-text-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+        }
 
-    <section class="home-section">
-        <img src="images/homepage.jpg" alt="Homepage Image">
-        <div class="text-container">
-            <h1>Bring Your Visions to Life: <span style="font-weight: bold;">Design Stunning Spaces</span> with Our 2D
-                Tile Visualizer</h1>
-            <p>Rich Anne Lea Tiles Trading</p>
-            <button>Start Visualizing Now</button>
-        </div>
-    </section>
-    <br>
-    <br>
-    <section class="video-text-section">
-        <div class="left-text">
-            <h1><span style="font-weight: bold; color: #946750;">Craft Your Visions</span> <br> <span
-                    style="color: black;">with our <br>Tile</span> <span style="color: black;">Visualizer Tool</span>
-            </h1>
-            <p style="font-size: medium; color: black;">Enhancing your imagination with the use of tile visualizer in
-                creating limitless designs all you want.</p>
-        </div>
-        <div class="right-video">
-            <video src="images/video.mp4" autoplay loop muted></video>
-        </div>
-    </section>
+        .video-text {
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+        }
 
-    <section class="meet-raltt-section" style="text-align:center; margin-top: 40px;">
-        <h3 style="color: #94481b; font-weight: 600; letter-spacing: 1px;">MEET RALTT</h3>
-        <h1 style="font-size: 2rem; font-weight: bold; margin: 10px 0;">
-            Tile Visualizer and E-Commerce in One Website
-        </h1>
-        <p style="color: #444; max-width: 500px; margin: 0 auto 30px;">
-            Browse while using our tile visualizer tool and check out items you want and deliver at the same day.
-        </p>
-    </section>
-    <section class="tabbed-section" style="margin: 60px auto 0; max-width: 1100px;">
-        <div class="tab-buttons" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">
-            <button class="tab-btn animated-btn active" data-tab="visualizer-tab">2D Visualizer</button>
-            <button class="tab-btn animated-btn secondary" data-tab="ecommerce-tab">Tile E-Commerce</button>
-        </div>
-        <div class="tab-content" id="visualizer-tab"
-            style="display: flex; align-items: center; gap: 40px; margin-top: 40px;">
-            <img src="images/2dtilehomepage.png" alt="2D Visualizer"
-                style="width: 350px; border-radius: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.07);">
-            <div>
-                <h2 style="font-size: 2.2rem; font-weight: bold; margin-bottom: 8px;">2D Tile Visualizer</h2>
-                <div style="color: #888; font-size: 0.98rem; margin-bottom: 10px;">Expand imagination with 2D</div>
-                <div style="color: #555; font-size: 1.1rem; max-width: 420px; margin-bottom: 28px;">
-                    Enhance your shopping experience with our 2D Tile Visualizer! Simply upload an image to see how
-                    tiles, marble, or wood flooring fit your space. Visualize with confidence and make informed
-                    decisions effortlessly!
-                </div>
-                <a href="visualizer.php" class="animated-btn" style="background: #e6844a; border: none;">Launch
-                    visualizer</a>
-            </div>
-        </div>
-        <div class="tab-content" id="ecommerce-tab"
-            style="display: none; align-items: center; gap: 40px; margin-top: 40px;">
-            <div style="display: flex; gap: 20px;">
-                <img src="images/tiles-shop1.jpg" alt="Tile Shop 1"
-                    style="width: 220px; border-radius: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.07);">
-                <img src="images/tiles-shop2.jpg" alt="Tile Shop 2"
-                    style="width: 220px; border-radius: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.07);">
-            </div>
-            <div>
-                <h2 style="font-size: 2.2rem; font-weight: bold; margin-bottom: 8px;">Choose over<br>1000+ tile designs
-                </h2>
-                <div style="color: #888; font-size: 0.98rem; margin-bottom: 10px;">Add to cart and checkout your tile
-                    choice</div>
-                <div style="color: #555; font-size: 1.1rem; max-width: 420px; margin-bottom: 28px;">
-                    Choose from over 1000+ tile designs at RALTT! Discover a variety of styles in tiles, marble, and
-                    wood flooring to perfectly match your space.
-                </div>
-                <a href="shop.php" class="animated-btn" style="background: #e6844a; border: none;">Buy now</a>
-            </div>
-        </div>
-    </section>
-    <style>
+        .video-text h1 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .video-text p {
+            font-size: 1rem;
+            color: #666;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .video-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .video-container video {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Meet RALTT Section */
+        .meet-raltt-section {
+            padding: 60px 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .meet-raltt-section h3 {
+            color: #94481b;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .meet-raltt-section h1 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .meet-raltt-section p {
+            color: #666;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Tabbed Section */
+        .tabbed-section {
+            padding: 60px 0;
+            width: 100%;
+        }
+
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 12px 25px;
+            border-radius: 30px;
+            background: #fff;
+            color: #94481b;
+            border: 2px solid #94481b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #94481b;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(148, 72, 27, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            align-items: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content img {
+            flex: 1;
+            min-width: 300px;
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .tab-text {
+            flex: 1;
+            min-width: 300px;
+            text-align: left;
+        }
+
+        .tab-content h2 {
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .tab-content .subtitle {
+            color: #888;
+            font-size: 0.98rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab-content .description {
+            color: #555;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
         .animated-btn {
             display: inline-block;
-            padding: 14px 32px;
-            background: #94481b;
-            color: #fff;
+            padding: 12px 30px;
+            background: #94481b; /* Same as login button */
+            color: white;
             border: none;
             border-radius: 30px;
             font-size: 1rem;
             font-weight: 600;
             text-decoration: none;
-            box-shadow: 0 4px 16px rgba(148, 72, 27, 0.15);
-            transition:
-                transform 0.18s cubic-bezier(.4, 0, .2, 1),
-                box-shadow 0.18s cubic-bezier(.4, 0, .2, 1),
-                background 0.18s,
-                color 0.18s,
-                border 0.18s;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            letter-spacing: 0.01em;
+            white-space: nowrap;
         }
 
-        .animated-btn:hover,
-        .animated-btn:focus,
-        .tab-btn.active {
-            transform: translateY(-3px) scale(1.04);
-            box-shadow: 0 8px 24px rgba(148, 72, 27, 0.22);
-            background: #94481b;
-            color: #fff;
-            border: 2px solid #94481b;
+        .animated-btn:hover {
+            background: #b35923;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
-        .animated-btn.secondary {
-            background: #fff;
-            color: #94481b;
-            border: 2px solid #94481b;
-        }
-
-        .animated-btn.secondary:hover,
-        .animated-btn.secondary:focus,
-        .tab-btn.secondary.active {
-            background: #94481b;
-            color: #fff;
-            border: 2px solid #94481b;
-        }
-
-        .tab-buttons {
-            background: transparent;
-            border-radius: 12px;
-            margin-bottom: 0;
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
-            box-shadow: none;
-        }
-
-        .tab-btn {
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 14px 32px;
-            border-radius: 30px;
-            margin: 0;
-            outline: none;
-            border: 2px solid transparent;
-            background: #fff;
-            color: #94481b;
-            transition:
-                background 0.18s,
-                color 0.18s,
-                box-shadow 0.18s,
-                border 0.18s,
-                transform 0.18s;
-        }
-
-        .tab-btn.active,
-        .tab-btn:focus {
-            background: #94481b;
-            color: #fff;
-            border: 2px solid #94481b;
-            box-shadow: 0 8px 24px rgba(148, 72, 27, 0.22);
-            transform: translateY(-3px) scale(1.04);
-            z-index: 1;
-        }
-
-        .tab-btn.secondary {
-            background: #fff;
-            color: #94481b;
-            border: 2px solid #94481b;
-        }
-
-        .tab-btn.secondary.active,
-        .tab-btn.secondary:focus {
-            background: #94481b;
-            color: #fff;
-            border: 2px solid #94481b;
-        }
-
-        .tab-content {
-            animation: fadeIn 0.4s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
+        /* Trusted Section */
         .trusted-section {
+            width: 100%;
+            padding: 80px 0;
+            text-align: center;
             background: #faf9f7;
-            border-radius: 18px;
-            box-shadow: 0 4px 32px rgba(148, 72, 27, 0.06);
-            padding: 36px 0 48px 0;
-            margin-top: 60px;
         }
 
         .trusted-section h1 {
-            margin-bottom: 0.2em;
-            letter-spacing: -1px;
+            font-size: clamp(2rem, 5vw, 2.7rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
         }
 
-        .trusted-section>div {
-            margin-bottom: 0.5em;
-        }
-
-        .distributor-carousel-outer {
-            overflow: hidden;
-            width: 100%;
-            max-width: 1100px;
-            margin: 0 auto;
-            border-radius: 16px;
-            background: #fff;
-            box-shadow: 0 2px 16px rgba(148, 72, 27, 0.07);
-            padding: 18px 0 10px 0;
-        }
-
-        .distributor-carousel {
-            display: flex;
-            gap: 24px;
-            transition: transform 0.8s cubic-bezier(.7, 0, .3, 1);
-            will-change: transform;
-        }
-
-        .distributor-carousel img {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-            border-radius: 12px;
-            background: #f7f7f7;
-            box-shadow: 0 2px 8px rgba(148, 72, 27, 0.07);
-            padding: 8px;
-            transition:
-                box-shadow 0.3s,
-                transform 0.5s cubic-bezier(.7, 0, .3, 1),
-                background 0.3s,
-                filter 0.3s,
-                opacity 0.4s;
-            opacity: 0.7;
-            filter: blur(1px) grayscale(30%);
-        }
-
-        .distributor-carousel img.center-logo {
-            width: 110px;
-            height: 110px;
-            z-index: 2;
-            transform: scale(1.35) rotate(-2deg);
-            box-shadow: 0 8px 32px 0 rgba(148, 72, 27, 0.18), 0 0 0 6px #fff8f3;
-            background: #fff8f3;
-            opacity: 1;
-            filter: none;
-            border: 2.5px solid #94481b22;
-            animation: pop-center 0.7s cubic-bezier(.7, 0, .3, 1);
-        }
-
-        @keyframes pop-center {
-            0% {
-                transform: scale(1) rotate(0deg);
-            }
-
-            60% {
-                transform: scale(1.45) rotate(-4deg);
-            }
-
-            100% {
-                transform: scale(1.35) rotate(-2deg);
-            }
-        }
-
-        .distributor-carousel img.side-logo {
-            width: 85px;
-            height: 85px;
-            z-index: 1;
-            opacity: 0.92;
-            filter: blur(0.5px) grayscale(10%);
-            transform: scale(1.08);
-            background: #f7f7f7;
-            box-shadow: 0 4px 16px rgba(148, 72, 27, 0.10);
-        }
-
-        .distributor-carousel img.far-logo {
-            width: 70px;
-            height: 70px;
-            opacity: 0.7;
-            filter: blur(1.5px) grayscale(40%);
-            transform: scale(0.95);
-        }
-
-        .distributor-carousel img.fade-logo {
-            opacity: 0.3;
-            filter: blur(2.5px) grayscale(80%);
-            transform: scale(0.8);
-            pointer-events: none;
-        }
-
-        .trusted-section {
-            margin-bottom: 80px;
-        }
-
-        .app-section {
-            margin-bottom: 80px;
-            background: #faf9f7;
-            border-radius: 18px;
-            box-shadow: 0 4px 32px rgba(148, 72, 27, 0.06);
-            padding: 48px 0 48px 0;
-        }
-
-        .app-flex {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 60px;
-            flex-wrap: wrap;
-        }
-
-        .app-phone {
-            flex: 0 0 270px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .app-info {
-            flex: 0 0 340px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
-        }
-
-        .app-download-btn {
-            display: inline-flex;
-            align-items: center;
-            background: #e0dfde;
-            color: #444;
-            font-size: 1.08rem;
-            font-weight: 500;
-            border-radius: 8px;
-            padding: 12px 28px;
-            margin-bottom: 8px;
-            text-decoration: none;
-            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-            box-shadow: 0 2px 8px rgba(148, 72, 27, 0.07);
-        }
-
-        .app-download-btn i {
-            margin-right: 10px;
-            font-size: 1.2em;
-        }
-
-        .app-download-btn:hover,
-        .app-download-btn:focus {
-            background: #94481b;
-            color: #fff;
-            box-shadow: 0 6px 24px rgba(148, 72, 27, 0.15);
-        }
-
-        .google-play-btn img {
-            height: 48px;
-            transition: transform 0.18s;
-        }
-
-        .google-play-btn:hover img {
-            transform: scale(1.07) rotate(-2deg);
-        }
-
-        @media (max-width: 900px) {
-            .app-flex {
-                flex-direction: column;
-                gap: 30px;
-            }
-
-            .app-info {
-                align-items: center;
-                text-align: center;
-            }
+        .trusted-section .subtitle {
+            color: #888;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
         }
 
         .distributor-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 32px;
-            justify-items: center;
-            align-items: center;
-            padding: 32px 0 0 0;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 4px 32px rgba(148, 72, 27, 0.06);
-        }
-
-        .distributor-grid img {
-            width: 110px;
-            height: 110px;
-            object-fit: contain;
-            background: #f7f7f7;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(148, 72, 27, 0.10);
-            transition:
-                transform 0.22s cubic-bezier(.4, 0, .2, 1),
-                box-shadow 0.22s cubic-bezier(.4, 0, .2, 1),
-                background 0.18s;
-            padding: 16px;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .distributor-grid img:hover,
-        .distributor-grid img:focus {
-            transform: scale(1.13) rotate(-2deg);
-            box-shadow: 0 8px 32px rgba(148, 72, 27, 0.18);
-            background: #fff8f3;
-            border: 2px solid #94481b44;
-            z-index: 2;
-        }
-
-        @media (max-width: 700px) {
-            .distributor-grid {
-                grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-                gap: 18px;
-            }
-
-            .distributor-grid img {
-                width: 70px;
-                height: 70px;
-                padding: 8px;
-            }
-        }
-
-        .distributor-tile-grid {
+            gap: 20px;
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 36px 36px;
-            justify-items: center;
-            align-items: center;
-            background: #fff;
-            border-radius: 24px;
-            box-shadow: 0 8px 40px rgba(148, 72, 27, 0.08);
-            padding: 40px 32px 40px 32px;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
         }
 
-        .distributor-tile {
-            width: 150px;
-            height: 150px;
+        .distributor-item {
             background: #f8f8f8;
-            border-radius: 20px;
+            border-radius: 15px;
+            padding: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 16px rgba(148, 72, 27, 0.10);
-            transition:
-                box-shadow 0.22s cubic-bezier(.4, 0, .2, 1),
-                transform 0.22s cubic-bezier(.4, 0, .2, 1),
-                background 0.18s;
-            cursor: pointer;
-            border: 2.5px solid transparent;
-            position: relative;
+            transition: all 0.3s ease;
+            aspect-ratio: 1/1;
         }
 
-        .distributor-tile img {
-            width: 90px;
-            height: 90px;
+        .distributor-item img {
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
-            transition:
-                transform 0.22s cubic-bezier(.4, 0, .2, 1),
-                filter 0.18s;
-            filter: grayscale(20%) brightness(0.97);
+            filter: grayscale(20%);
+            transition: all 0.3s ease;
         }
 
-        .distributor-tile:hover,
-        .distributor-tile:focus {
-            background: #fff8f3;
-            box-shadow: 0 8px 32px rgba(148, 72, 27, 0.18);
-            border: 2.5px solid #94481b44;
-            z-index: 2;
-            transform: scale(1.07) translateY(-4px);
+        .distributor-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            background: white;
         }
 
-        .distributor-tile:hover img,
-        .distributor-tile:focus img {
-            transform: scale(1.13) rotate(-2deg);
-            filter: none;
+        .distributor-item:hover img {
+            filter: grayscale(0%);
         }
 
-        @media (max-width: 900px) {
-            .distributor-tile-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                gap: 22px 18px;
-                padding: 28px 8px 28px 8px;
+        /* App Section */
+        .app-section {
+            width: 100%;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .app-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            background: #faf9f7;
+            border-radius: 20px;
+        }
+
+        .app-section h1 {
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .app-section .subtitle {
+            color: #aaa;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .app-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .app-image {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .app-image img {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .app-details {
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        .app-highlight {
+            font-size: 1.25rem;
+            color: #94481b;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        /* Unified Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #94481b;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 30px;
+            margin: 8px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 240px;
+            min-width: 180px;
+            max-width: 100%;
+            transition: all 0.3s ease;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+        }
+
+        .btn i {
+            font-size: 1.15em;
+        }
+
+        .btn:hover {
+            background: #b35923;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-download {
+            background: #94481b;
+        }
+
+        .btn-playstore {
+            background: #4285F4;
+        }
+
+        .btn-playstore:hover {
+            background: #3367D6;
+        }
+
+        .btn-divider {
+            color: #888;
+            font-size: 1.05rem;
+            margin: 10px 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-divider::before,
+        .btn-divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+            margin: 0 10px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .home-section {
+                height: 80vh;
+            }
+            
+            .hero-content {
+                padding: 0 15px;
+            }
+            
+            .video-text-container {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .video-text, .video-container {
+                width: 100%;
+                padding: 0 15px;
+            }
+            
+            .tab-buttons {
+                gap: 10px;
+            }
+            
+            .tab-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .tab-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .tab-text {
+                text-align: center;
+                padding: 0 15px;
+            }
+            
+            .distributor-grid {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 15px;
+                padding: 20px;
+            }
+            
+            .distributor-item {
+                padding: 15px;
+            }
+            
+            .app-content {
+                flex-direction: column;
+            }
+            
+            .app-details {
+                text-align: center;
             }
 
-            .distributor-tile {
-                width: 100px;
-                height: 100px;
-                border-radius: 14px;
+            .btn {
+                width: 100%;
+                max-width: 280px;
             }
+        }
 
-            .distributor-tile img {
-                width: 60px;
-                height: 60px;
+        @media (max-width: 480px) {
+            .home-section {
+                height: 70vh;
+            }
+            
+            .hero-content h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero-content p {
+                font-size: 1rem;
+            }
+            
+            .tab-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .tab-btn {
+                width: 100%;
+            }
+            
+            .distributor-grid {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .app-container {
+                padding: 40px 15px;
+            }
+            
+            .app-highlight {
+                font-size: 1.1rem;
             }
         }
     </style>
+</head>
+
+<body>
+    <!-- Hero Section -->
+    <section class="home-section">
+        <img src="images/homepage.jpg" alt="Beautiful tile designs">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Bring Your Visions to Life: <span>Design Stunning Spaces</span> with Our 2D Tile Visualizer</h1>
+                <p>Rich Anne Lea Tiles Trading</p>
+                <button class="btn">Start Visualizing Now</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Text Section -->
+    <section class="video-text-section">
+        <div class="container">
+            <div class="video-text-container">
+                <div class="video-text">
+                    <h1><span style="color: #946750;">Craft Your Visions</span> <br>with our<br>Tile Visualizer Tool</h1>
+                    <p>Enhancing your imagination with the use of tile visualizer in creating limitless designs all you want.</p>
+                </div>
+                <div class="video-container">
+                    <video src="images/video.mp4" autoplay loop muted></video>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Meet RALTT Section -->
+    <section class="meet-raltt-section">
+        <div class="container">
+            <h3>MEET RALTT</h3>
+            <h1>Tile Visualizer and E-Commerce in One Website</h1>
+            <p>Browse while using our tile visualizer tool and check out items you want and deliver at the same day.</p>
+        </div>
+    </section>
+
+    <!-- Tabbed Section -->
+    <section class="tabbed-section">
+        <div class="container">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="visualizer-tab">2D Visualizer</button>
+                <button class="tab-btn" data-tab="ecommerce-tab">Tile E-Commerce</button>
+            </div>
+            
+            <div class="tab-content active" id="visualizer-tab">
+                <img src="images/2dtilehomepage.png" alt="2D Visualizer">
+                <div class="tab-text">
+                    <h2>2D Tile Visualizer</h2>
+                    <div class="subtitle">Expand imagination with 2D</div>
+                    <div class="description">
+                        Enhance your shopping experience with our 2D Tile Visualizer! Simply upload an image to see how
+                        tiles, marble, or wood flooring fit your space. Visualize with confidence and make informed
+                        decisions effortlessly!
+                    </div>
+                    <a href="visualizer.php" class="animated-btn">Launch visualizer</a>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="ecommerce-tab">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+                    <img src="images/tilehp1.PNG" alt="Tile Shop 1" style="flex: 1; min-width: 200px; max-width: 100%;">
+                    <img src="images/tilehp2.PNG" alt="Tile Shop 2" style="flex: 1; min-width: 200px; max-width: 100%;">
+                </div>
+                <div class="tab-text">
+                    <h2>Choose over 1000+ tile designs</h2>
+                    <div class="subtitle">Add to cart and checkout your tile choice</div>
+                    <div class="description">
+                        Choose from over 1000+ tile designs at RALTT! Discover a variety of styles in tiles, marble, and
+                        wood flooring to perfectly match your space.
+                    </div>
+                    <a href="shop.php" class="animated-btn">Buy now</a>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Trusted Distributors Section -->
-    <section class="trusted-section" style="width:100%; margin: 80px 0 0 0; text-align: center; display: flex; flex-direction: column; align-items: center;">
-        <h1 style="font-size: 2.7rem; font-weight: bold; margin-bottom: 0.3em; letter-spacing: -1px;">
-            Trusted by over <span style="color: #94481b;">50+ distributors</span>
-        </h1>
-        <div style="color: #888; font-size: 1.2rem; margin-bottom: 32px;">
-            Low prices vs. other tile trade retailers
-        </div>
-        <div class="distributor-tile-grid">
-            <div class="distributor-tile"><img src="images/distributors/logo1.jpg" alt="Distributor 1"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo2.jpg" alt="Distributor 2"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo3.jpg" alt="Distributor 3"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo4.jpg" alt="Distributor 4"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo5.jpg" alt="Distributor 5"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo6.jpg" alt="Distributor 6"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo7.jpg" alt="Distributor 7"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo8.jpg" alt="Distributor 8"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo9.jpg" alt="Distributor 9"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo10.jpg" alt="Distributor 10"></div>
-            <div class="distributor-tile"><img src="images/distributors/logo11.jpg" alt="Distributor 11"></div>
-            <!-- Add more as needed -->
+    <section class="trusted-section">
+        <div class="container">
+            <h1>Trusted by over <span style="color: #94481b;">50+ distributors</span></h1>
+            <div class="subtitle">Low prices vs. other tile trade retailers</div>
+            <div class="distributor-grid">
+                <div class="distributor-item"><img src="images/distributors/logo1.jpg" alt="Distributor 1"></div>
+                <div class="distributor-item"><img src="images/distributors/logo2.jpg" alt="Distributor 2"></div>
+                <div class="distributor-item"><img src="images/distributors/logo3.jpg" alt="Distributor 3"></div>
+                <div class="distributor-item"><img src="images/distributors/logo4.jpg" alt="Distributor 4"></div>
+                <div class="distributor-item"><img src="images/distributors/logo5.jpg" alt="Distributor 5"></div>
+                <div class="distributor-item"><img src="images/distributors/logo6.jpg" alt="Distributor 6"></div>
+                <div class="distributor-item"><img src="images/distributors/logo7.jpg" alt="Distributor 7"></div>
+                <div class="distributor-item"><img src="images/distributors/logo8.jpg" alt="Distributor 8"></div>
+                <div class="distributor-item"><img src="images/distributors/logo9.jpg" alt="Distributor 9"></div>
+                <div class="distributor-item"><img src="images/distributors/logo10.jpg" alt="Distributor 10"></div>
+                <div class="distributor-item"><img src="images/distributors/logo11.jpg" alt="Distributor 11"></div>
+            </div>
         </div>
     </section>
 
     <!-- App Download Section -->
-    <section class="app-section" style="margin: 80px auto 0; max-width: 1100px;">
-        <h1 style="text-align:center; font-size:2.4rem; font-weight: bold; margin-bottom: 0.2em;">
-            Checkout wherever you are!
-        </h1>
-        <div style="text-align:center; color:#aaa; font-size:1.1rem; margin-bottom: 36px;">
-            Download our app now
-        </div>
-        <div class="app-flex">
-            <div class="app-phone">
-                <img src="images/phonehome.jpg" alt="Phone Mockup" style="width: 260px; max-width: 90%;">
-            </div>
-            <div class="app-info">
-                <div style="font-size: 1.25rem; color: #94481b; font-weight: 600; margin-bottom: 30px; line-height: 1.4;">
-                    Let’s make your ideas come<br>
-                    into real-life visuals within<br>
-                    your hands.
+    <section class="app-section">
+        <div class="container">
+            <div class="app-container">
+                <h1>Checkout wherever you are!</h1>
+                <div class="subtitle">Download our app now</div>
+                <div class="app-content">
+                    <div class="app-image">
+                        <img src="images/phonehome.jpg" alt="Phone Mockup">
+                    </div>
+                    <div class="app-details">
+                        <div class="app-highlight">
+                            Let's make your ideas come<br>
+                            into real-life visuals within<br>
+                            your hands.
+                        </div>
+                        <a href="#" class="btn btn-download">
+                            <i class="fas fa-download"></i> Download the App
+                        </a>
+                        <div class="btn-divider">or</div>
+                        <a href="#" class="btn btn-playstore">
+                            <i class="fab fa-google-play"></i> Get on Google Play
+                        </a>
+                    </div>
                 </div>
-                <a href="#" class="app-download-btn">
-                    <i class="fa fa-download"></i> Download the app
-                </a>
-                <div style="margin: 18px 0 10px 0; color: #888; font-size: 1.1rem;">OR</div>
-                <a href="#" class="google-play-btn">
-                    <img src="images/google-play-badge.png" alt="Get it on Google Play" style="height: 48px;">
-                </a>
             </div>
         </div>
     </section>
 
-    <!-- Distributor Carousel Script -->
-    <script src="js/distributor-carousel.js"></script>
+    <script>
+        // Tab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons and content
+                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
 </body>
-
-<script src="js/home.js"></script>
-
 </html>
 <?php
 include 'includes/footer.php';

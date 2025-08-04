@@ -13,14 +13,12 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
 
     <style>
-        /* General body styling for font consistency */
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
-            padding-top: 80px; /* Adjust based on header height */
+            padding-top: 80px;
         }
 
-        /* Header styling */
         .header {
             position: fixed;
             top: 0;
@@ -30,7 +28,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 5%; /* Adjusted padding for better spacing */
+            padding: 1rem 5%;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
@@ -45,31 +43,29 @@
         }
 
         .header .logo img {
-            height: 40px; /* Adjust logo size */
-            /* The image itself might have width, but height ensures consistent vertical alignment */
+            height: 40px;
             margin-right: 10px;
         }
 
         .header .navbar {
             display: flex;
-            gap: 2.5rem; /* Increased gap for better spacing */
+            gap: 2.5rem;
         }
 
         .header .navbar a {
-            font-size: 1.1rem; /* Slightly larger font */
+            font-size: 1.1rem;
             color: #555;
             text-decoration: none;
             padding: 0.5rem 0;
             position: relative;
-            transition: color 0.3s ease, transform 0.3s ease; /* Smooth transition for hover */
+            transition: color 0.3s ease, transform 0.3s ease;
         }
 
         .header .navbar a:hover {
-            color: #EF7232; /* Orange color on hover */
-            transform: translateY(-3px); /* Slight upward movement */
+            color: #EF7232;
+            transform: translateY(-3px);
         }
 
-        /* Underline animation for navbar links */
         .header .navbar a::after {
             content: '';
             position: absolute;
@@ -85,7 +81,6 @@
             width: 100%;
         }
 
-        /* Dropdown specific styles */
         .header .navbar .dropdown {
             position: relative;
         }
@@ -116,17 +111,17 @@
         }
 
         .header .navbar .dropdown:hover .dropbtn i {
-            transform: rotate(180deg); /* Rotate arrow on hover */
+            transform: rotate(180deg);
         }
 
         .header .navbar .dropdown-content {
             display: none;
             position: absolute;
             background-color: #f9f9f9;
-            min-width: 220px; /* Increased width for content */
+            min-width: 220px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
-            border-radius: 8px; /* Rounded corners for dropdown */
+            border-radius: 8px;
             padding: 10px 0;
             opacity: 0;
             transform: translateY(10px);
@@ -143,33 +138,32 @@
             color: #333;
             padding: 12px 20px;
             text-decoration: none;
-            display: flex; /* Use flex for icon and text alignment */
+            display: flex;
             align-items: center;
             text-align: left;
             font-size: 1rem;
             transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-            white-space: nowrap; /* Prevent text wrapping */
+            white-space: nowrap;
         }
 
         .header .navbar .dropdown-content a i {
-            margin-right: 10px; /* Space between icon and text */
-            color: #666; /* Default icon color */
+            margin-right: 10px;
+            color: #666;
             transition: color 0.3s ease;
         }
 
         .header .navbar .dropdown-content a:hover {
             background-color: #f1f1f1;
             color: #EF7232;
-            transform: translateX(5px); /* Slide effect on hover */
+            transform: translateX(5px);
         }
 
         .header .navbar .dropdown-content a:hover i {
-            color: #EF7232; /* Change icon color on hover */
+            color: #EF7232;
         }
 
-        /* Login button styling */
         .header .login-btn {
-            background-color: #A0522D; /* A shade of brown/orange */
+            background-color: #A0522D;
             color: #fff;
             padding: 0.7rem 1.5rem;
             border-radius: 5px;
@@ -185,25 +179,26 @@
         }
 
         .header .login-btn:hover {
-            background-color: #8B4513; /* Darker shade on hover */
-            transform: translateY(-2px); /* Lift effect */
+            background-color: #8B4513;
+            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Mobile menu icon */
         .header .fas.fa-bars {
             font-size: 1.8rem;
             color: #333;
             cursor: pointer;
-            display: none; /* Hidden on desktop */
+            display: none;
         }
 
         /* Responsive adjustments */
         @media (max-width: 991px) {
-            .header .fas.fa-bars {
-                display: block; /* Show on mobile */
+            .header {
+                padding: 1rem 2%;
             }
-
+            .header .logo img {
+                height: 32px;
+            }
             .header .navbar {
                 position: absolute;
                 top: 100%;
@@ -212,32 +207,109 @@
                 background-color: #fff;
                 border-top: 1px solid #eee;
                 flex-direction: column;
+                align-items: flex-start;
                 padding: 1rem 0;
-                clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); /* Hidden by default */
+                gap: 0;
+                clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
                 transition: clip-path 0.3s ease-in-out;
+                z-index: 999;
+                display: flex !important; /* Ensure navbar is always rendered */
             }
-
             .header .navbar.active {
-                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); /* Show when active */
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
             }
-
             .header .navbar a,
             .header .navbar .dropdown .dropbtn {
                 margin: 0.5rem 1.5rem;
                 text-align: left;
+                width: 100%;
+                display: block;
             }
-
             .header .navbar .dropdown-content {
-                position: static; /* Remove absolute positioning for mobile */
+                position: static;
                 box-shadow: none;
                 min-width: unset;
-                padding-left: 20px; /* Indent dropdown items */
-                transform: translateY(0); /* Reset transform */
-                opacity: 1; /* Always visible when parent dropdown is active */
+                padding-left: 20px;
+                transform: translateY(0);
+                opacity: 1;
+                border-radius: 0;
+                display: none;
             }
+            .header .navbar .dropdown.open .dropdown-content {
+                display: block;
+            }
+            .header .login-btn {
+                padding: 0.7rem 1rem;
+                font-size: 0.95rem;
+            }
+            .header .fas.fa-bars {
+                display: block;
+            }
+        }
 
-            .header .navbar .dropdown:hover .dropdown-content {
-                display: block; /* Ensure dropdown content shows on mobile when parent is hovered/clicked */
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.7rem 2vw;
+                width: 100vw;
+                box-sizing: border-box;
+                max-width: 100vw;
+            }
+            .header .logo img {
+                max-width: 120px;
+                height: auto;
+            }
+            .header .login-bars-group {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .header .login-btn {
+                margin-top: 0;
+                width: auto;
+                justify-content: center;
+                font-size: 0.95rem;
+                padding: 0.6rem 1rem;
+            }
+            .header .fas.fa-bars {
+                display: block;
+                margin-left: 0;
+                font-size: 2rem;
+            }
+            .header .navbar {
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background-color: #fff;
+                border-top: 1px solid #eee;
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem 0;
+                gap: 0;
+                clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+                transition: clip-path 0.3s ease-in-out;
+                z-index: 999;
+                display: flex !important;
+                max-width: 100vw;
+                width: 100vw;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+            .header .navbar.active {
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            }
+            .header .navbar a,
+            .header .navbar .dropdown .dropbtn {
+                font-size: 1rem;
+                padding: 0.8rem 1.5rem;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .header .navbar .dropdown-content {
+                padding-left: 20px;
             }
         }
     </style>
@@ -246,11 +318,8 @@
 <body>
     <header class="header">
         <a href="index.php" class="logo">
-            <!-- Replaced placeholder with header-home.png -->
             <img src="images/header.png" alt="RALTT Logo">
-            <!-- Removed the text as the image now contains the branding -->
         </a>
-
         <nav class="navbar">
             <a href="#whats-new">What's New</a>
             <div class="dropdown">
@@ -263,9 +332,10 @@
             <a href="product.php">Products</a>
             <a href="#aboutus">About Us</a>
         </nav>
-
-        <a href="login.php" class="login-btn"> <i class="fas fa-user"></i> Login</a>
-        <div class="fas fa-bars" id="menu"></div>
+        <div class="login-bars-group">
+            <div class="fas fa-bars" id="menu"></div>
+            <a href="login.php" class="login-btn"> <i class="fas fa-user"></i> Login</a>
+        </div>
     </header>
 
     <script>
@@ -280,38 +350,25 @@
             navbar.classList.remove('active');
         });
 
+        // For mobile, toggle dropdown on click
+        document.querySelectorAll('.dropdown .dropbtn').forEach(button => {
+            button.addEventListener('click', function(event) {
+                if (window.innerWidth <= 991) {
+                    event.preventDefault();
+                    const parent = this.parentElement;
+                    parent.classList.toggle('open');
+                    event.stopPropagation();
+                }
+            });
+        });
+
         // Optional: Close dropdown if clicking outside (for desktop)
         window.addEventListener('click', function(event) {
             if (!event.target.matches('.dropbtn')) {
-                const dropdowns = document.getElementsByClassName("dropdown-content");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    const openDropdown = dropdowns[i];
-                    if (openDropdown.style.display === 'block') { // Check if it's currently displayed
-                        openDropdown.style.display = 'none';
-                        openDropdown.style.opacity = '0';
-                        openDropdown.style.transform = 'translateY(10px)';
-                    }
-                }
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('open');
+                });
             }
-        });
-
-        // For mobile, make dropdown toggle on click of dropbtn
-        document.querySelectorAll('.dropdown .dropbtn').forEach(button => {
-            button.addEventListener('click', function(event) {
-                if (window.innerWidth <= 991) { // Apply only for mobile
-                    const dropdownContent = this.nextElementSibling;
-                    if (dropdownContent.style.display === 'block') {
-                        dropdownContent.style.display = 'none';
-                        dropdownContent.style.opacity = '0';
-                        dropdownContent.style.transform = 'translateY(10px)';
-                    } else {
-                        dropdownContent.style.display = 'block';
-                        dropdownContent.style.opacity = '1';
-                        dropdownContent.style.transform = 'translateY(0)';
-                    }
-                    event.stopPropagation(); // Prevent immediate closing from window click listener
-                }
-            });
         });
     </script>
 </body>
