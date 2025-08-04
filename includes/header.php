@@ -329,7 +329,7 @@
                     <a href="referral_code.php"><i class="fas fa-users"></i> Referral Code</a>
                 </div>
             </div>
-            <a href="product.php">Products</a>
+            <a href="productviewhomepage.php">Products</a>
             <a href="#aboutus">About Us</a>
         </nav>
         <div class="login-bars-group">

@@ -59,6 +59,17 @@ include 'includes/header.php';
             object-fit: cover;
             z-index: 1;
         }
+        .home-section::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 40%, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0.15) 90%, rgba(0,0,0,0.05) 100%);
+        }
 
         .hero-content {
             position: relative;
@@ -67,23 +78,6 @@ include 'includes/header.php';
             text-align: center;
             padding: 0 20px;
             width: 100%;
-        }
-
-        .hero-content::before {
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 120vw;         /* Increased from 90vw */
-            max-width: 1000px;    /* Increased from 700px */
-            height: 120vw;        /* Increased from 90vw */
-            max-height: 1000px;   /* Increased from 700px */
-            background: radial-gradient(circle, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0) 100%);
-            z-index: -1;
-            pointer-events: none;
-            border-radius: 50%;
-            filter: blur(2px);
         }
 
         .hero-content h1 {
@@ -281,7 +275,7 @@ include 'includes/header.php';
         .animated-btn {
             display: inline-block;
             padding: 12px 30px;
-            background: #94481b; /* Same as login button */
+            background: #94481b;
             color: white;
             border: none;
             border-radius: 30px;
