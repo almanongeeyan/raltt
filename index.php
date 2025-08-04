@@ -28,7 +28,7 @@ include 'includes/header.php';
             min-height: 100vh;
             font-family: 'Inter', sans-serif;
             color: #333;
-            line-height: 1.6;
+            line-height: 1.6 ;
             overflow-x: hidden;
         }
 
