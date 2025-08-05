@@ -10,11 +10,6 @@
             min-height: 70vh;
             /* Remove the background here! */
             background: #f7f7fa;
-            background: linear-gradient(to bottom,
-                    var(--maincolor)0%,
-                    rgba(243, 218, 202, 0.6)40%,
-                    rgba(247, 242, 237, 0.7)60%,
-                    white 100%);
             /* Light background for the main site */
             overflow: hidden;
             scroll-behavior: smooth;
