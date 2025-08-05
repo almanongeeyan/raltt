@@ -334,7 +334,7 @@
         </nav>
         <div class="login-bars-group">
             <div class="fas fa-bars" id="menu"></div>
-            <a href="login.php" class="login-btn"> <i class="fas fa-user"></i> Login</a>
+            <a href="loginform.php" class="login-btn"> <i class="fas fa-user"></i> Login</a>
         </div>
     </header>
 

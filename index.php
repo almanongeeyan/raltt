@@ -244,7 +244,6 @@ include 'includes/header.php';
             min-width: 300px;
             max-width: 100%;
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
 
         .tab-text {
@@ -642,7 +641,7 @@ include 'includes/header.php';
                         tiles, marble, or wood flooring fit your space. Visualize with confidence and make informed
                         decisions effortlessly!
                     </div>
-                    <a href="visualizer.php" class="animated-btn">Launch visualizer</a>
+                    <a href="loginform.php" class="animated-btn">Launch visualizer</a>
                 </div>
             </div>
             
@@ -658,7 +657,7 @@ include 'includes/header.php';
                         Choose from over 1000+ tile designs at RALTT! Discover a variety of styles in tiles, marble, and
                         wood flooring to perfectly match your space.
                     </div>
-                    <a href="shop.php" class="animated-btn">Buy now</a>
+                    <a href="loginform.php" class="animated-btn">Buy now</a>
                 </div>
             </div>
         </div>

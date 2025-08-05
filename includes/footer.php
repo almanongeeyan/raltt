@@ -368,7 +368,7 @@
                         <div class="footer-square-column">
                             <p>Meet RALTT</p>
                             <a href="about_us.php">About Us</a>
-                            <a href="tile_e_commerce.php">Tile E-Commerce</a>
+                            <a href="productviewhomepage.php">Tile E-Commerce</a>
                         </div>
                     </div>
                 </div>
