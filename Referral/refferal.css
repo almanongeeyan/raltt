@@ -10,11 +10,6 @@
             min-height: 70vh;
             /* Remove the background here! */
             background: #f7f7fa;
-            background: linear-gradient(to bottom,
-                    var(--maincolor)0%,
-                    rgba(243, 218, 202, 0.6)40%,
-                    rgba(247, 242, 237, 0.7)60%,
-                    white 100%);
             /* Light background for the main site */
             overflow: hidden;
             scroll-behavior: smooth;
@@ -774,7 +769,6 @@
             align-items: center;
             gap: 40px;
             padding: 40px;
-            background: linear-gradient(to top, #ffecd2, #fcb69f);
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             width: 800px;
