@@ -31,12 +31,53 @@ include 'includes/header.php';
             line-height: 1.6;
             overflow-x: hidden;
         }
+
+        .visualize-section {
+            width: 100%;
+            min-height: 380px;
+            background: linear-gradient(180deg, #FFE7D7 0%, #FFF 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 70px 20px 60px 20px;
+            text-align: center;
+        }
+
+        .visualize-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .visualize-title .highlight {
+            color: #F47C2E;
+        }
+
+        .visualize-desc {
+            max-width: 900px;
+            margin: 0 auto;
+            font-size: 1.08rem;
+            color: #4B3B2B;
+            font-weight: 400;
+            line-height: 1.6;
+        }
     </style>
 </head>
 
 <body>
 
-    <h1>jane</h1>
+    <section class="visualize-section">
+        <div class="visualize-title">
+            <span class="highlight">Visualize</span> Your Imagination
+        </div>
+        <div class="visualize-desc">
+            You can navigate various textures, colors, styles, and a lot more and cherish everything in "Almost real life" virtualizations.<br>
+            So, you can resolve choices that synchronize seamlessly with your visionary aesthetic. If you want to effortlessly weave the tapestry of imagination and actuality and allow your space to eloquently echo your distinctive panache, it's your time to contact us today!
+        </div>
+    </section>
+
+
 </body>
 </html>
 <?php
