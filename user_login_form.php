@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -282,6 +281,22 @@
             margin-left: 0.5rem;
         }
 
+        /* Message box to display alerts */
+        #messageBox {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            background-color: #f8f8f8;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+
         /* Responsive Design */
         @media (max-width: 1024px) {
             .login-container {
@@ -362,7 +377,6 @@
         <div class="login-container">
             <div class="login-left">
                 <h1>Download our app!</h1>
-                <!-- Removed phone image from left section -->
             </div>
 
             <div class="login-right">
@@ -381,11 +395,24 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Log in</button>
                         <div class="or-divider">OR</div>
-                        <a href="#" class="btn btn-secondary">
-                            <img src="images/googlebtn.png"
-                                alt="Google" class="btn-icon" width="18">
-                            Continue with Google
-                        </a>
+                        <!-- Centered Google Sign-In Button from GSI library -->
+                        <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin: 16px 0;">
+                            <div>
+                                <div id="g_id_onload"
+                                    data-client_id="1043599229897-c7t8ir646mn4i1abs79eeg51r4hu4j66.apps.googleusercontent.com"
+                                    data-callback="handleCredentialResponse"
+                                    data-auto_prompt="false">
+                                </div>
+                                <div class="g_id_signin"
+                                    data-type="standard"
+                                    data-size="large"
+                                    data-theme="outline"
+                                    data-text="continue_with"
+                                    data-shape="pill"
+                                    data-logo_alignment="left">
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -394,7 +421,14 @@
         <img src="images/loginphone.png" alt="App on phone" class="fixed-phone-mockup">
     </div>
 
+    <!-- Custom message box to display alerts -->
+    <div id="messageBox"></div>
+
+    <!-- Load the Google Sign-In Platform library. This must be a global script. -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <script>
+        // Go back functionality
         function goBack() {
             if (window.history.length > 1) {
                 window.history.back();
@@ -425,7 +459,83 @@
                 handleToggle();
             }
         });
+        
+        // A utility function to show a temporary message instead of using alert()
+        function showMessage(message, duration = 3000) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, duration);
+        }
+
+        /**
+         * This is the callback function that Google's GSI library calls after a user
+         * successfully signs in. It receives the credential response as an argument.
+         * @param {Object} response - The credential response object from Google.
+         * @param {string} response.credential - The JWT (JSON Web Token) containing user information.
+         */
+        function handleCredentialResponse(response) {
+            // The `response.credential` is a JSON Web Token (JWT) that needs to be
+            // decoded to access the user's data. For a real application, you should send
+            // this token to your backend server for verification and user authentication.
+            const idToken = response.credential;
+            console.log("Encoded JWT ID token: " + idToken);
+
+            // Decode the JWT on the client-side for display purposes.
+            // This is NOT secure for authentication. A server MUST verify the token.
+            const user = parseJwt(idToken);
+            console.log("Decoded user information:", user);
+            
+            showMessage(`Welcome, ${user.name}! You are signed in.`);
+
+            // ----------------------------------------------------------------------
+            // YOUR CUSTOM APPLICATION LOGIC GOES HERE.
+            // 1. Send the `idToken` to your backend server via a fetch or AJAX call.
+            //    Example:
+            //    fetch('/api/google-signin', {
+            //        method: 'POST',
+            //        headers: {
+            //            'Content-Type': 'application/json',
+            //        },
+            //        body: JSON.stringify({ id_token: idToken }),
+            //    })
+            //    .then(response => response.json())
+            //    .then(data => {
+            //        console.log('Backend response:', data);
+            //        // Update UI, set session cookies, redirect, etc.
+            //    })
+            //    .catch(error => {
+            //        console.error('Error sending token to backend:', error);
+            //    });
+            //
+            // 2. Based on the backend response, update the UI (e.g., show a welcome message,
+            //    redirect to a dashboard, or load user-specific content).
+            // ----------------------------------------------------------------------
+        }
+
+        /**
+         * Helper function to decode a JWT.
+         * Note: This is for demonstration purposes. Do not rely on client-side decoding
+         * for security.
+         * @param {string} token - The JWT to decode.
+         * @returns {Object} - The decoded payload.
+         */
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("Error decoding JWT:", e);
+                return null;
+            }
+        }
     </script>
 </body>
-
 </html>

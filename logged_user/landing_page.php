@@ -112,9 +112,10 @@ include '../includes/headeruser.php';
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 32px;
             position: relative;
-            max-width: 1400px;
+            max-width: 1800px;
+            width: 95vw;
             margin: 0 auto;
         }
 
@@ -144,13 +145,15 @@ include '../includes/headeruser.php';
 
         .featured-items {
             display: flex;
-            gap: 24px;
+            gap: 32px;
             overflow: hidden;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1600px;
             justify-content: center;
             position: relative;
             transition: none;
+            /* Added padding to fix hover animation clipping */
+            padding: 20px 0; 
             min-height: 420px;
         }
 
@@ -172,7 +175,7 @@ include '../includes/headeruser.php';
 
         .featured-item:hover {
             box-shadow: 0 12px 40px rgba(207, 135, 86, 0.15), 0 4px 15px rgba(0, 0, 0, 0.08);
-            transform: translateY(-10px) scale(1.03);
+            transform: translateY(-10px) scale(0.93);
             border-color: #CF8756;
         }
 
@@ -240,10 +243,6 @@ include '../includes/headeruser.php';
             transform: translateY(-2px);
         }
 
-        .featured-item .add-to-cart i {
-            font-size: 0.9rem;
-        }
-
         .featured-pagination {
             margin-top: 35px;
             display: flex;
@@ -291,7 +290,6 @@ include '../includes/headeruser.php';
                 opacity: 0;
                 transform: translateX(80px);
             }
-
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -303,7 +301,6 @@ include '../includes/headeruser.php';
                 opacity: 1;
                 transform: translateX(0);
             }
-
             to {
                 opacity: 0;
                 transform: translateX(-80px);
@@ -315,7 +312,6 @@ include '../includes/headeruser.php';
                 opacity: 0;
                 transform: translateX(-80px);
             }
-
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -327,7 +323,6 @@ include '../includes/headeruser.php';
                 opacity: 1;
                 transform: translateX(0);
             }
-
             to {
                 opacity: 0;
                 transform: translateX(80px);
@@ -339,6 +334,9 @@ include '../includes/headeruser.php';
             .featured-items {
                 max-width: 900px;
                 gap: 20px;
+            }
+            .featured-carousel {
+                max-width: 1100px;
             }
             .featured-item {
                 width: 200px;
@@ -357,36 +355,33 @@ include '../includes/headeruser.php';
                 padding-top: 100px;
                 padding-bottom: 50px;
             }
-
             .landing-hero-content {
                 flex-direction: column;
                 align-items: center;
                 gap: 1.5rem;
                 padding: 0 2vw;
             }
-
             .center-hero-img {
                 max-height: 45vh;
                 transform: rotate(25deg);
                 margin-top: 5rem;
             }
-
             .landing-hero-text-overlay {
                 text-align: center;
                 padding: 0;
             }
-
             .landing-hero-text-overlay .big-text {
                 font-size: 2.5rem;
             }
-
             .featured-section h2 {
                 font-size: 2rem;
                 margin-bottom: 40px;
             }
-            
             .featured-items {
                 max-width: 600px;
+            }
+            .featured-carousel {
+                max-width: 700px;
             }
         }
 
@@ -394,6 +389,9 @@ include '../includes/headeruser.php';
             .featured-items {
                 max-width: 400px;
                 gap: 16px;
+            }
+            .featured-carousel {
+                max-width: 420px;
             }
             .featured-item {
                 width: 180px;
@@ -417,25 +415,20 @@ include '../includes/headeruser.php';
                 padding: 100px 2vw 20px;
                 min-height: auto;
             }
-
             .landing-hero-content {
                 padding: 0;
             }
-
             .center-hero-img {
                 max-height: 35vh;
                 transform: rotate(15deg);
                 margin-top: 1rem;
             }
-
             .landing-hero-text-overlay .small-text {
                 font-size: 1rem;
             }
-
             .landing-hero-text-overlay .big-text {
                 font-size: 1.8rem;
             }
-
             .featured-items {
                 max-width: 250px;
                 gap: 0;
@@ -455,7 +448,7 @@ include '../includes/headeruser.php';
         <div class="landing-hero-content">
             <img src="../images/user/landingpagetile1.png" alt="Landing Tile" class="center-hero-img">
             <div class="landing-hero-text-overlay">
-                <div class="small-text">EYE PLEASING. FEEL BETTER.</div>
+                <div class="small-text">STYLE--- IN YOUR EVERY STEP.</div>
                 <div class="big-text">CHOOSE YOUR<br>TILES NOW.</div>
             </div>
         </div>
@@ -505,10 +498,8 @@ include '../includes/headeruser.php';
             return 4;
         };
 
-
         let currentPage = 0;
         let animating = false;
-
 
         function renderFeaturedItems(direction = 0) {
             const container = document.querySelector('.featured-items');
