@@ -288,6 +288,15 @@
             display: none;
             text-align: center;
         }
+        
+        /* === FIXES FOR BUTTON WIDTH === */
+        .login-box button.btn-primary {
+            width: 100%;
+        }
+
+        .g_id_signin {
+            width: 100%;
+        }
 
         @media (max-width: 1024px) {
             .login-container {
@@ -388,20 +397,25 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Log in</button>
                         <div class="or-divider">OR</div>
-                        <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin: 16px 0;">
-                            <div>
-                                <div id="g_id_onload"
-                                    data-client_id="1043599229897-c7t8ir646mn4i1abs79eeg51r4hu4j66.apps.googleusercontent.com"
-                                    data-callback="handleCredentialResponse"
-                                    data-auto_prompt="false">
-                                </div>
-                                <div class="g_id_signin"
-                                    data-type="standard"
-                                    data-size="large"
-                                    data-theme="outline"
-                                    data-text="continue_with"
-                                    data-shape="pill"
-                                    data-logo_alignment="left">
+                        <div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch; width: 100%; margin: 0 0 16px 0;">
+                            <button type="button" class="btn btn-primary" style="background: #684330;" onclick="window.location.href='register.php'">Manual Register</button>
+                            
+                            <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                                <div>
+                                    <div id="g_id_onload"
+                                        data-client_id="1043599229897-c7t8ir646mn4i1abs79eeg51r4hu4j66.apps.googleusercontent.com"
+                                        data-callback="handleCredentialResponse"
+                                        data-auto_prompt="false">
+                                    </div>
+                                    <div class="g_id_signin"
+                                        data-type="standard"
+                                        data-size="large"
+                                        data-theme="outline"
+                                        data-text="continue_with"
+                                        data-shape="pill"
+                                        data-logo_alignment="left"
+                                        data-width="345">
+                                    </div>
                                 </div>
                             </div>
                         </div>
