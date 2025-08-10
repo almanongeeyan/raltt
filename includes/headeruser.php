@@ -559,7 +559,7 @@
                 <i class="fa fa-caret-down"></i>
                 <div class="user-dropdown-content">
                     <a href="#"><i class="fa fa-user"></i> Account</a>
-                    <a href="#"><i class="fa fa-sign-out"></i> Logout</a>
+                    <a href="../index.php"><i class="fa fa-sign-out"></i> Logout</a>
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 <?php
 $servername = "localhost";
-$username = "";
-$password = "";
+$username = "root"; 
+$password = ""; 
 $dbname = "raltt_db";
 
 try {
@@ -13,5 +13,6 @@ try {
     exit();
 }
 
-// ... (existing try-catch block for token verification) ...
+// Assign the PDO object to a variable that other scripts can use
+$db_connection = $conn;
 ?>
