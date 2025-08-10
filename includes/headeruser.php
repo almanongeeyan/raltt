@@ -10,38 +10,41 @@
             background: #000 !important;
             color: #fff;
             margin: 0;
-            font-family: Arial, sans-serif;
-            font-weight: bold;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-weight: 500;
         }
 
         .raltt-header {
             width: 100%;
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             z-index: 100;
-            background: transparent;
+            background: rgba(10,10,10,0.85);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 12px 48px 0 48px;
-            height: 100px;
+            justify-content: space-between;
+            padding: 0 32px;
+            height: 72px;
             box-sizing: border-box;
-            gap: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.3s;
         }
 
         .raltt-header .logo-area {
             display: flex;
             align-items: center;
-            gap: 32px;
-            max-width: 320px;
+            gap: 18px;
+            max-width: 180px;
             flex: 0 0 auto;
-            margin-right: 32px;
+            margin-right: 18px;
+            z-index: 200;
         }
 
         .raltt-header .logo-img {
-            width: 280px;
-            height: 230px;
+            width: 250px;
+            height: 180px;
             object-fit: contain;
             display: block;
         }
@@ -54,19 +57,45 @@
 
         .raltt-header .brand-main {
             color: #fff;
-            font-size: 1.25rem;
-            font-weight: 500;
+            font-size: 1.1rem;
+            font-weight: 600;
             letter-spacing: 0.5px;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
         }
 
         .raltt-header .brand-sub {
             color: #b88b4a;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 400;
             margin-top: -2px;
             letter-spacing: 0.2px;
         }
+
+        .raltt-header .nav-and-user {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-width: 0;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 1200px;
+        }
+        
+        .raltt-header .nav-and-user.search-active .nav,
+        .raltt-header .nav-and-user.search-active .user-dropdown {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s linear;
+        }
+
+        .raltt-header .nav-and-user.search-active .search-bar {
+            display: flex;
+            visibility: visible;
+            opacity: 1;
+        }
+
 
         .raltt-header nav {
             display: flex;
@@ -76,17 +105,18 @@
             justify-content: center;
             background: rgba(0, 0, 0, 0.10);
             border-radius: 32px;
-            padding: 10px 36px;
+            padding: 8px 22px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
-            margin: 0 32px;
+            margin: 0 18px;
+            transition: opacity 0.3s, visibility 0.3s;
         }
-
+        
         .raltt-header nav a {
             color: #fff;
-            font-size: 1.08rem;
-            font-weight: 700;
+            font-size: 1.02rem;
+            font-weight: 600;
             text-decoration: none;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 4px;
             transition: background 0.18s, color 0.18s;
             position: relative;
@@ -142,13 +172,126 @@
         .raltt-header .user-area {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex: 0 0 auto;
-            margin-left: 32px;
+            margin-left: 12px;
+            position: relative;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .raltt-header .search-icon {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #fff;
+            margin-right: 6px;
+            transition: color 0.18s;
+            z-index: 200;
+        }
+        .raltt-header .search-icon:hover {
+            color: #ff7a22;
+        }
+
+        .raltt-header .search-bar {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(34,34,34,0.98);
+            border-radius: 32px;
+            padding: 6px 18px;
+            z-index: 300;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+            min-width: 220px;
+            max-width: 400px;
+            width: 100%;
+            transition: all 0.3s;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        .raltt-header .search-bar input {
+            border: none;
+            background: transparent;
+            color: #fff;
+            font-size: 1.1rem;
+            outline: none;
+            width: 80%;
+            padding: 6px 0;
+        }
+        .raltt-header .search-bar button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .raltt-header .search-bar #raltt-search-close {
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+
+        /* Mobile search icon and bar */
+        .raltt-header .search-icon-mobile {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            color: #fff;
+            margin-left: 10px;
+            transition: color 0.18s;
+        }
+        .raltt-header .search-icon-mobile:hover {
+            color: #ff7a22;
+        }
+        .raltt-header .search-bar-mobile {
+            display: none;
+            position: relative;
+            background: rgba(34,34,34,0.98);
+            border-radius: 32px;
+            padding: 6px 18px;
+            margin: 10px 0 0 0;
+            z-index: 300;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+            min-width: 180px;
+            max-width: 95vw;
+            width: 90vw;
+            transition: all 0.3s;
+            align-self: center;
+            align-items: center;
+        }
+        .raltt-header .search-bar-mobile input {
+            border: none;
+            background: transparent;
+            color: #fff;
+            font-size: 1.1rem;
+            outline: none;
+            width: 70vw;
+            max-width: 80vw;
+            padding: 6px 0;
+        }
+        .raltt-header .search-bar-mobile button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .raltt-header .search-bar-mobile #raltt-search-close-mobile {
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 1.3rem;
         }
 
         .raltt-header .user-dropdown {
             position: relative;
+            transition: opacity 0.3s, visibility 0.3s;
         }
 
         .raltt-header .user-dropdown-content {
@@ -187,6 +330,12 @@
             background: #ff7a22;
             color: #fff;
         }
+        
+        .raltt-header .user-icon {
+            font-size: 1.4rem;
+            color: #fff;
+            cursor: pointer;
+        }
 
         /* Mobile specific styles */
         .raltt-header .burger,
@@ -196,8 +345,8 @@
 
         @media (max-width: 900px) {
             .raltt-header {
-                padding: 0 8px;
-                height: 70px;
+                padding: 0 4vw;
+                height: 56px;
                 justify-content: space-between;
                 align-items: center;
             }
@@ -206,30 +355,30 @@
             .raltt-header .user-area {
                 display: none;
             }
-            
+
             .raltt-header .logo-area {
                 max-width: 120px;
                 margin-right: 0;
             }
 
             .raltt-header .logo-img {
-                width: 100px;
-                height: 80px;
+                width: 70px;
+                height: 32px;
             }
 
             .raltt-header .burger {
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                width: 36px;
-                height: 36px;
+                width: 32px;
+                height: 32px;
                 cursor: pointer;
                 z-index: 120;
                 position: relative;
             }
 
             .raltt-header .burger span {
-                height: 4px;
+                height: 3px;
                 width: 100%;
                 background: #fff;
                 margin: 4px 0;
@@ -237,7 +386,7 @@
                 transition: 0.3s;
                 display: block;
             }
-            
+
             /* Burger animation */
             .raltt-header .burger.open span:nth-child(1) {
                 transform: rotate(-45deg) translate(-5px, 6px);
@@ -261,20 +410,20 @@
                 height: 100vh;
                 background: rgba(34, 34, 34, 0.98);
                 z-index: 200;
-                padding-top: 70px;
+                padding-top: 56px;
                 align-items: center;
                 gap: 16px;
                 transition: 0.3s;
                 overflow-y: auto;
             }
-            
+
             .raltt-header .mobile-menu.open {
                 display: flex;
             }
 
             .raltt-header .mobile-menu a {
                 color: #fff;
-                font-size: 1.08rem;
+                font-size: 1.01rem;
                 padding: 10px 0;
                 text-decoration: none;
                 width: 100%;
@@ -285,7 +434,7 @@
                 align-items: center;
                 justify-content: center;
                 letter-spacing: 0.02em;
-                font-weight: 700;
+                font-weight: 600;
             }
 
             .raltt-header .mobile-menu .dropdown-content {
@@ -299,7 +448,7 @@
                 width: 100%;
                 text-align: center;
             }
-            
+
             .raltt-header .mobile-menu .dropdown-content a {
                 padding-left: 0;
                 font-size: 0.92rem;
@@ -307,13 +456,13 @@
                 padding-top: 6px;
                 padding-bottom: 6px;
                 gap: 8px;
-                font-weight: 700;
+                font-weight: 600;
             }
-            
+
             .raltt-header .mobile-menu .dropdown-content a i {
                 font-size: 1rem;
             }
-            
+
             .raltt-header .user-dropdown-mobile {
                 display: flex;
                 flex-direction: column;
@@ -331,13 +480,21 @@
                 gap: 8px;
                 width: 100%;
                 text-align: center;
-                font-weight: 700;
+                font-weight: 600;
+            }
+
+            /* Show search icon in mobile menu header */
+            .raltt-header .search-icon-mobile {
+                display: flex;
+            }
+            .raltt-header .search-bar-mobile {
+                display: none;
             }
         }
         
         @media (max-width: 600px) {
             .raltt-header {
-                height: 56px;
+                height: 44px;
             }
 
             .raltt-header .logo-img {
@@ -350,17 +507,17 @@
             }
 
             .raltt-header .brand-sub {
-                font-size: 0.85rem;
+                font-size: 0.78rem;
             }
 
             .raltt-header .mobile-menu {
-                padding-top: 56px;
+                padding-top: 44px;
             }
             
             .raltt-header .mobile-menu a,
             .raltt-header .mobile-menu .dropdown-content a {
-                font-size: 0.98rem;
-                padding: 9px 0;
+                font-size: 0.95rem;
+                padding: 8px 0;
             }
         }
     </style>
@@ -371,39 +528,59 @@
     <div class="logo-area">
         <img src="../images/logover2.png" alt="Logo" class="logo-img">
     </div>
+    <div class="nav-and-user">
+        <nav class="nav">
+            <a href="/index.php">Home</a>
+            <div class="dropdown" tabindex="0">
+                <a href="#">Products <i class="fa fa-caret-down"></i></a>
+                <div class="dropdown-content">
+                    <a href="#"><i class="fa fa-th-large"></i> Floor Tiles</a>
+                    <a href="#"><i class="fa fa-door-open"></i> PVC Doors</a>
+                    <a href="#"><i class="fa fa-tint"></i> Sinks</a>
+                    <a href="#"><i class="fa fa-grip-horizontal"></i> Tile Vinyl</a>
+                    <a href="#"><i class="fa fa-circle-o"></i> Bowls</a>
+                </div>
+            </div>
+            <a href="/feature-2d-visualizer.php">2D Visualizer</a>
+            <a href="#">My Favourite</a>
+            <a href="#">My Cart</a>
+        </nav>
+        <div class="user-area">
+            <div class="search-icon" id="raltt-search-icon" tabindex="0">
+                <i class="fa fa-search"></i>
+            </div>
+            <form class="search-bar" id="raltt-search-bar">
+                <input type="text" placeholder="Search...">
+                <button type="submit"><i class="fa fa-search"></i></button>
+                <span id="raltt-search-close">&times;</span>
+            </form>
+            <div class="user-dropdown" tabindex="0">
+                <i class="fa fa-user-circle user-icon"></i>
+                <i class="fa fa-caret-down"></i>
+                <div class="user-dropdown-content">
+                    <a href="#"><i class="fa fa-user"></i> Account</a>
+                    <a href="#"><i class="fa fa-sign-out"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="burger" id="raltt-burger" aria-label="Open menu" tabindex="0">
         <span></span>
         <span></span>
         <span></span>
     </div>
-    <nav>
-        <a href="/index.php">Home</a>
-        <div class="dropdown" tabindex="0">
-            <a href="#">Products <i class="fa fa-caret-down"></i></a>
-            <div class="dropdown-content">
-                <a href="#"><i class="fa fa-th-large"></i> Floor Tiles</a>
-                <a href="#"><i class="fa fa-door-open"></i> PVC Doors</a>
-                <a href="#"><i class="fa fa-tint"></i> Sinks</a>
-                <a href="#"><i class="fa fa-grip-horizontal"></i> Tile Vinyl</a>
-                <a href="#"><i class="fa fa-circle-o"></i> Bowls</a>
-            </div>
-        </div>
-        <a href="/feature-2d-visualizer.php">2D Visualizer</a>
-        <a href="#">My Favourite</a>
-        <a href="#">My Cart</a>
-    </nav>
-    <div class="user-area">
-        <div class="user-dropdown" tabindex="0">
-            <i class="fa fa-user-circle user-icon"></i>
-            <i class="fa fa-caret-down" style="color:#fff;font-size:1.1rem;"></i>
-            <div class="user-dropdown-content">
-                <a href="#"><i class="fa fa-user"></i> Account</a>
-                <a href="#"><i class="fa fa-sign-out"></i> Logout</a>
-            </div>
-        </div>
-    </div>
     <div class="mobile-menu" id="raltt-mobile-menu">
-        <button id="raltt-back-btn" style="background:none;border:none;color:#fff;font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:8px;padding:12px 0 12px 12px;width:100%;text-align:left;cursor:pointer;"><i class="fa fa-arrow-left"></i> Back</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 12px 0 0;">
+            <button id="raltt-back-btn" style="background:none;border:none;color:#fff;font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:8px;padding:12px 0 12px 12px;width:auto;text-align:left;cursor:pointer;"><i class="fa fa-arrow-left"></i> Back</button>
+            <div class="search-icon-mobile" id="raltt-search-icon-mobile" tabindex="0" style="cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.7rem;color:#fff;margin-left:10px;">
+                <i class="fa fa-search"></i>
+            </div>
+        </div>
+        <form class="search-bar-mobile" id="raltt-search-bar-mobile">
+            <input type="text" placeholder="Search...">
+            <button type="submit"><i class="fa fa-search"></i></button>
+            <span id="raltt-search-close-mobile">&times;</span>
+        </form>
         <a href="/index.php">Home</a>
         <div class="dropdown" tabindex="0" style="width:100%;">
             <a href="#">Products <i class="fa fa-caret-down"></i></a>
@@ -434,6 +611,43 @@
         const mobileMenu = document.getElementById('raltt-mobile-menu');
         const backBtn = document.getElementById('raltt-back-btn');
         const body = document.body;
+        
+        const navAndUser = document.querySelector('.nav-and-user');
+        const searchIcon = document.getElementById('raltt-search-icon');
+        const searchBar = document.getElementById('raltt-search-bar');
+        const searchClose = document.getElementById('raltt-search-close');
+        
+        const searchIconMobile = document.getElementById('raltt-search-icon-mobile');
+        const searchBarMobile = document.getElementById('raltt-search-bar-mobile');
+        const searchCloseMobile = document.getElementById('raltt-search-close-mobile');
+
+        // Function to toggle the desktop search bar
+        function toggleDesktopSearch(show) {
+            if (show) {
+                navAndUser.classList.add('search-active');
+            } else {
+                navAndUser.classList.remove('search-active');
+            }
+        }
+
+        // Desktop search icon click handler
+        if (searchIcon && searchBar && searchClose) {
+            searchIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleDesktopSearch(true);
+                searchBar.querySelector('input').focus();
+            });
+            searchClose.addEventListener('click', () => {
+                toggleDesktopSearch(false);
+            });
+            document.addEventListener('click', (e) => {
+                if (!searchBar.contains(e.target) && !searchIcon.contains(e.target)) {
+                    toggleDesktopSearch(false);
+                }
+            });
+        }
+
+        // Mobile menu functionality
         if (backBtn) {
             backBtn.addEventListener('click', () => {
                 mobileMenu.classList.remove('open');
@@ -494,10 +708,28 @@
                 mobileMenu.classList.remove('open');
                 burger.classList.remove('open');
                 body.style.overflow = '';
+                if (searchBarMobile) searchBarMobile.style.display = 'none';
+                toggleDesktopSearch(false); // Hide search on resize
             }
         });
+
+        // Mobile search icon handlers
+        if (searchIconMobile && searchBarMobile && searchCloseMobile) {
+            searchIconMobile.addEventListener('click', (e) => {
+                e.stopPropagation();
+                searchBarMobile.style.display = 'flex';
+                searchBarMobile.querySelector('input').focus();
+            });
+            searchCloseMobile.addEventListener('click', () => {
+                searchBarMobile.style.display = 'none';
+            });
+            document.addEventListener('click', (e) => {
+                if (!searchBarMobile.contains(e.target) && !searchIconMobile.contains(e.target)) {
+                    searchBarMobile.style.display = 'none';
+                }
+            });
+        }
     });
 </script>
-
 </body>
 </html>
