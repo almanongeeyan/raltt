@@ -174,11 +174,11 @@
 		}
 
 		.login-btn {
-			display: flex;
+			display: inline-flex;
 			align-items: center;
 			justify-content: center;
 			gap: 0.5rem;
-			margin: 2rem auto 0 auto;
+			margin: 2rem 0 0 0;
 			background: var(--secondary);
 			color: white;
 			font-size: 1.13rem;
@@ -190,8 +190,8 @@
 			box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
 			transition: var(--transition);
 			text-decoration: none;
-			width: 100%;
-			max-width: 340px;
+			width: auto;
+			max-width: none;
 			text-align: center;
 		}
 
@@ -248,20 +248,28 @@
 		}
 
 		@media (max-width: 480px) {
-			.container {
-				padding: 8px 0;
-			}
-			.card h1 {
-				flex-direction: column;
-				gap: 0.5rem;
-				font-size: 1.3rem;
-			}
-			.card-secondary h2 {
-				flex-direction: column;
-				gap: 0.5rem;
-				font-size: 1.1rem;
-			}
-		}
+    .container {
+        padding: 16px 0;
+    }
+    .card, .card-secondary {
+        padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+    }
+    .login-btn {
+        width: 100%;
+        padding: 0.9rem 1rem;
+        max-width: 100%;
+    }
+    /* The correction is here */
+    .card h1 {
+        font-size: 1.3rem;
+    }
+    .card-secondary h2 {
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+    }
+}
+		
 	</style>
 </head>
 <body>
