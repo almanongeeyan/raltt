@@ -1,12 +1,11 @@
 <?php
+// Enforce session and cache control to prevent back navigation after logout
 session_start();
-// Prevent back navigation after logout
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
-// Redirect to login if not logged in
 if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
-    header('Location: ../index.php');
+    header('Location: ../connection/tresspass.php');
     exit();
 }
 include '../includes/headeruser.php';
@@ -454,6 +453,28 @@ include '../includes/headeruser.php';
 </head>
 
 <body>
+    <?php
+    // Extra check in body to force redirect if session is not valid (prevents access from browser cache)
+    if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
+        echo "<script>window.location.href='../connection/tresspass.php';</script>";
+        exit();
+    }
+    ?>
+    <script>
+    // Detect browser back navigation and force check for session
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            // Always revalidate session by making a request
+            fetch(window.location.href, {cache: 'reload', credentials: 'same-origin'})
+                .then(() => {
+                    // If PHP session is invalid, the server will redirect
+                })
+                .catch(() => {
+                    window.location.href = '../connection/tresspass.php';
+                });
+        }
+    });
+    </script>
     <section class="landing-hero-section">
         <div class="landing-hero-content">
             <img src="../images/user/landingpagetile1.png" alt="Landing Tile" class="center-hero-img">
