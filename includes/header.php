@@ -330,7 +330,7 @@
                 </div>
             </div>
             <a href="product_view_homepage.php">Products</a>
-            <a href="aboutraltt.php">About Us</a>
+            <a href="about_us_cholene.php">About Us</a>
         </nav>
         <div class="login-bars-group">
             <div class="fas fa-bars" id="menu"></div>
