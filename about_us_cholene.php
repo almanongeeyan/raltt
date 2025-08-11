@@ -69,12 +69,11 @@ include 'includes/header.php';
             min-width: 220px;
         }
         .about-raltt-tiles-img img {
-            width: 500px;
+            width: 1000px;
             height: auto;
             object-fit: contain;
-            border-radius: 10px;
-            box-shadow: 0 4px 18px 0 rgba(0,0,0,0.07);
-            background: #fff;
+            
+        
         }
         .about-raltt-bottom {
             width: 100%;
@@ -85,7 +84,7 @@ include 'includes/header.php';
             justify-content: space-between;
             gap: 40px;
             padding: 0 30px;
-            background-color: transparent;
+            
         }
         .about-raltt-bottom-img {
             flex: 1.2;
@@ -94,12 +93,10 @@ include 'includes/header.php';
             justify-content: flex-start;
         }
         .about-raltt-bottom-img img {
-            width: 340px;
+            width: 500px;
             height: auto;
             object-fit: contain;
-            border-radius: 6px;
-            background: #fff;
-            box-shadow: 0 4px 18px 0 rgba(0,0,0,0.07);
+            
         }
         .about-raltt-bottom-desc {
             flex: 2;
@@ -170,13 +167,13 @@ include 'includes/header.php';
             </div>
             <div class="about-raltt-tiles-img">
                 <!-- Replace with your real image -->
-                <img src="images/tiles_stack.png" alt="Tiles Stack">
+                <img src="images/tile1.png" alt="Tiles Stack">
             </div>
         </div>
         <div class="about-raltt-bottom">
             <div class="about-raltt-bottom-img">
                 <!-- Replace with your real image -->
-                <img src="images/tiles_sample.png" alt="Tile Samples">
+                <img src="images/tile2.png" alt="Tile Samples">
             </div>
             <div class="about-raltt-bottom-desc">
                 <p>
