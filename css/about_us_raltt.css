@@ -1,5 +1,4 @@
-@ -0,0 +1,852 @@
- /* General body styling for font consistency */
+/* General body styling for font consistency */
  body {
      display: flex;
      flex-direction: row;
