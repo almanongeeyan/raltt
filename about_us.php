@@ -27,7 +27,7 @@
             <div class="dropdown">
                 <button class="dropbtn">Features <i class="fas fa-caret-down"></i></button>
                 <div class="dropdown-content">
-                    <a href="2d_tile_visualizer.php"><i class="fas fa-cube"></i> 2D Tile Visualizer</a>
+                    <a href="2d_visualizer.php"><i class="fas fa-cube"></i> 2D Tile Visualizer</a>
                     <a href="referral_code.php"><i class="fas fa-users"></i> Referral Code</a>
                 </div>
             </div>
@@ -56,10 +56,11 @@
                 <img src="images/tile2.png" alt="Tile Samples">
             </div>
             <div class="about-raltt-bottom-desc">
-                <p>
-                    We will bring something new and refreshing to your usage of visualizer and tile e-commerce. RALTT is
-                    here to maximize your tile design imagination while shopping on our tile e-commerce shop. <span
-                        class="highlight">Check out now!</span>
+                <p><br>
+                    Want something new and refreshing experience on tile visualizer? RALTT is
+                    here to maximize your tile design imagination while shopping on our tile e-commerce shop. 
+                    <br><br><button><a href="user_login_form.php" class="checkout-btn">Check out now!</a></button>
+                    
                 </p>
             </div>
         </div>

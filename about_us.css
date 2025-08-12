@@ -36,15 +36,15 @@
             align-items: flex-start;
             justify-content: space-between;
             gap: 40px;
-            margin-bottom: 60px;
+            margin-bottom: 35px;
             padding: 0 30px;
             
         }
         .about-raltt-title {
             flex: 2;
-            font-size: 2.7rem;
+            font-size: 2.9rem;
             font-weight: 700;
-            line-height: 1.13;
+            line-height: 1.30;
             color: #222;
             margin-bottom: 0;
         }
@@ -59,10 +59,10 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-end;
-            min-width: 220px;
+            min-width: 550px;
         }
         .about-raltt-tiles-img img {
-            width: 1000px;
+            width: 550px;
             height: auto;
             object-fit: contain;
             
@@ -86,7 +86,7 @@
             justify-content: flex-start;
         }
         .about-raltt-bottom-img img {
-            width: 500px;
+            width: 550px;
             height: auto;
             object-fit: contain;
             
@@ -108,6 +108,30 @@
         .about-raltt-bottom-desc .highlight {
             color: #F47C2E;
             font-weight: 700;
+        }
+        .checkout-btn {
+            background: #F47C2E;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.08rem;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 28px;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px 0 rgba(244,124,46,0.08);
+            text-decoration: none;
+        }
+        .checkout-btn:hover {
+            background: #d9651c;
+        }
+        button{
+            outline: none;
+            border: none;
+            box-shadow: none;
+        }
+        button:focus {
+            box-shadow: none;
         }
         @media (max-width: 1000px) {
             .about-raltt-top, .about-raltt-bottom {

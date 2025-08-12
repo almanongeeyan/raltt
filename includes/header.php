@@ -326,11 +326,11 @@
                 <button class="dropbtn">Features <i class="fas fa-caret-down"></i></button>
                 <div class="dropdown-content">
                     <a href="2d_visualizer_homepage.php"><i class="fas fa-cube"></i> 2D Tile Visualizer</a>
-                    <a href="referral_code.php"><i class="fas fa-users"></i> Referral Code</a>
+                    <a href="referral_homepage.php"><i class="fas fa-users"></i> Referral Code</a>
                 </div>
             </div>
             <a href="product_view_homepage.php">Products</a>
-            <a href="about_us_cholene.php">About Us</a>
+            <a href="about_us.php">About Us</a>
         </nav>
         <div class="login-bars-group">
             <div class="fas fa-bars" id="menu"></div>
