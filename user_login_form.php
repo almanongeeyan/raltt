@@ -1,3 +1,15 @@
+<?php
+session_start();
+// Prevent back navigation after login
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+// If already logged in, redirect to landing page
+if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
+    header('Location: logged_user/landing_page.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -432,7 +444,7 @@
     <script>
         function goBack() {
             if (window.history.length > 1) {
-                window.history.back();
+                window.location.href = 'index.php';
             } else {
                 window.location.href = 'index.php';
             }

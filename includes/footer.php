@@ -362,13 +362,13 @@
                     <div class="footer-square-content">
                         <div class="footer-square-column">
                             <p>Features</p>
-                            <a href="2d_tile_visualizer.php">2D Tile Visualizer</a>
+                            <a href="2d_visualizer_homepage.php">2D Tile Visualizer</a>
                             <a href="referral_code.php">Referral Code</a>
                         </div>
                         <div class="footer-square-column">
                             <p>Meet RALTT</p>
-                            <a href="about_us.php">About Us</a>
-                            <a href="productviewhomepage.php">Tile E-Commerce</a>
+                            <a href="about_us_cholene.php">About Us</a>
+                            <a href="product_view_homepage.php">Tile E-Commerce</a>
                         </div>
                     </div>
                 </div>
@@ -411,7 +411,7 @@
             <div class="footer-about">
                 <span>About us</span>
                 <a href="#">Privacy</a>
-                <a href="#">Other branches</a>
+                <a href="about_us_cholene.php">Other branches</a>
             </div>
         </div>
     </footer>

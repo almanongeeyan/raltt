@@ -1,3 +1,13 @@
+<?php
+// Start session and check if user is logged in
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
+    header('Location: ../connection/tresspass.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -523,6 +533,23 @@
     </style>
 </head>
 <body>
+<script>
+// Check session every 1 second
+setInterval(function() {
+    fetch('../connection/check_session.php', { method: 'POST' })
+        .then(response => response.text())
+        .then(data => {
+            // If check_session.php returns anything except 'OK', redirect
+            if (data.trim() !== 'OK') {
+                window.location.href = '../connection/tresspass.php';
+            }
+        })
+        .catch(() => {
+            // On error, redirect as well
+            window.location.href = '../connection/tresspass.php';
+        });
+}, 1000);
+</script>
 
 <header class="raltt-header">
     <div class="logo-area">
@@ -559,7 +586,7 @@
                 <i class="fa fa-caret-down"></i>
                 <div class="user-dropdown-content">
                     <a href="#"><i class="fa fa-user"></i> Account</a>
-                    <a href="../connection/logout.php"><i class="fa fa-sign-out"></i> Logout</a>
+                    <a href="../logout.php"><i class="fa fa-sign-out"></i> Logout</a>
                 </div>
             </div>
         </div>
