@@ -27,11 +27,11 @@
             <div class="dropdown">
                 <button class="dropbtn">Features <i class="fas fa-caret-down"></i></button>
                 <div class="dropdown-content">
-                    <a href="2d_visualizer.php"><i class="fas fa-cube"></i> 2D Tile Visualizer</a>
-                    <a href="referral_code.php"><i class="fas fa-users"></i> Referral Code</a>
+                    <a href="2d_visualizer_homepage.php"><i class="fas fa-cube"></i> 2D Tile Visualizer</a>
+                    <a href="refferal.php"><i class="fas fa-users"></i> Referral Code</a>
                 </div>
             </div>
-            <a href="product.php">Products</a>
+            <a href="product_view_homepage.php">Products</a>
             <a href="#aboutus">About Us</a>
         </nav>
 
