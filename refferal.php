@@ -28,7 +28,7 @@
                 </div>
             </div>
             <a href="product_view_homepage.php">Products</a>
-            <a href="#aboutus">About Us</a>
+            <a href="about_us.php">About Us</a>
         </nav>
 
         <a href="login.php" class="login-btn"> <i class="fas fa-user"></i> Login</a>
