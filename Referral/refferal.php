@@ -35,58 +35,34 @@
         <div class="fas fa-bars" id="menu"></div>
     </header>
 
-    <div id="page1" class="scroll-section">
-        <div class="centered-container">
-            <h1 class="main-heading" id="1"> REFER TO A <span class="highlight-word"> FRIEND!</span></h1>
-            <p class="sub-heading">Get a discount when a <span class="highlight-word">FRIEND</span> of yours enters your
-                referral code.<br>
-                For every order that your <span class="highlight-word">FRIEND</span> made, you get a reward point.
-                Enjoy!
-            </p>
-        </div>
+    <div class="content-placeholder">
+        <h1 class="main-heading">
+            REFER A FRIEND,<span class="highlight">GET REWARDS!</span>
+        </h1>
+        <p class="sub-text">Get a discount when a customer <span class="highlight">enters your referral code.</span> Enjoy the <span class="highlight"> Points </span> you earn!.</p>
     </div>
 
-    <div id="page2" class="scroll-section">
-        <div class="cards-container">
-            <div class="card">
-                <h3 class="card-title">Invite Your Friend</h3>
-                <img src="steponeicon.png" alt="Invite" class="card-image" />
-            </div>
-            <div class="card">
-                <h3 class="card-title">Earn Points</h3>
-                <img src="step2icon.png" alt="Earn Points" class="card-image" />
-            </div>
-            <div class="card">
-                <h3 class="card-title"> Next Purchase Discount</h3>
-                <img src="step3icon.png" alt="Discounts" class="card-image" />
-            </div>
-        </div>
-    </div>
+    <div class="cards-container">
+  <div class="card">
+    <img src="step1.png" alt="Card 1 Image">
+  </div>
+  <div class="card">
+    <img src="step2.png" alt="Card 2 Image">
+  </div>
+  <div class="card">
+    <img src="step3.png" alt="Card 3 Image">
+  </div>
+  <div class="card">
+    <img src="step4.png" alt="Card 4 Image">
+  </div>
+</div>
 
-    <div id="page2" class="scroll-section">
-        <div class="form-wrapper">
-            <form class="large-form">
-                <div class="inner-form left-form">
-                    <label for="referral-code">Enter Your <span class="highlight-word">FRIEND'S</span> Referral
-                        Code</label>
-                    <br>
-                    <input type="text" id="referral-code" placeholder="e.g., ABC123" required>
-                    <button type="submit">Submit</button>
-                </div>
+<div class="footer-text-block">
+  <h2 class="footer-heading">
+    Join <span class="highlight">RALTT</span> Today and Start Referring!
+  </h2>
+</div>
 
-                <div class="inner-form right-form">
-                    <p class="big-text">Share your referral code to a <span class="highlight-word">FRIEND</span> and
-                        earn rewards!</p>
-                    <p class="big-text"
-                        style="background: white; width:325px; height: 45px; display: flex; justify-content: center; align-items: center; margin: 0;">
-                        REF-7X29QZ
-                    </p>
-                    <br>
-                    <button type="button" class="share-button">Share</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <div class="content-placeholder"></div>
 
@@ -196,30 +172,15 @@
     </script>
 
     <script>
-        const scrollSteps = [0, 100, 200, 375];
-        let currentStep = 0;
-        let isScrolling = false;
-
-        function scrollToVH(vh) {
-            const px = (vh / 100) * window.innerHeight;
-            window.scrollTo({ top: px, behavior: 'smooth' });
-        }
-
-        function handleWheel(e) {
-            e.preventDefault();
-            if (isScrolling) return;
-            isScrolling = true;
-
-            const direction = e.deltaY > 0 ? 1 : -1;
-            currentStep = Math.min(Math.max(currentStep + direction, 0), scrollSteps.length - 1);
-            scrollToVH(scrollSteps[currentStep]);
-
-            setTimeout(() => {
-                isScrolling = false;
-            }, 900);
-        }
-
-        window.addEventListener('wheel', handleWheel, { passive: false });
+        document.querySelectorAll('.header .navbar .dropdown > .dropbtn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (window.innerWidth <= 991) {
+                    const dropdown = btn.parentElement;
+                    dropdown.classList.toggle('open');
+                    e.preventDefault();
+                }
+            });
+        });
     </script>
 
 </body>
