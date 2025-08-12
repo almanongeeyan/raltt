@@ -39,32 +39,29 @@
         <div class="fas fa-bars" id="menu"></div>
     </header>
 
-    <section class="hero-section">
-        <h1>RICH ANNE LEA TILES TRADING</h1>
-    </section>
-
-    <section class="four-part-section">
-        <div class="top-left">
-            <p><span class="highlight-word">RALTT: </span> BRING YOUR
-                <br>VISION TO LIFE:
-                <br>Design Stunning Spaces,
-                <br>with our <span class="highlight-word">2D Tiles Visualizer</span>
-            </p>
+    <section class="about-raltt-section">
+        <div class="about-raltt-top">
+            <div class="about-raltt-title">
+                <span class="highlight">RALTT:</span> Bring Your<br>
+                Visions to Life:<br>
+                Design Stunning Spaces,<br>
+                with our <span class="highlight2">2D Tile Visualizer</span>
+            </div>
+            <div class="about-raltt-tiles-img">
+                <img src="images/tile1.png" alt="Tiles Stack">
+            </div>
         </div>
-        <div class="top-right">
-            <img src="rightsec.png" alt="Top Right Image" />
-        </div>
-        <div class="bottom-left">
-            <img src="leftsec.png" alt="Bottom Left Image" />
-        </div>
-        <div class="bottom-right">
-            <p>We will bring something new and refreshing
-                <br>to your usage of visualizer and tile
-                <br>e-commerce. <span class="highlight-word">RALTT</span> is here to maximize
-                <br>your <span class="highlight-word2">Style Design Imagination</span> while
-                <br><span class="highlight-word2">Shopping</span> on our tile E-Commerce Site.
-                <br><span class="highlight-word"><u>Check Out Now!</u></span>
-            </p>
+        <div class="about-raltt-bottom">
+            <div class="about-raltt-bottom-img">
+                <img src="images/tile2.png" alt="Tile Samples">
+            </div>
+            <div class="about-raltt-bottom-desc">
+                <p>
+                    We will bring something new and refreshing to your usage of visualizer and tile e-commerce. RALTT is
+                    here to maximize your tile design imagination while shopping on our tile e-commerce shop. <span
+                        class="highlight">Check out now!</span>
+                </p>
+            </div>
         </div>
     </section>
 
@@ -79,7 +76,10 @@
             <div class="branches-columns">
                 <div class="branches-container" alt="1">
                     <div class="branches-left">
-                        <img src="maps.png" alt="Branches Left Image" class="centered-image" />
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3875.679906514091!2d121.03429821483269!3d14.676041889810735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b7b12e5f0c5d%3A0x9717f4be57b2345d!2sCaloocan%20City!5e0!3m2!1sen!2sph!4v1691791091927!5m2!1sen!2sph"
+                            width="500" height="500" style="border:0;" allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
                 </div>
 
@@ -118,10 +118,6 @@
             </div>
 
     </div>
-
-    </section>
-
-
 
     <div class="content-placeholder"></div>
 
@@ -239,23 +235,23 @@
     </script>
 
     <script>
-       const branches = [
-  { name: "SAMARIA", img: "SAMARIA.png", address: "St. Vincent Ferrer Ave. Samaria Corner, Tala, Caloocan City", hours: "8AM – 6PM", contact: "0999 999 9999" },
-  { name: "KIKO", img: "KIKO.png", address: "Kiko, Camarin Road, Caloocan City", hours: "9AM – 7PM", contact: "0999 999 9999" },
-  { name: "DEPARO", img: "DEPARO.png", address: "189 Deparo Road, Caloocan City", hours: "10AM – 8PM", contact: "0999 999 9999" },
-  { name: "VANGUARD", img: "VANGUARD.png", address: "Phase 6, Vanguard, Camarin, North Caloocan", hours: "8AM – 5PM", contact: "0999 999 9999" },
-  { name: "BRIXTON", img: "BRIXTON.png", address: "Coaster St. Brixtonville Subdivision, Caloocan City", hours: "7AM – 9PM", contact: "0999 999 9999" }
-];
+        const branches = [
+            { name: "SAMARIA", img: "SAMARIA.png", address: "St. Vincent Ferrer Ave. Samaria Corner, Tala, Caloocan City", hours: "8AM – 6PM", contact: "0999 999 9999" },
+            { name: "KIKO", img: "KIKO.png", address: "Kiko, Camarin Road, Caloocan City", hours: "9AM – 7PM", contact: "0999 999 9999" },
+            { name: "DEPARO", img: "DEPARO.png", address: "189 Deparo Road, Caloocan City", hours: "10AM – 8PM", contact: "0999 999 9999" },
+            { name: "VANGUARD", img: "VANGUARD.png", address: "Phase 6, Vanguard, Camarin, North Caloocan", hours: "8AM – 5PM", contact: "0999 999 9999" },
+            { name: "BRIXTON", img: "BRIXTON.png", address: "Coaster St. Brixtonville Subdivision, Caloocan City", hours: "7AM – 9PM", contact: "0999 999 9999" }
+        ];
 
-let currentIndex = 0;
-const branchNameElem = document.getElementById('branch-name');
-const branchCardElem = document.getElementById('branch-card');
+        let currentIndex = 0;
+        const branchNameElem = document.getElementById('branch-name');
+        const branchCardElem = document.getElementById('branch-card');
 
-function updateBranchContent(index) {
-  const branch = branches[index];
-  branchNameElem.textContent = branch.name;
-  
-  branchCardElem.innerHTML = `
+        function updateBranchContent(index) {
+            const branch = branches[index];
+            branchNameElem.textContent = branch.name;
+
+            branchCardElem.innerHTML = `
     <img src="${branch.img}" alt="${branch.name} Branch" />
     <div class="branch-info-block">
       <div class="info-title">Address</div>
@@ -273,53 +269,39 @@ function updateBranchContent(index) {
       <div class="info-desc">${branch.contact}</div>
     </div>
   `;
-}
+        }
 
-function slideTransition(newIndex, direction) {
-  // direction: "left" or "right"
-  const slideOutClass = direction === "left" ? "slide-out-left" : "slide-out-right";
-  const slideInClass = direction === "left" ? "slide-in-right" : "slide-in-left";
+        function slideTransition(newIndex, direction) {
+            const slideOutClass = direction === "left" ? "slide-out-left" : "slide-out-right";
+            const slideInClass = direction === "left" ? "slide-in-right" : "slide-in-left";
 
-  // Start slide out animation
-  branchCardElem.classList.add(slideOutClass);
+            branchCardElem.classList.add(slideOutClass);
+            branchCardElem.addEventListener('transitionend', function handler() {
+                branchCardElem.classList.remove(slideOutClass);
 
-  // Listen for transition end (fade + slide out)
-  branchCardElem.addEventListener('transitionend', function handler() {
-    // Clean slide out classes
-    branchCardElem.classList.remove(slideOutClass);
+                updateBranchContent(newIndex);
+                branchCardElem.classList.add(slideInClass);
+                void branchCardElem.offsetWidth;
 
-    // Update content
-    updateBranchContent(newIndex);
+                branchCardElem.addEventListener('transitionend', function handler2() {
+                    branchCardElem.classList.remove(slideInClass);
+                    branchCardElem.removeEventListener('transitionend', handler2);
+                }, { once: true });
 
-    // Add slide in class to slide in from opposite direction
-    branchCardElem.classList.add(slideInClass);
+                branchCardElem.removeEventListener('transitionend', handler);
+            }, { once: true });
+        }
 
-    // Force reflow to restart animation
-    void branchCardElem.offsetWidth;
+        document.getElementById('branch-left').addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + branches.length) % branches.length;
+            slideTransition(currentIndex, 'left');
+        });
 
-    // Remove slide in class after animation ends to reset
-    branchCardElem.addEventListener('transitionend', function handler2() {
-      branchCardElem.classList.remove(slideInClass);
-      branchCardElem.removeEventListener('transitionend', handler2);
-    }, { once: true });
-
-    // Remove this first event listener
-    branchCardElem.removeEventListener('transitionend', handler);
-  }, { once: true });
-}
-
-document.getElementById('branch-left').addEventListener('click', () => {
-  currentIndex = (currentIndex - 1 + branches.length) % branches.length;
-  slideTransition(currentIndex, 'left');
-});
-
-document.getElementById('branch-right').addEventListener('click', () => {
-  currentIndex = (currentIndex + 1) % branches.length;
-  slideTransition(currentIndex, 'right');
-});
-
-// Initialize first content
-updateBranchContent(currentIndex);
+        document.getElementById('branch-right').addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % branches.length;
+            slideTransition(currentIndex, 'right');
+        });
+        updateBranchContent(currentIndex);
 
     </script>
 
