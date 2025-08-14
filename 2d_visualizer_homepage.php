@@ -69,6 +69,7 @@ include 'includes/header.php';
             display: flex;
             justify-content: center;
             background: #ffffffff;
+            /* padding-bottom: 300px; */
         }
         .tile-visualizer-container {
             display: flex;
@@ -126,10 +127,10 @@ include 'includes/header.php';
 
         .visualizer-cards-section {
             width: 100%;
-            margin-top: 160px;
-            margin-bottom: 100px;
             display: flex;
             justify-content: center;
+            background: #ffffffff;
+            
         }
         .visualizer-cards-container {
             display: flex;
@@ -137,7 +138,8 @@ include 'includes/header.php';
             justify-content: center;
             max-width: 1000px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 50px 20px;
+            min-height: 100px;
         }
         .visualizer-card {
             background: #fff;
@@ -204,6 +206,7 @@ include 'includes/header.php';
         <div class="visualize-desc">
             You can navigate various textures, colors, styles, and a lot more and cherish everything in "Almost real life" virtualizations. <br>
             If you want to effortlessly weave the tapestry of imagination and actuality and allow your space to eloquently echo your distinctive panache, it's your time to <b> contact us today! </b>
+            
         </div>
     </section>
 
@@ -223,7 +226,7 @@ include 'includes/header.php';
                     <br>Let's enhance your shopping journey with our 2D Tile Visualizer!
                 </p>
                 <!-- <button class="visualizer-btn">Try Our Visualizer!</button> -->
-                <br><button></button><a href="register.php" class="visualizer-btn">Try Our Visualizer!</a></button>
+                <br><button></button><a href="user_login_form.php" class="visualizer-btn">Try Our Visualizer!</a></button>
             </div>
         </div>
     </section>

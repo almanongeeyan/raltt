@@ -35,7 +35,7 @@
             flex-direction: column;
             align-items: center;
             position: relative;
-            margin-top: 2rem;
+            /* margin-top: 2rem; */
             width: 100%;
         }
 
@@ -367,7 +367,7 @@
                         </div>
                         <div class="footer-square-column">
                             <p>Meet RALTT</p>
-                            <a href="about_us_cholene.php">About Us</a>
+                            <a href="about_us.php">About Us</a>
                             <a href="product_view_homepage.php">Tile E-Commerce</a>
                         </div>
                     </div>
@@ -410,8 +410,8 @@
             <!-- About Us -->
             <div class="footer-about">
                 <span>About us</span>
-                <a href="#">Privacy</a>
-                <a href="about_us_cholene.php">Other branches</a>
+                <a href="privacy_info_homepage.php">Privacy</a>
+                <a href="about_us.php">Other branches</a>
             </div>
         </div>
     </footer>
