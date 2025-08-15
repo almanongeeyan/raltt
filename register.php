@@ -154,31 +154,37 @@
             color: #999;
         }
         
-        /* Updated styles for the Locate Me button */
         .input-group .locate-btn {
             width: 100%;
-            background-color: var(--button-color); /* Matches the Sign up button */
+            background-color: var(--button-color);
             color: #fff;
             border: none;
-            padding: 15px; /* Matches the Sign up button */
+            padding: 15px;
             border-radius: 8px;
-            font-size: 1rem; /* Matches the Sign up button */
-            font-weight: 600; /* Matches the Sign up button */
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             margin-top: 10px;
-            transition: background-color 0.2s ease, transform 0.2s ease;
+            transition: background-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
         }
 
-        .input-group .locate-btn:hover {
+        .input-group .locate-btn:hover:not(:disabled) {
             background-color: var(--secondary-color);
-            transform: translateY(-2px); /* Adds a subtle hover effect */
+            transform: translateY(-2px);
+        }
+
+        .input-group .locate-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none;
         }
 
         #location-info {
             font-size: 0.8rem;
-            color: #ff4500;
             text-align: left;
             margin-top: 5px;
+            min-height: 20px; /* Prevents layout shift */
         }
         
         .btn-submit {
@@ -248,7 +254,7 @@
                 <label for="address">Address</label>
                 <div class="input-group">
                     <input type="text" id="address" name="address" placeholder="Tap 'Locate Me' to get your current location" readonly required>
-                    <button type="button" class="locate-btn" onclick="getAndSetLocation()">Locate Me</button>
+                    <button type="button" class="locate-btn">Locate Me</button>
                 </div>
                 <div id="location-info"></div>
             </div>
@@ -296,14 +302,12 @@
 
         async function fetchAddress(latitude, longitude) {
             const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
-
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error('Network response was not ok.');
                 }
                 const data = await response.json();
-
                 if (data.display_name) {
                     return data.display_name;
                 } else {
@@ -314,11 +318,15 @@
                 throw new Error('Failed to retrieve a detailed address.');
             }
         }
-
+        
         async function getAndSetLocation() {
             const addressInput = document.getElementById('address');
             const locationInfo = document.getElementById('location-info');
-            
+            const locateBtn = document.querySelector('.locate-btn');
+
+            locateBtn.disabled = true;
+            locateBtn.textContent = 'Locating...';
+
             if (navigator.geolocation) {
                 locationInfo.style.color = 'blue';
                 locationInfo.textContent = 'Getting your precise location...';
@@ -333,10 +341,21 @@
                             addressInput.value = fullAddress;
                             locationInfo.style.color = 'green';
                             locationInfo.textContent = 'Address set successfully!';
+                            
+                            // Successfully found location, finalize button state
+                            locateBtn.textContent = 'Location Set';
+                            locateBtn.style.backgroundColor = '#4CAF50'; // Green color for success
+                            locateBtn.style.cursor = 'not-allowed';
+                            // The button will remain disabled and styled as "Location Set"
+
                         } catch (error) {
                             locationInfo.style.color = 'red';
                             locationInfo.textContent = error.message;
                             addressInput.value = '';
+                            
+                            // Re-enable button on failure
+                            locateBtn.disabled = false;
+                            locateBtn.textContent = 'Locate Me';
                         }
                     },
                     (error) => {
@@ -344,7 +363,7 @@
                         let errorMessage = 'Could not get your location.';
                         switch(error.code) {
                             case error.PERMISSION_DENIED:
-                                errorMessage = "User denied location access.";
+                                errorMessage = "User denied location access. Please allow location access in your browser settings.";
                                 break;
                             case error.POSITION_UNAVAILABLE:
                                 errorMessage = "Location information is unavailable.";
@@ -352,12 +371,16 @@
                             case error.TIMEOUT:
                                 errorMessage = "The request to get user location timed out.";
                                 break;
-                            case error.UNKNOWN_ERROR:
-                                errorMessage = "An unknown error occurred.";
+                            default:
+                                errorMessage = "An unknown error occurred. Please try again.";
                                 break;
                         }
                         locationInfo.textContent = errorMessage;
                         addressInput.value = '';
+                        
+                        // Re-enable button on failure
+                        locateBtn.disabled = false;
+                        locateBtn.textContent = 'Locate Me';
                     },
                     {
                         enableHighAccuracy: true,
@@ -369,8 +392,13 @@
                 locationInfo.style.color = 'red';
                 locationInfo.textContent = 'Geolocation is not supported by this browser.';
                 addressInput.value = '';
+                locateBtn.disabled = true; // No point in trying again if not supported
+                locateBtn.textContent = 'Not Supported';
             }
         }
+        
+        // Add event listener to the button
+        document.querySelector('.locate-btn').addEventListener('click', getAndSetLocation);
     </script>
 </body>
 </html>
