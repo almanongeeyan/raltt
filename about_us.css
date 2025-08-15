@@ -933,6 +933,8 @@
   flex-wrap: nowrap;
   border-top: 2px solid white;
   margin-top: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
   position: relative;
 }
 
@@ -976,6 +978,8 @@
   user-select: none;
   margin-left: 100px;
   margin-right: -75px;
+  
+  padding-bottom: 100px;
 }
 
 .branch-header {
