@@ -1,3 +1,6 @@
+<?php
+include 'includes/header.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,29 +15,6 @@
 </head>
 
 <body>
-
-    <header class="header">
-        <a href="index.php" class="logo">
-            <img src="images/header.png" alt="RALTT Logo">
-        </a>
-
-        <nav class="navbar">
-            <a href="#whats-new">What's New</a>
-            <div class="dropdown">
-                <button class="dropbtn">Features <i class="fas fa-caret-down"></i></button>
-                <div class="dropdown-content">
-                    <a href="2d_visualizer_homepage.php"><i class="fas fa-cube"></i> 2D Tile Visualizer</a>
-                    <a href="refferal.php"><i class="fas fa-users"></i> Referral Code</a>
-                </div>
-            </div>
-            <a href="product_view_homepage.php">Products</a>
-            <a href="about_us.php">About Us</a>
-        </nav>
-
-        <a href="login.php" class="login-btn"> <i class="fas fa-user"></i> Login</a>
-        <div class="fas fa-bars" id="menu"></div>
-    </header>
-
     <div class="content-placeholder">
         <h1 class="main-heading">
             REFER A FRIEND,<span class="highlight">GET REWARDS!</span>
@@ -44,16 +24,16 @@
 
     <div class="cards-container">
   <div class="card">
-    <img src="step1.png" alt="Card 1 Image">
+    <img src="images/step1.png" alt="Card 1 Image">
   </div>
   <div class="card">
-    <img src="step2.png" alt="Card 2 Image">
+    <img src="images/step2.png" alt="Card 2 Image">
   </div>
   <div class="card">
-    <img src="step3.png" alt="Card 3 Image">
+    <img src="images/step3.png" alt="Card 3 Image">
   </div>
   <div class="card">
-    <img src="step4.png" alt="Card 4 Image">
+    <img src="images/step4.png" alt="Card 4 Image">
   </div>
 </div>
 
@@ -62,69 +42,6 @@
     Join <span class="highlight">RALTT</span> Today and Start Referring!
   </h2>
 </div>
-
-
-    <div class="content-placeholder"></div>
-
-    <footer class="footer">
-        <div class="footer-line"></div>
-        <div class="footer-content">
-            <div class="footer-left">
-                <div class="footer-square">
-                    <div class="footer-square-content">
-                        <div class="footer-square-column">
-                            <p>Features</p>
-                            <a href="2d_tile_visualizer.php">2D Tile Visualizer</a>
-                            <a href="referral_code.php">Referral Code</a>
-                        </div>
-                        <div class="footer-square-column">
-                            <p>Meet RALTT</p>
-                            <a href="about_us.php">About Us</a>
-                            <a href="tile_e_commerce.php">Tile E-Commerce</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-right">
-                <span class="footer-checkout">Check Out Now,</span>
-                <span class="footer-delivery">Same-day delivery.</span>
-            </div>
-        </div>
-        <div class="footer-bottom-line"></div>
-        <div class="footer-lower">
-            <div class="footer-logo">
-                <img src="images/logocopyright.png" alt="Rich Anne Lea Tiles Trading Logo">
-            </div>
-            <div class="footer-contact">
-                <span>Contact Us</span>
-                <div>
-                    <span class="icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path
-                                d="M16.7 13.6l-2.2-1c-.5-.2-1.1-.1-1.4.3l-.7.9c-2.1-1-3.8-2.7-4.8-4.8l.9-.7c.4-.4.5-.9.3-1.4l-1-2.2c-.3-.6-1-.9-1.6-.8l-1.7.3c-.6.1-1 .6-1 1.2C2.5 13.1 6.9 17.5 12.1 17.5c.6 0 1.1-.4 1.2-1l.3-1.7c.1-.6-.2-1.3-.9-1.6z"
-                                fill="currentColor" />
-                        </svg>
-                    </span>
-                    <span>+639817547870</span>
-                </div>
-                <div>
-                    <span class="icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path
-                                d="M10 2.5a6 6 0 0 0-6 6c0 4.2 5.2 8.6 5.4 8.8.3.2.7.2 1 0 .2-.2 5.4-4.6 5.4-8.8a6 6 0 0 0-6-6zm0 8.2a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4z"
-                                fill="currentColor" />
-                        </svg>
-                    </span>
-                    <span>Phase 6, Camarin, North Caloocan</span>
-                </div>
-            </div>
-            <div class="footer-about">
-                <span>About us</span>
-                <a href="#">Privacy</a>
-                <a href="#">Other branches</a>
-            </div>
-        </div>
-    </footer>
 
     <script>
         const menu = document.querySelector('#menu');
