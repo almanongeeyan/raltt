@@ -398,7 +398,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
                     <div class="logo"><span>RAL</span><span class="tt">TT</span></div>
                     <form>
                         <div class="form-group">
-                            <input type="email" placeholder="Email" required>
+                            <input type="number" placeholder="Enter your number" required>
                         </div>
                         <div class="form-group">
                             <input id="password-field" type="password" placeholder="Password" required>
