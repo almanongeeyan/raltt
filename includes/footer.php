@@ -144,7 +144,7 @@
         }
 
         .footer-checkout {
-            color: #EF7232;
+            color: #F47C2E;
             font-weight: bold;
             font-size: 3.2rem;
             margin-bottom: 0.2rem;
@@ -244,7 +244,7 @@
             padding: 2px 6px;
         }
         .footer-about a:hover {
-            color: #EF7232;
+            color: #F47C2E;
             background: rgba(239,114,50,0.08);
             transform: translateY(-2px) scale(1.06);
         }
@@ -256,7 +256,7 @@
             width: 1.5em;
             height: 1.5em;
             margin-right: 0.5em;
-            color: #EF7232;
+            color: #F47C2E;
             font-size: 1.3em;
             background: none; /* No background */
             border-radius: 0;
@@ -265,7 +265,7 @@
         }
         .footer-contact div:hover .icon {
             background: none;
-            color: #EF7232;
+            color: #F47C2E;
             transform: none;
         }
 

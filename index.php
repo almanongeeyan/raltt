@@ -177,7 +177,7 @@ include 'includes/header.php';
         }
 
         .meet-raltt-section h3 {
-            color: #94481b;
+            color: #F47C2E;
             font-weight: 600;
             letter-spacing: 1px;
             margin-bottom: 1rem;
@@ -617,7 +617,7 @@ include 'includes/header.php';
         <div class="container">
             <div class="video-text-container">
                 <div class="video-text">
-                    <h1><span style="color: #946750;">Craft Your Visions</span> <br>with our<br>Tile Visualizer Tool</h1>
+                    <h1><span style="color: #F47C2E;">Craft Your Visions</span> <br>with our<br>Tile Visualizer Tool</h1>
                     <p>Enhancing your imagination with the use of tile visualizer in creating limitless designs all you want.</p>
                 </div>
                 <div class="video-container">
@@ -679,7 +679,7 @@ include 'includes/header.php';
     <!-- Trusted Distributors Section -->
     <section class="trusted-section">
         <div class="container">
-            <h1>Trusted by over <span style="color: #94481b;">50+ distributors</span></h1>
+            <h1>Trusted by over <span style="color: #F47C2E;">50+ distributors</span></h1>
             <div class="subtitle">Low prices vs. other tile trade retailers</div>
             <div class="distributor-grid">
                 <div class="distributor-item"><img src="images/distributors/logo1.jpg" alt="Distributor 1"></div>
