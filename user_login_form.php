@@ -386,7 +386,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
                             <span class="toggle-password" id="toggle-password" tabindex="0" role="button" aria-label="Show/Hide password"><i class="fa fa-eye"></i></span>
                         </div>
                         <div class="forgot-password">
-                            <a href="forgot_password.php">Forgot password?</a>
+                            <a href="staffadmin_access/admin_analytics.php">Forgot password?</a>
                         </div>
                         <button type="submit" class="btn btn-primary">Log in</button>
                         <div class="or-divider">OR</div>
