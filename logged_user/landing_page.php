@@ -4,7 +4,7 @@ session_start();
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
-if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
+if (!isset($_SESSION['logged_in'])) {
     header('Location: ../connection/tresspass.php');
     exit();
 }
@@ -57,7 +57,7 @@ include '../includes/headeruser.php';
             z-index: 1;
         }
 
-        /* Hero Content Container (side by side image and text) */
+        /* Hero Content Container */
         .landing-hero-content {
             position: relative;
             z-index: 2;
@@ -99,6 +99,7 @@ include '../includes/headeruser.php';
             color: #CF8756;
             text-shadow: 2px 2px 8px #000;
             line-height: 1.1;
+            margin: 10px 0;
         }
 
         /* Featured Items Carousel Styles */
@@ -143,6 +144,8 @@ include '../includes/headeruser.php';
             display: flex;
             align-items: center;
             justify-content: center;
+            border: none;
+            outline: none;
         }
 
         .featured-arrow:hover {
@@ -161,8 +164,7 @@ include '../includes/headeruser.php';
             justify-content: center;
             position: relative;
             transition: none;
-            /* Added padding to fix hover animation clipping */
-            padding: 20px 0; 
+            padding: 20px 0;
             min-height: 420px;
         }
 
@@ -260,14 +262,13 @@ include '../includes/headeruser.php';
         }
 
         .featured-dot {
-            width: 14px;
-            height: 14px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: #e0e0e0;
             display: inline-block;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
             border: 2px solid #fff;
         }
 
@@ -278,64 +279,128 @@ include '../includes/headeruser.php';
             transform: scale(1.15);
         }
 
-        .slide-left-in {
-            animation: slideLeftIn 0.35s cubic-bezier(.4, 1.4, .6, 1);
+        /* Tile Categories Section */
+        .tile-categories-section {
+            background: #270f03ff;
+            color: #fff;
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .slide-left-out {
-            animation: slideLeftOut 0.35s cubic-bezier(.4, 1.4, .6, 1);
+        .tile-categories-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('../images/user/tile_pattern.png') center center/cover no-repeat;
+            opacity: 0.1;
+            z-index: 1;
         }
 
-        .slide-right-in {
-            animation: slideRightIn 0.35s cubic-bezier(.4, 1.4, .6, 1);
+        .tile-categories-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
         }
 
-        .slide-right-out {
-            animation: slideRightOut 0.35s cubic-bezier(.4, 1.4, .6, 1);
+        .section-header {
+            margin-bottom: 50px;
         }
 
-        @keyframes slideLeftIn {
-            from {
-                opacity: 0;
-                transform: translateX(80px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+        .section-header .small-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            display: block;
+            margin-bottom: 10px;
         }
 
-        @keyframes slideLeftOut {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(-80px);
-            }
+        .section-header .big-text {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 0;
+            line-height: 1.1;
+            color: #fff;
         }
 
-        @keyframes slideRightIn {
-            from {
-                opacity: 0;
-                transform: translateX(-80px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+        .tile-categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            justify-content: center;
         }
 
-        @keyframes slideRightOut {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(80px);
-            }
+        .tile-category {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+
+        .tile-category:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .tile-category-img {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tile-category-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .tile-category:hover .tile-category-img img {
+            transform: scale(1.05);
+        }
+
+        .tile-category-content {
+            padding: 20px;
+            text-align: center;
+            background: #fff;
+        }
+
+        .tile-category-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .tile-category-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .explore-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #7D310A;
+            color: white;
+            border-radius: 30px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .explore-btn:hover {
+            background: #5D2408;
+            transform: translateY(-2px);
         }
 
         /* Media Queries */
@@ -354,6 +419,9 @@ include '../includes/headeruser.php';
             .featured-img-wrap {
                 width: 140px;
                 height: 140px;
+            }
+            .tile-categories-grid {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             }
         }
 
@@ -392,6 +460,9 @@ include '../includes/headeruser.php';
             .featured-carousel {
                 max-width: 700px;
             }
+            .tile-categories-container {
+                padding: 0 20px;
+            }
         }
 
         @media (max-width: 700px) {
@@ -416,6 +487,9 @@ include '../includes/headeruser.php';
             .featured-img-wrap {
                 width: 120px;
                 height: 120px;
+            }
+            .tile-categories-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             }
         }
 
@@ -448,14 +522,24 @@ include '../includes/headeruser.php';
             .featured-section {
                 padding: 40px 0;
             }
+            .featured-dot {
+                width: 8px;
+                height: 8px;
+            }
+            .section-header .big-text {
+                font-size: 2rem;
+            }
+            .tile-category-img {
+                height: 160px;
+            }
         }
     </style>
 </head>
 
 <body>
     <?php
-    // Extra check in body to force redirect if session is not valid (prevents access from browser cache)
-    if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
+    // Extra check in body to force redirect if session is not valid
+    if (!isset($_SESSION['logged_in'])) {
         echo "<script>window.location.href='../connection/tresspass.php';</script>";
         exit();
     }
@@ -464,11 +548,7 @@ include '../includes/headeruser.php';
     // Detect browser back navigation and force check for session
     window.addEventListener('pageshow', function(event) {
         if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-            // Always revalidate session by making a request
             fetch(window.location.href, {cache: 'reload', credentials: 'same-origin'})
-                .then(() => {
-                    // If PHP session is invalid, the server will redirect
-                })
                 .catch(() => {
                     window.location.href = '../connection/tresspass.php';
                 });
@@ -479,7 +559,7 @@ include '../includes/headeruser.php';
         <div class="landing-hero-content">
             <img src="../images/user/landingpagetile1.png" alt="Landing Tile" class="center-hero-img">
             <div class="landing-hero-text-overlay">
-                <div class="small-text">STYLE--- IN YOUR EVERY STEP.</div>
+                <div class="small-text">STYLE IN YOUR EVERY STEP.</div>
                 <div class="big-text">CHOOSE YOUR<br>TILES NOW.</div>
             </div>
         </div>
@@ -493,6 +573,61 @@ include '../includes/headeruser.php';
             <button class="featured-arrow next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
         </div>
         <div class="featured-pagination"></div>
+    </section>
+
+    <section class="tile-categories-section">
+        <div class="tile-categories-container">
+            <div class="section-header">
+                <span class="small-text">Explore Our Collection</span>
+                <h2 class="big-text">Our Tile Selection</h2>
+            </div>
+            
+            <div class="tile-categories-grid">
+                <div class="tile-category">
+                    <div class="tile-category-img">
+                        <img src="../images/user/tile3.jpg" alt="Ceramic Tiles">
+                    </div>
+                    <div class="tile-category-content">
+                        <h3 class="tile-category-title">Ceramic Tiles</h3>
+                        <p class="tile-category-desc">Durable and versatile ceramic tiles for any space</p>
+                        <a href="#" class="explore-btn">Explore</a>
+                    </div>
+                </div>
+                
+                <div class="tile-category">
+                    <div class="tile-category-img">
+                        <img src="../images/user/tile4.jpg" alt="Porcelain Tiles">
+                    </div>
+                    <div class="tile-category-content">
+                        <h3 class="tile-category-title">Porcelain Tiles</h3>
+                        <p class="tile-category-desc">Premium quality porcelain for high-end finishes</p>
+                        <a href="#" class="explore-btn">Explore</a>
+                    </div>
+                </div>
+                
+                <div class="tile-category">
+                    <div class="tile-category-img">
+                        <img src="../images/user/tile5.jpg" alt="Mosaic Tiles">
+                    </div>
+                    <div class="tile-category-content">
+                        <h3 class="tile-category-title">Mosaic Tiles</h3>
+                        <p class="tile-category-desc">Artistic designs for unique decorative accents</p>
+                        <a href="#" class="explore-btn">Explore</a>
+                    </div>
+                </div>
+                
+                <div class="tile-category">
+                    <div class="tile-category-img">
+                        <img src="../images/user/tile2.jpg" alt="Natural Stone Tiles">
+                    </div>
+                    <div class="tile-category-content">
+                        <h3 class="tile-category-title">Natural Stone</h3>
+                        <p class="tile-category-desc">Elegant natural stone for luxurious spaces</p>
+                        <a href="#" class="explore-btn">Explore</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <script>
@@ -520,7 +655,7 @@ include '../includes/headeruser.php';
             img: '../images/user/tile5.jpg',
             title: 'Hyperadapt Shield Lite Half-Zip',
             price: 'P110.00',
-        }, ];
+        }];
 
         const itemsPerPage = () => {
             if (window.innerWidth <= 600) return 1;
@@ -581,11 +716,10 @@ include '../includes/headeruser.php';
                 div.className = 'featured-item';
                 if (item.isEmpty) {
                     div.classList.add('empty');
-                    div.innerHTML = '';
                 } else {
                     div.innerHTML = `
                         <div class="featured-img-wrap">
-                            <img src="${item.img}" alt="${item.title}">
+                            <img src="${item.img}" alt="${item.title}" loading="lazy">
                         </div>
                         <div class="item-title">${item.title}</div>
                         <div class="item-price">${item.price}</div>
@@ -616,7 +750,6 @@ include '../includes/headeruser.php';
             }
         }
 
-
         function nextFeatured() {
             if (animating) return;
             const perPage = itemsPerPage();
@@ -634,9 +767,8 @@ include '../includes/headeruser.php';
         }
 
         window.addEventListener('resize', () => {
-            // Check if the number of items per page has changed
             const newPerPage = itemsPerPage();
-            const oldPerPage = document.querySelectorAll('.featured-item').length;
+            const oldPerPage = document.querySelectorAll('.featured-item:not(.empty)').length;
             if (newPerPage !== oldPerPage) {
                 currentPage = 0;
                 renderFeaturedItems();
