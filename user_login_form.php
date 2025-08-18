@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 // Prevent back navigation after login
@@ -20,8 +21,8 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Judson:wght@400;700&family=Secular+One&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* Your existing CSS styles remain unchanged */
         * {
             margin: 0;
             padding: 0;
@@ -286,28 +287,8 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             margin-left: 0.5rem;
         }
 
-        #messageBox {
-            position: fixed;
-            top: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 1rem 2rem;
-            background-color: #f8f8f8;
-            border: 1px solid #ccc;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            display: none;
-            text-align: center;
-        }
-        
-        /* === FIXES FOR BUTTON WIDTH === */
-        .login-box button.btn-primary {
-            width: 100%;
-        }
-
-        .g_id_signin {
-            width: 100%;
+        .swal2-popup {
+            font-family: 'Inter', sans-serif;
         }
 
         @media (max-width: 1024px) {
@@ -396,16 +377,16 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             <div class="login-right">
                 <div class="login-box">
                     <div class="logo"><span>RAL</span><span class="tt">TT</span></div>
-                    <form>
+                    <form id="loginForm">
                         <div class="form-group">
-                            <input type="email" placeholder="Email" required>
+                            <input type="tel" name="phone" placeholder="Enter your phone number" required>
                         </div>
                         <div class="form-group">
-                            <input id="password-field" type="password" placeholder="Password" required>
+                            <input id="password-field" name="password" type="password" placeholder="Password" required>
                             <span class="toggle-password" id="toggle-password" tabindex="0" role="button" aria-label="Show/Hide password"><i class="fa fa-eye"></i></span>
                         </div>
                         <div class="forgot-password">
-                            <a href="logged_user/landing_page.php">Forgot password?</a>
+                            <a href="staffadmin_access/admin_analytics.php">Forgot password?</a>
                         </div>
                         <button type="submit" class="btn btn-primary">Log in</button>
                         <div class="or-divider">OR</div>
@@ -437,17 +418,17 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
         </div>
     </div>
 
-    <div id="messageBox"></div>
-
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <script>
+        // Prevent back button navigation after login
+        history.pushState(null, null, location.href);
+        window.onpopstate = function() {
+            history.go(1);
+        };
+
         function goBack() {
-            if (window.history.length > 1) {
-                window.location.href = 'index.php';
-            } else {
-                window.location.href = 'index.php';
-            }
+            window.location.href = 'index.php';
         }
 
         const passwordField = document.getElementById('password-field');
@@ -471,21 +452,67 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
                 handleToggle();
             }
         });
-        
-        function showMessage(message, duration = 3000) {
-            const messageBox = document.getElementById('messageBox');
-            messageBox.textContent = message;
-            messageBox.style.display = 'block';
-            setTimeout(() => {
-                messageBox.style.display = 'none';
-            }, duration);
-        }
+
+        // Handle manual login form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Logging in...';
+            
+            fetch('connection/manual_login_process.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Login successful!',
+                        icon: 'success',
+                        confirmButtonText: 'Continue',
+                        allowOutsideClick: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = data.redirect || 'logged_user/landing_page.php';
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Login failed. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Log in';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Wrong Phone Number or Password. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log in';
+            });
+        });
 
         function handleCredentialResponse(response) {
             const idToken = response.credential;
             console.log("Encoded JWT ID token: " + idToken);
 
-            // Send the ID token to your backend for verification and database operations
             fetch('connection/process_google_login.php', {
                 method: 'POST',
                 headers: {
@@ -497,34 +524,33 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             .then(data => {
                 console.log('Backend response:', data);
                 if (data.success) {
-                    showMessage(`Welcome, ${data.name}! Redirecting...`);
-                    // Redirect on successful login and database operation
-                    window.location.href = 'logged_user/landing_page.php';
+                    Swal.fire({
+                        title: 'Welcome!',
+                        text: `Welcome, ${data.name}!`,
+                        icon: 'success',
+                        confirmButtonText: 'Continue',
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.href = 'logged_user/landing_page.php';
+                    });
                 } else {
-                    showMessage(`Error: ${data.message}`);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Login failed',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error sending token to backend:', error);
-                showMessage('An unexpected error occurred. Please try again.');
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Wrong Phone Number or Password. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             });
-        }
-
-        // The parseJwt function is no longer strictly needed for security,
-        // as the backend will handle token verification, but we'll keep it for the log
-        function parseJwt(token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-
-                return JSON.parse(jsonPayload);
-            } catch (e) {
-                console.error("Error decoding JWT:", e);
-                return null;
-            }
         }
     </script>
 </body>

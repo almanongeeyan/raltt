@@ -47,7 +47,7 @@ include 'includes/header.php';
         }
 
         .homepage-message .easy {
-            color: #94481b;
+            color: #F47C2E;
             display: inline-block;
         }
 
@@ -222,7 +222,7 @@ include 'includes/header.php';
         .tile-selection-item p {
             font-size: 1.1rem;
             font-weight: 600;
-            color: #94481b;
+            color: #F47C2E;
             margin-top: 15px;
         }
 

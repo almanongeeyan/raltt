@@ -1,5 +1,6 @@
 <?php
 include 'includes/header.php';
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +22,7 @@ include 'includes/header.php';
         <div class="about-raltt-top">
             <div class="about-raltt-title">
                 <span class="highlight">RALTT:</span> Bring Your<br>
-                Visions to Life:<br>
+                Visions to Life!<br>
                 Design Stunning Spaces,<br>
                 with our <span class="highlight2">2D Tile Visualizer</span>
             </div>
@@ -98,11 +99,11 @@ include 'includes/header.php';
 
     <script>
         const branches = [
-            { name: "SAMARIA", img: "SAMARIA.png", address: "St. Vincent Ferrer Ave. Samaria Corner, Tala, Caloocan City", hours: "8AM – 6PM", contact: "0999 999 9999" },
-            { name: "KIKO", img: "KIKO.png", address: "Kiko, Camarin Road, Caloocan City", hours: "9AM – 7PM", contact: "0999 999 9999" },
-            { name: "DEPARO", img: "DEPARO.png", address: "189 Deparo Road, Caloocan City", hours: "10AM – 8PM", contact: "0999 999 9999" },
-            { name: "VANGUARD", img: "VANGUARD.png", address: "Phase 6, Vanguard, Camarin, North Caloocan", hours: "8AM – 5PM", contact: "0999 999 9999" },
-            { name: "BRIXTON", img: "BRIXTON.png", address: "Coaster St. Brixtonville Subdivision, Caloocan City", hours: "7AM – 9PM", contact: "0999 999 9999" }
+            { name: "SAMARIA", img: "images/SAMARIA.png", address: "St. Vincent Ferrer Ave. Samaria Corner, Tala, Caloocan City", hours: "8AM – 6PM", contact: "0999 999 9999" },
+            { name: "KIKO", img: "images/KIKO.png", address: "Kiko, Camarin Road, Caloocan City", hours: "9AM – 7PM", contact: "0999 999 9999" },
+            { name: "DEPARO", img: "images/DEPARO.png", address: "189 Deparo Road, Caloocan City", hours: "10AM – 8PM", contact: "0999 999 9999" },
+            { name: "VANGUARD", img: "images/VANGUARD.png", address: "Phase 6, Vanguard, Camarin, North Caloocan", hours: "8AM – 5PM", contact: "0999 999 9999" },
+            { name: "BRIXTON", img: "images/BRIXTON.png", address: "Coaster St. Brixtonville Subdivision, Caloocan City", hours: "7AM – 9PM", contact: "0999 999 9999" }
         ];
 
         let currentIndex = 0;
@@ -171,5 +172,5 @@ include 'includes/header.php';
 
 </html>
 <?php
-include 'includes/header.php';
+include 'includes/footer.php';
 ?>
