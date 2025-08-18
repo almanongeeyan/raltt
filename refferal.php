@@ -43,63 +43,6 @@ include 'includes/header.php';
   </h2>
 </div>
 
-    <script>
-        const menu = document.querySelector('#menu');
-        const navbar = document.querySelector('.header .navbar');
-
-        menu.addEventListener('click', () => {
-            navbar.classList.toggle('active');
-        });
-
-        window.addEventListener('scroll', () => {
-            navbar.classList.remove('active');
-        });
-
-        window.addEventListener('click', function (event) {
-            if (!event.target.matches('.dropbtn')) {
-                const dropdowns = document.getElementsByClassName("dropdown-content");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    const openDropdown = dropdowns[i];
-                    if (openDropdown.style.display === 'block') {
-                        openDropdown.style.display = 'none';
-                        openDropdown.style.opacity = '0';
-                        openDropdown.style.transform = 'translateY(10px)';
-                    }
-                }
-            }
-        });
-
-        document.querySelectorAll('.dropdown .dropbtn').forEach(button => {
-            button.addEventListener('click', function (event) {
-                if (window.innerWidth <= 991) {
-                    const dropdownContent = this.nextElementSibling;
-                    if (dropdownContent.style.display === 'block') {
-                        dropdownContent.style.display = 'none';
-                        dropdownContent.style.opacity = '0';
-                        dropdownContent.style.transform = 'translateY(10px)';
-                    } else {
-                        dropdownContent.style.display = 'block';
-                        dropdownContent.style.opacity = '1';
-                        dropdownContent.style.transform = 'translateY(0)';
-                    }
-                    event.stopPropagation();
-                }
-            });
-        });
-    </script>
-
-    <script>
-        document.querySelectorAll('.header .navbar .dropdown > .dropbtn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                if (window.innerWidth <= 991) {
-                    const dropdown = btn.parentElement;
-                    dropdown.classList.toggle('open');
-                    e.preventDefault();
-                }
-            });
-        });
-    </script>
-
 </body>
 
 </html>

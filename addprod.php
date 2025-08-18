@@ -97,14 +97,12 @@
         </div>
     </div>
 
-    <!-- Modal -->
     <div id="alertModal" class="alert-modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2 class="modal-title" style="text-align:center; color:red;">LOW STOCK ALERT</h2>
 
             <div class="product-table">
-                <!-- Header Row -->
                 <div class="table-header">
                     <div>Product</div>
                     <div>Remaining Stocks</div>
@@ -112,7 +110,6 @@
                     <div>Quantity</div>
                 </div>
 
-                <!-- Product Rows -->
                 <div class="table-row">
                     <div>Product 1</div>
                     <div>10</div>
@@ -150,24 +147,20 @@
     const closeBtn = document.querySelector(".close-btn");
     const restockButtons = document.querySelectorAll(".restock-btn");
 
-    // Show modal when alert button is clicked
     alertBtn.addEventListener("click", () => {
         alertModal.style.display = "block";
     });
 
-    // Close modal when clicking the X
     closeBtn.addEventListener("click", () => {
         alertModal.style.display = "none";
     });
 
-    // Close modal when clicking outside the modal content
     window.addEventListener("click", (event) => {
         if (event.target === alertModal) {
             alertModal.style.display = "none";
         }
     });
 
-    // Restock button functionality
     restockButtons.forEach(button => {
         button.addEventListener("click", () => {
             alert("Product Restocked");
@@ -175,7 +168,6 @@
         });
     });
 
-    // Update alert button badge dynamically
     let notifications = 123;
     function updateAlertButton() {
         if (notifications > 0) {
