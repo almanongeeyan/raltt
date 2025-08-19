@@ -7,6 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Products Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --sidebar-width: 250px;
@@ -109,12 +110,14 @@
         }
 
         .search-bar {
+            position: relative;
             display: flex;
             align-items: center;
             background: #f1f1f1;
             padding: 8px 12px;
             border-radius: 8px;
             width: 450px;
+            border: 1px solid gray;
         }
 
         .search-bar i {
@@ -130,6 +133,32 @@
             font-size: 16px;
         }
 
+        .search-suggestions {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            border-radius: 0 0 6px 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-suggestions div {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .search-suggestions div:hover {
+            background-color: #f0f0f0;
+        }
+
+
         .filter-dropdown {
             position: relative;
             display: flex;
@@ -138,6 +167,7 @@
             padding: 8px 12px;
             border-radius: 3px;
             min-width: 200px;
+            border: 1px solid Gray;
         }
 
         .filter-dropdown select {
@@ -158,41 +188,75 @@
         }
 
         .alert-btn {
-            position: relative;
-            background-color: #4774d4;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-            width: 250px;
-        }
+    position: relative;
+    background-color: #fff;
+    color: #ff4d4f;
+    border: 2px solid #ff4d4f;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 200px;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
 
-        .badge {
-            display: none;
-            position: absolute;
-            top: -5px;
-            right: -10px;
-            background-color: #ff4d4f;
-            color: #fff;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 3px 6px;
-            border-radius: 50%;
-        }
+.alert-btn i {
+    margin-right: 8px;
+    transition: color 0.3s ease;
+}
 
-        .alert-btn.has-notifications {
-            background-color: #ff4d4f;
-        }
+.alert-btn .badge {
+    display: inline-block;
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    background-color: #ff4d4f;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 7px;
+    border-radius: 50%;
+    z-index: 2; 
+}
 
-        .alert-btn.has-notifications .badge {
-            display: inline-block;
-        }
+.alert-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 77, 79, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    z-index: 0; 
+    pointer-events: none;
+}
+
+.alert-btn:hover::before {
+    width: 400%;
+    height: 400%;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.alert-btn.has-notifications:hover {
+    background-color: #ff4d4f;
+    color: #fff;
+    border: 2px solid #ff4d4f;
+}
+
+.alert-btn.has-notifications:hover i {
+    color: #fff;
+}
+
+
 
         .add-btn {
             display: inline-flex;
@@ -359,11 +423,180 @@
             background-color: #218838;
         }
 
-        .quantity-selector {
-            width: 60px;
-            padding: 5px;
-            border-radius: 4px;
+        /* Restock Modal */
+        .restock-modal {
+            display: none;
+            position: fixed;
+            z-index: 1100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .restock-modal .modal-content {
+            background-color: #fff;
+            margin: 80px auto;
+            padding: 20px 30px;
+            width: 650px;
+            height: 400px;
+            border-radius: 3px;
             border: 1px solid #ccc;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        .restock-modal .modal-content h2 {
+            font-size: 20px;
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+
+        .restock-modal label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .restock-modal .text-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .restock-modal input[type="text"],
+        .restock-modal select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .restock-modal input[disabled] {
+            background-color: #f1f1f1;
+            color: #555;
+        }
+
+        .restock-modal .dropdown {
+            width: 375px;
+        }
+
+        .restock-modal .textbox {
+            flex: 1;
+        }
+
+        .restock-modal .bottom-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .restock-modal .submit-btn {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .restock-modal .submit-btn i {
+            font-size: 16px;
+        }
+
+        .restock-modal .submit-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .restock-modal .cancel-btn {
+            background-color: #ccc;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .submit-btn {
+            position: relative;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn i {
+            position: absolute;
+            left: 10px;
+            transition: all 0.5s ease;
+        }
+
+        .submit-btn span {
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn:hover i {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        @keyframes truckDrive {
+            0% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            25% {
+                transform: translateX(-50%) translateY(-2px);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            75% {
+                transform: translateX(-50%) translateY(2px);
+            }
+
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .submit-btn:hover i {
+            animation: truckDrive 1s infinite;
+        }
+
+
+        #okRestockBtn {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #okRestockBtn:hover {
+            background-color: #218838;
         }
     </style>
 </head>
@@ -378,12 +611,17 @@
             <div class="search-container">
                 <div class="search-bar">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Product Search Bar">
+                    <input type="text" placeholder="Product Search Bar" id="searchInput">
+                    <div class="search-suggestions" id="searchSuggestions">
+                    </div>
                 </div>
+
                 <button class="alert-btn" id="alertBtn">
+                    <i class="fas fa-bell" style="margin-right: 8px;"></i>
                     Alert
                     <span class="badge" id="alertBadge">3</span>
                 </button>
+
             </div>
 
             <div class="filter-container">
@@ -450,79 +688,107 @@
                     <div>Product</div>
                     <div>Remaining Stocks</div>
                     <div>Actions</div>
-                    <div>Quantity</div>
                 </div>
 
                 <div class="table-row">
                     <div>Product 1</div>
                     <div>10</div>
                     <div><button class="restock-btn">Restock</button></div>
-                    <div><input type="number" min="1" value="1" class="quantity-selector"></div>
                 </div>
 
                 <div class="table-row">
                     <div>Product 2</div>
                     <div>13</div>
                     <div><button class="restock-btn">Restock</button></div>
-                    <div><input type="number" min="1" value="1" class="quantity-selector"></div>
                 </div>
 
                 <div class="table-row">
                     <div>Product 3</div>
                     <div>14</div>
                     <div><button class="restock-btn">Restock</button></div>
-                    <div><input type="number" min="1" value="1" class="quantity-selector"></div>
                 </div>
 
                 <div class="table-row">
                     <div>Product 4</div>
                     <div>17</div>
                     <div><button class="restock-btn">Restock</button></div>
-                    <div><input type="number" min="1" value="1" class="quantity-selector"></div>
                 </div>
             </div>
         </div>
     </div>
 
-<script>
-    const alertBtn = document.getElementById("alertBtn");
-    const alertModal = document.getElementById("alertModal");
-    const closeBtn = document.querySelector(".close-btn");
-    const restockButtons = document.querySelectorAll(".restock-btn");
+    <div id="restockModal" class="restock-modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
 
-    alertBtn.addEventListener("click", () => {
-        alertModal.style.display = "block";
-    });
+            <h3 style="text-align:left;">Order to Supplier</h3>
 
-    closeBtn.addEventListener("click", () => {
-        alertModal.style.display = "none";
-    });
+            <p style="margin-top:10px;">Product</p>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="restockProductName" disabled style="flex:2; padding:8px;" />
+                <input type="text" id="restockProductStock" disabled style="flex:1; padding:8px;" />
+            </div>
 
-    window.addEventListener("click", (event) => {
-        if (event.target === alertModal) {
-            alertModal.style.display = "none";
-        }
-    });
+            <p>Supplier</p>
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:10px;">
+                <select style="width:100%; padding:8px;">
+                    <option>Dropdown 1</option>
+                </select>
+                <input type="text" placeholder="Textbox 1" style="padding:8px;" />
+                <select style="width:100%; padding:8px;">
+                    <option>Dropdown 2</option>
+                </select>
+                <input type="text" placeholder="Textbox 2" style="padding:8px;" />
+            </div>
 
-    restockButtons.forEach(button => {
-        button.addEventListener("click", () => {
-            alert("Product Restocked");
-            alertModal.style.display = "none";
+            <input type="text" placeholder="Amount" disabled style="width:100%; padding:8px; margin-bottom:20px;" />
+
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button class="cancel-btn"
+                    style="background-color:#ccc; color:#000; padding:10px 20px; border-radius:5px;">Cancel</button>
+                <button class="submit-btn"
+                    style="background-color:#28a745; color:#fff; padding:10px 20px; border-radius:5px;">
+                    <i class="fas fa-truck"></i> Submit Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script>
+        const alertBtn = document.getElementById("alertBtn");
+        const alertModal = document.getElementById("alertModal");
+        const alertCloseBtn = alertModal.querySelector(".close-btn");
+
+        alertBtn.addEventListener("click", () => alertModal.style.display = "block");
+        alertCloseBtn.addEventListener("click", () => alertModal.style.display = "none");
+
+        const restockModal = document.getElementById("restockModal");
+        const restockButtons = document.querySelectorAll(".restock-btn");
+        const restockCloseBtn = restockModal.querySelector(".close-btn");
+        const cancelBtn = restockModal.querySelector(".cancel-btn");
+
+        restockButtons.forEach((button, index) => {
+            button.addEventListener("click", () => {
+                document.getElementById("restockProductName").value = `Product ${index + 1}`;
+                document.getElementById("restockProductStock").value = 10 + index;
+
+                restockModal.style.display = "block";
+            });
         });
-    });
 
-    let notifications = 123;
-    function updateAlertButton() {
-        if (notifications > 0) {
-            alertBtn.classList.add("has-notifications");
-            document.getElementById("alertBadge").textContent = notifications;
-        } else {
-            alertBtn.classList.remove("has-notifications");
+        restockCloseBtn.onclick = cancelBtn.onclick = function () {
+            restockModal.style.display = "none";
         }
-    }
 
-    updateAlertButton();
-</script>
+        window.onclick = function (event) {
+            if (event.target == restockModal) {
+                restockModal.style.display = "none";
+            }
+        }
+    </script>
 
 </body>
 
