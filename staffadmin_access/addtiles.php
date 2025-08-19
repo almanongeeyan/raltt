@@ -1,3 +1,5 @@
+<?php include '../includes/sidebar.php'; ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,27 +12,10 @@
 </head>
 
 <body>
-    <aside class="sidebar">
-        <div class="sidebar-top">
-            <img src="raltticon.png" alt="Logo">
-            <h2>Staff Dashboard</h2>
-            <hr>
-            <nav>
-                <a href="#"><i class="fas fa-chart-line"></i> Analytics</a>
-                <a href="#"><i class="fas fa-shopping-cart"></i> Orders</a>
-                <a href="addprod.php"><i class="fas fa-box"></i> Products</a>
-                <a href="#"><i class="fas fa-check-circle"></i> Complete Order</a>
-                <a href="#"><i class="fas fa-truck"></i> Suppliers</a>
-            </nav>
-        </div>
-        <div class="sidebar-bottom">
-            <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-    </aside>
-
     <div class="main-content">
-        <h1>ADD PRODUCT</h1>
-        <hr>
+        <div class="dashboard-header">
+            <h1>Products Dashboard</h1>
+        </div>
 
         <div class="form-container">
             <div class="form-header">
@@ -90,7 +75,9 @@
             </div>
 
             <div class="button-row">
-                <button id="addProductBtn">Add Product</button>
+                <a href="../staffadmin_access/admin_addproduct.php">
+                    <button id="addProductBtn">Add Product</button>
+                </a>
             </div>
 
         </div>
