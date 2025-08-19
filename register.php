@@ -534,10 +534,23 @@
                 verifyStatusDiv.style.color = 'blue';
 
                 try {
-                    // Simulate API call (replace with actual fetch)
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // For demo purposes, we'll simulate success
+                    const params = new URLSearchParams();
+                    params.append('phone_number', phoneNumber);
+
+                    const response = await fetch('connection/send_verification.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: params
+                    });
+
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error(data.message || 'Failed to send code. Please try again.');
+                    }
+
                     verifyStatusDiv.textContent = 'Code sent! Check your phone.';
                     verifyStatusDiv.style.color = 'green';
                     verificationForm.style.display = 'block';
@@ -568,10 +581,24 @@
                 verifyStatusDiv.style.color = 'blue';
 
                 try {
-                    // Simulate API call (replace with actual fetch)
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // For demo purposes, we'll accept any 6-digit code
+                    const params = new URLSearchParams();
+                    params.append('phone_number', phoneNumber);
+                    params.append('verification_code', verificationCode);
+
+                    const response = await fetch('connection/check_verification.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: params
+                    });
+
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error(data.message || 'Invalid code. Please try again.');
+                    }
+
                     verifyStatusDiv.textContent = 'Phone number verified successfully! ✅';
                     verifyStatusDiv.style.color = 'green';
                     confirmCodeBtn.style.backgroundColor = '#4CAF50';
