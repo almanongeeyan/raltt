@@ -2,3 +2,6 @@
 [2025-08-18 11:29:32] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'raltt_db'
 [2025-08-18 11:38:00] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'raltt_db'
 [2025-08-18 11:38:11] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'raltt_db'
+[2025-08-19 10:51:31] PDO Error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.user' doesn't exist
+[2025-08-19 10:52:07] PDO Error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.user' doesn't exist
+[2025-08-19 10:56:20] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist

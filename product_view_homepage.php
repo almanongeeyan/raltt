@@ -15,12 +15,23 @@ include 'includes/header.php';
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* General page and section styling */
+        /* Base Styles with Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        
         body {
             overflow-x: hidden;
-            background-color: #f8f5f2; /* Light background for the whole page */
+            background-color: #f8f5f2;
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
+        /* Homepage Message Section */
         .homepage-message {
             width: 100vw;
             position: relative;
@@ -32,11 +43,15 @@ include 'includes/header.php';
             text-align: center;
             background: linear-gradient(to bottom, #ffece2 0%, #f8f5f2 100%);
             box-sizing: border-box;
+            will-change: transform;
         }
 
         .homepage-message-container {
             max-width: 900px;
             margin: 0 auto;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
         }
 
         .homepage-message h1 {
@@ -76,6 +91,10 @@ include 'includes/header.php';
             padding: 50px 0;
             box-sizing: border-box;
             z-index: 1;
+            will-change: transform;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
         }
 
         .tile-type-toggle {
@@ -98,6 +117,7 @@ include 'includes/header.php';
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            will-change: transform;
         }
 
         .tile-type-toggle button::after {
@@ -133,6 +153,7 @@ include 'includes/header.php';
 
         .tile-type-content {
             width: 100%;
+            will-change: transform;
         }
 
         .tile-type-flex {
@@ -140,6 +161,7 @@ include 'includes/header.php';
             align-items: center;
             justify-content: center;
             gap: 40px;
+            will-change: transform;
         }
 
         .tile-type-img {
@@ -149,11 +171,18 @@ include 'includes/header.php';
             border-radius: 12px;
             box-shadow: 6px 8px 16px rgba(0, 0, 0, 0.1);
             background: #fff;
+            will-change: transform;
+            transition: transform 0.3s ease;
+        }
+
+        .tile-type-img:hover {
+            transform: scale(1.02);
         }
 
         .tile-type-desc {
             max-width: 500px;
             text-align: left;
+            will-change: transform;
         }
 
         .tile-type-desc h2 {
@@ -176,11 +205,15 @@ include 'includes/header.php';
             line-height: 1.6;
         }
 
-        /* --- New Section: Wide Range Tile Selection --- */
+        /* Tile Selection Section */
         .tile-selection-section {
             padding: 50px 20px;
             text-align: center;
             background-color: #f8f5f2;
+            will-change: transform;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease 0.4s, transform 0.6s ease 0.4s;
         }
 
         .tile-selection-section h2 {
@@ -203,6 +236,7 @@ include 'includes/header.php';
             flex-direction: column;
             align-items: center;
             text-align: center;
+            will-change: transform;
         }
 
         .tile-selection-item img {
@@ -212,11 +246,13 @@ include 'includes/header.php';
             object-fit: cover;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
         }
 
         .tile-selection-item img:hover {
-            transform: scale(1.05);
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .tile-selection-item p {
@@ -224,13 +260,22 @@ include 'includes/header.php';
             font-weight: 600;
             color: #F47C2E;
             margin-top: 15px;
+            transition: color 0.3s ease;
         }
 
-        /* --- New Section: Patterns and Designs --- */
+        .tile-selection-item:hover p {
+            color: #d3691f;
+        }
+
+        /* Patterns and Designs Section */
         .patterns-and-designs-section {
             background-color: #f8f5f2;
             padding: 50px 20px;
             text-align: center;
+            will-change: transform;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease 0.6s, transform 0.6s ease 0.6s;
         }
 
         .patterns-and-designs-section h2 {
@@ -247,6 +292,7 @@ include 'includes/header.php';
             margin-bottom: 30px;
             background-color: #ffffff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            will-change: transform;
         }
 
         .pattern-category h3 {
@@ -267,14 +313,16 @@ include 'includes/header.php';
 
         .pattern-tile {
             width: 100%;
-            padding-top: 100%; /* Creates a perfect square for the tile */
+            padding-top: 100%;
             position: relative;
             background-size: cover;
             background-position: center;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             cursor: pointer;
+            will-change: transform;
+            overflow: hidden;
         }
 
         .pattern-tile::after {
@@ -299,7 +347,11 @@ include 'includes/header.php';
             opacity: 1;
         }
 
-
+        /* Animation Classes */
+        .animate-in {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
 
         /* Responsive Styles */
         @media (max-width: 1024px) {
@@ -384,9 +436,8 @@ include 'includes/header.php';
                 margin-bottom: 20px;
             }
 
-            /* Fix for the patterns and designs section */
             .pattern-grid {
-                grid-template-columns: repeat(2, 1fr); /* Two columns on mobile */
+                grid-template-columns: repeat(2, 1fr);
             }
             
             .pattern-category h3 {
@@ -411,7 +462,6 @@ include 'includes/header.php';
                 grid-template-columns: 1fr;
             }
 
-            /* Mobile view: 4 tiles in a single line */
             .pattern-grid {
                 grid-template-columns: repeat(4, 1fr);
                 gap: 10px;
@@ -421,7 +471,7 @@ include 'includes/header.php';
             }
 
             .pattern-tile {
-                width: 100px; /* Fixed width for single-line scrolling */
+                width: 100px;
                 padding-top: 100px;
                 flex-shrink: 0;
             }
@@ -534,10 +584,10 @@ include 'includes/header.php';
                 <div class="pattern-tile" style="background-image: url('images/p&d/b&w4.PNG');"></div>
             </div>
         </div>
-
     </div>
     
     <script>
+        // Tab functionality
         const glossyBtn = document.getElementById('glossyBtn');
         const matteBtn = document.getElementById('matteBtn');
         const glossyContent = document.getElementById('glossyContent');
@@ -556,10 +606,57 @@ include 'includes/header.php';
             matteContent.style.display = 'block';
             glossyContent.style.display = 'none';
         });
+
+        // Scroll animation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate sections on load
+            setTimeout(() => {
+                document.querySelector('.homepage-message-container').classList.add('animate-in');
+                document.querySelector('.tile-type-section').classList.add('animate-in');
+                document.querySelector('.tile-selection-section').classList.add('animate-in');
+                document.querySelector('.patterns-and-designs-section').classList.add('animate-in');
+            }, 100);
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Intersection Observer for scroll animations
+            const observerOptions = {
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections with animation classes
+            document.querySelectorAll('.homepage-message-container, .tile-type-section, .tile-selection-section, .patterns-and-designs-section').forEach(section => {
+                observer.observe(section);
+            });
+        });
+
+        // Prevent flash of unstyled content
+        document.documentElement.style.visibility = 'hidden';
+        window.addEventListener('load', function() {
+            document.documentElement.style.visibility = 'visible';
+        });
     </script>
     <?php
     include 'includes/footer.php';
     ?>
 </body>
-
 </html>
