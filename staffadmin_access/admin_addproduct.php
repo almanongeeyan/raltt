@@ -373,14 +373,6 @@
         <div class="dashboard-header">
             <h1>Products Dashboard</h1>
         </div>
-        <div class="dashboard-content">
-            <p>Wag niyo burahin yung nasa taas, proceed na agad kayo sa laman, also make it responsive</p>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <h1>PRODUCT INVENTORY</h1>
-        <hr>
 
         <div class="toolbar">
             <div class="search-container">
