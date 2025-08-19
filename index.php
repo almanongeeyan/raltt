@@ -32,14 +32,22 @@ include 'includes/header.php';
             padding: 0;
         }
         
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        
         body {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
             font-family: 'Inter', sans-serif;
             color: #333;
-            line-height: 1.6 ;
+            line-height: 1.6;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         /* Container for all sections */
@@ -60,6 +68,7 @@ include 'includes/header.php';
             display: flex;
             align-items: center;
             justify-content: center;
+            will-change: transform;
         }
 
         .home-section img {
@@ -68,6 +77,7 @@ include 'includes/header.php';
             height: 100%;
             object-fit: cover;
             z-index: 1;
+            will-change: transform;
         }
         .home-section::after {
             content: "";
@@ -88,6 +98,7 @@ include 'includes/header.php';
             text-align: center;
             padding: 0 20px;
             width: 100%;
+            will-change: transform;
         }
 
         .hero-content h1 {
@@ -115,6 +126,7 @@ include 'includes/header.php';
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            will-change: transform;
         }
 
         .hero-content button:hover {
@@ -127,6 +139,7 @@ include 'includes/header.php';
         .video-text-section {
             padding: 60px 0;
             width: 100%;
+            will-change: transform;
         }
 
         .video-text-container {
@@ -167,6 +180,7 @@ include 'includes/header.php';
             width: 100%;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            will-change: transform;
         }
 
         /* Meet RALTT Section */
@@ -174,6 +188,7 @@ include 'includes/header.php';
             padding: 60px 0;
             width: 100%;
             text-align: center;
+            will-change: transform;
         }
 
         .meet-raltt-section h3 {
@@ -201,6 +216,7 @@ include 'includes/header.php';
         .tabbed-section {
             padding: 60px 0;
             width: 100%;
+            will-change: transform;
         }
 
         .tab-buttons {
@@ -221,6 +237,7 @@ include 'includes/header.php';
             border: 2px solid #94481b;
             cursor: pointer;
             transition: all 0.3s ease;
+            will-change: transform;
         }
 
         .tab-btn.active {
@@ -254,6 +271,7 @@ include 'includes/header.php';
             min-width: 300px;
             max-width: 100%;
             border-radius: 15px;
+            will-change: transform;
         }
 
         .tab-text {
@@ -295,6 +313,7 @@ include 'includes/header.php';
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             letter-spacing: 0.01em;
             white-space: nowrap;
+            will-change: transform;
         }
 
         .animated-btn:hover {
@@ -309,6 +328,7 @@ include 'includes/header.php';
             padding: 80px 0;
             text-align: center;
             background: #faf9f7;
+            will-change: transform;
         }
 
         .trusted-section h1 {
@@ -346,6 +366,7 @@ include 'includes/header.php';
             justify-content: center;
             transition: all 0.3s ease;
             aspect-ratio: 1/1;
+            will-change: transform;
         }
 
         .distributor-item img {
@@ -354,6 +375,7 @@ include 'includes/header.php';
             object-fit: contain;
             filter: grayscale(20%);
             transition: all 0.3s ease;
+            will-change: transform, filter;
         }
 
         .distributor-item:hover {
@@ -371,6 +393,7 @@ include 'includes/header.php';
             width: 100%;
             padding: 80px 0;
             text-align: center;
+            will-change: transform;
         }
 
         .app-container {
@@ -412,6 +435,7 @@ include 'includes/header.php';
             width: 100%;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            will-change: transform;
         }
 
         .app-details {
@@ -451,6 +475,7 @@ include 'includes/header.php';
             text-decoration: none;
             letter-spacing: 0.01em;
             white-space: nowrap;
+            will-change: transform;
         }
 
         .btn i {
@@ -593,12 +618,24 @@ include 'includes/header.php';
                 font-size: 1.1rem;
             }
         }
+
+        /* Performance optimizations */
+        [data-scroll] {
+            opacity: 0;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: translateY(20px);
+        }
+
+        [data-scroll="in"] {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 
 <body>
     <!-- Hero Section -->
-    <section class="home-section">
+    <section class="home-section" data-scroll>
         <img src="images/homepage.jpg" alt="Beautiful tile designs">
         <div class="container">
             <div class="hero-content">
@@ -613,7 +650,7 @@ include 'includes/header.php';
         <br>
         <br>
     <!-- Video Text Section -->
-    <section class="video-text-section">
+    <section class="video-text-section" data-scroll>
         <div class="container">
             <div class="video-text-container">
                 <div class="video-text">
@@ -621,14 +658,14 @@ include 'includes/header.php';
                     <p>Enhancing your imagination with the use of tile visualizer in creating limitless designs all you want.</p>
                 </div>
                 <div class="video-container">
-                    <video src="images/video.mp4" autoplay loop muted></video>
+                    <video src="images/video.mp4" autoplay loop muted playsinline></video>
                 </div>
             </div>
         </div>
     </section>
 <br>
     <!-- Meet RALTT Section -->
-    <section class="meet-raltt-section">
+    <section class="meet-raltt-section" data-scroll>
         <div class="container">
             <h3>MEET RALTT</h3>
             <h1>Tile Visualizer and E-Commerce in One Website</h1>
@@ -637,7 +674,7 @@ include 'includes/header.php';
     </section>
 
     <!-- Tabbed Section -->
-    <section class="tabbed-section">
+    <section class="tabbed-section" data-scroll>
         <div class="container">
             <div class="tab-buttons">
                 <button class="tab-btn active" data-tab="visualizer-tab">2D Visualizer</button>
@@ -677,7 +714,7 @@ include 'includes/header.php';
     </section>
 
     <!-- Trusted Distributors Section -->
-    <section class="trusted-section">
+    <section class="trusted-section" data-scroll>
         <div class="container">
             <h1>Trusted by over <span style="color: #F47C2E;">50+ distributors</span></h1>
             <div class="subtitle">Low prices vs. other tile trade retailers</div>
@@ -698,7 +735,7 @@ include 'includes/header.php';
     </section>
 
     <!-- App Download Section -->
-    <section class="app-section">
+    <section class="app-section" data-scroll>
         <div class="container">
             <div class="app-container">
                 <h1>Checkout wherever you are!</h1>
@@ -745,6 +782,73 @@ include 'includes/header.php';
                     document.getElementById(tabId).classList.add('active');
                 });
             });
+
+            // Scroll animation functionality
+            const scrollElements = document.querySelectorAll('[data-scroll]');
+            
+            const elementInView = (el, dividend = 1) => {
+                const elementTop = el.getBoundingClientRect().top;
+                return (
+                    elementTop <= (window.innerHeight || document.documentElement.clientHeight) / dividend
+                );
+            };
+            
+            const elementOutofView = (el) => {
+                const elementTop = el.getBoundingClientRect().top;
+                return (
+                    elementTop > (window.innerHeight || document.documentElement.clientHeight)
+                );
+            };
+            
+            const displayScrollElement = (element) => {
+                element.setAttribute('data-scroll', 'in');
+            };
+            
+            const hideScrollElement = (element) => {
+                element.setAttribute('data-scroll', 'out');
+            };
+            
+            const handleScrollAnimation = () => {
+                scrollElements.forEach((el) => {
+                    if (elementInView(el, 1.25)) {
+                        displayScrollElement(el);
+                    } else if (elementOutofView(el)) {
+                        hideScrollElement(el);
+                    }
+                });
+            };
+            
+            // Initialize scroll animation
+            window.addEventListener('load', () => {
+                handleScrollAnimation();
+                // Force a reflow to trigger animations after page load
+                scrollElements.forEach(el => el.offsetHeight);
+            });
+            
+            window.addEventListener('scroll', () => {
+                // Throttle scroll events for performance
+                let ticking = false;
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        handleScrollAnimation();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
         });
     </script>
 </body>
@@ -752,5 +856,3 @@ include 'includes/header.php';
 <?php
 include 'includes/footer.php';
 ?>
-
-
