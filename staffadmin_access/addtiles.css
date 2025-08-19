@@ -1,84 +1,55 @@
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        height: 100%;
-        background: #2B3241;
-        color: #fff;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 20px 10px;
-    }
+        :root {
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 80px;
+            --transition-speed: 0.3s;
+        }
 
-    .sidebar-top img {
-        width: 100%;
-        border-radius: 8px;
-        height: 75px;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            transition: padding-left var(--transition-speed);
+        }
 
-    .sidebar-top h2 {
-        margin: 20px 0 10px;
-        font-size: 18px;
-        text-align: center;
-    }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: margin-left var(--transition-speed);
+        }
 
-    .sidebar-top hr {
-        border: 1px solid #fff;
-        margin-bottom: 20px;
-    }
+        /* Adjust main content when sidebar is collapsed */
+        html.sidebar-collapsed .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+        }
 
-    .sidebar nav a {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 15px;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 6px;
-        transition: background 0.3s;
-    }
+        .dashboard-header {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
 
-    .sidebar nav a:hover {
-        background: #D5591A;
-    }
+        .dashboard-header h1 {
+            font-size: 24px;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
 
-    .sidebar-bottom a {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 15px;
-        color: #fff;
-        text-decoration: none;
-        border-top: 1px solid #fff;
-        margin-top: 20px;
-        transition: background 0.3s;
-        margin-bottom: 25px;
-    }
+        .dashboard-content {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-    .sidebar-bottom a:hover {
-        background: #D5591A;
-    }
-
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
-        width: calc(100% - 250px);
-        box-sizing: border-box;
-    }
-
-    .main-content h1 {
-        font-size: 48px;
-        margin-bottom: 5px;
-    }
-
-    .main-content hr {
-        border: 1px solid #000;
-        margin-bottom: 20px;
-    }
-
-    @media screen and (min-width: 1200px) {
+        .dashboard-content p {
+            color: #666;
+            margin: 0;
+            padding: 0;
+        }
+        
+@media screen and (min-width: 1200px) {
         .main-content {
             padding: 40px;
             margin-top: -30px;
