@@ -18,31 +18,37 @@ include 'includes/header.php';
 
 <body>
     <section class="about-raltt-section">
-        <div class="about-raltt-top">
-            <div class="about-raltt-title">
-                <span class="highlight">RALTT:</span> Bring Your<br>
-                Visions to Life:<br>
-                Design Stunning Spaces,<br>
-                with our <span class="highlight2">2D Tile Visualizer</span>
-            </div>
-            <div class="about-raltt-tiles-img">
-                <img src="images/tile1.png" alt="Tiles Stack">
-            </div>
+    <div class="about-raltt-grid">
+        <!-- Top Left Text -->
+        <div class="grid-top-left">
+            <span class="highlight">RALTT:</span> Bring Your<br>
+            Visions to Life:<br>
+            Design Stunning Spaces,<br>
+            with our <span class="highlight2">2D Tile Visualizer</span>
         </div>
-        <div class="about-raltt-bottom">
-            <div class="about-raltt-bottom-img">
-                <img src="images/tile2.png" alt="Tile Samples">
-            </div>
-            <div class="about-raltt-bottom-desc">
-                <p><br>
-                    Want something new and refreshing experience on tile visualizer? RALTT is
-                    here to maximize your tile design imagination while shopping on our tile e-commerce shop. 
-                    <br><br><button><a href="user_login_form.php" class="checkout-btn">Check out now!</a></button>
-                    
-                </p>
-            </div>
+
+        <!-- Top Right Image -->
+        <div class="grid-top-right">
+            <img src="images/tile1.png" alt="Tiles Stack">
         </div>
-    </section>
+
+        <!-- Bottom Left Image -->
+        <div class="grid-bottom-left">
+            <img src="images/tile2.png" alt="Tile Samples">
+        </div>
+
+        <!-- Bottom Right Text + Button -->
+        <div class="grid-bottom-right">
+            <p>
+                We will bring something new and refreshing to your usage 
+                <br> of visualizer and tile e-commerce. RALTT is here 
+                <br>to maximize your tile design imagination while 
+                <br>shopping on our tile e-commerce shop. <span class="highlight2">Check out now!</span>
+            </p>
+        </div>
+    </div>
+</section>
+
 
     <div class="branch-columns">
         <section class="branches-section">
@@ -57,7 +63,7 @@ include 'includes/header.php';
                     <div class="branches-left">
                         <iframe
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3875.679906514091!2d121.03429821483269!3d14.676041889810735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b7b12e5f0c5d%3A0x9717f4be57b2345d!2sCaloocan%20City!5e0!3m2!1sen!2sph!4v1691791091927!5m2!1sen!2sph"
-                            width="500" height="500" style="border:0;" allowfullscreen="" loading="lazy"
+                            width="400" height="400" style="border:0;" loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
                 </div>
@@ -171,5 +177,5 @@ include 'includes/header.php';
 
 </html>
 <?php
-include 'includes/header.php';
+include 'includes/footer.php';
 ?>
