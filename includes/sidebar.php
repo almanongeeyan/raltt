@@ -414,7 +414,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                 <path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zM9 17H7v-7h2v7zm4 0h-2v-4h2v4zm4 0h-2v-2h2v2z"/>
                             </svg>
-                            <span>Analytics</span>
+                            <span>Dashboard</span>
                         </a>
                     </li>
                     
@@ -478,7 +478,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                 <path d="M22 6h-4V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2H2c-1.1 0-2 .9-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-4h4a2 2 0 002-2V8a2 2 0 00-2-2zm-6-2h-4v2h4V4zM2 18V8h4v10H2zm6 0v-4h8v4H8zm14-4h-4V8h4v6z"/>
                             </svg>
-                            <span>Supply</span>
+                            <span>Maintenance</span>
                             <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="9 18 15 12 9 6"></polyline>
                             </svg>
