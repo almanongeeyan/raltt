@@ -188,75 +188,63 @@
         }
 
         .alert-btn {
-    position: relative;
-    background-color: #fff;
-    color: #ff4d4f;
-    border: 2px solid #ff4d4f;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    width: 200px;
-    transition: all 0.3s ease;
-    z-index: 1;
-}
+            position: relative;
+            background-color: #fff;
+            color: #ff4d4f;
+            border: 2px solid #ff4d4f;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            width: 200px;
+            transition: all 0.3s ease;
+        }
 
-.alert-btn i {
-    margin-right: 8px;
-    transition: color 0.3s ease;
-}
+        .alert-btn i {
+            margin-right: 8px;
+            transition: color 0.3s ease;
+        }
 
-.alert-btn .badge {
-    display: inline-block;
-    position: absolute;
-    top: -12px;
-    right: -12px;
-    background-color: #ff4d4f;
-    color: #fff;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 4px 7px;
-    border-radius: 50%;
-    z-index: 2; 
-}
+        .alert-btn::after {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: 50%;
+            left: 50%;
+            background: rgba(255, 77, 79, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: transform 0.6s ease, opacity 0.8s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
 
-.alert-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 77, 79, 0.2);
-    border-radius: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    transition: transform 0.5s ease, opacity 0.5s ease;
-    z-index: 0; 
-    pointer-events: none;
-}
+        .alert-btn:hover::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
 
-.alert-btn:hover::before {
-    width: 400%;
-    height: 400%;
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-}
+        .alert-btn:hover {
+            background-color: #ff4d4f;
+            color: #fff;
+            border-color: #ff4d4f;
+        }
 
-.alert-btn.has-notifications:hover {
-    background-color: #ff4d4f;
-    color: #fff;
-    border: 2px solid #ff4d4f;
-}
+        .alert-btn:hover i {
+            color: #fff;
+        }
 
-.alert-btn.has-notifications:hover i {
-    color: #fff;
-}
-
-
+        .alert-btn span,
+        .alert-btn i {
+            position: relative;
+            z-index: 1;
+        }
 
         .add-btn {
             display: inline-flex;
@@ -423,7 +411,6 @@
             background-color: #218838;
         }
 
-        /* Restock Modal */
         .restock-modal {
             display: none;
             position: fixed;
@@ -527,63 +514,82 @@
             font-size: 14px;
         }
 
-        .submit-btn {
-            position: relative;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
+.submit-btn {
+    position: relative;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
 
-        .submit-btn i {
-            position: absolute;
-            left: 10px;
-            transition: all 0.5s ease;
-        }
+.submit-btn i {
+    position: absolute;
+    left: 10px;
+    transition: all 0.5s ease;
+    pointer-events: none;
+}
 
-        .submit-btn span {
-            transition: opacity 0.3s ease;
-        }
+.submit-btn span {
+    transition: opacity 0.3s ease;
+}
 
-        .submit-btn:hover i {
-            left: 50%;
-            transform: translateX(-50%);
-        }
+.submit-btn:hover i {
+    left: 50%;
+    transform: translateX(-50%);
+}
+/*
+.submit-btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple-effect 0.6s linear;
+    pointer-events: none; 
+    z-index: 0;
+}
 
-        @keyframes truckDrive {
-            0% {
-                transform: translateX(-50%) translateY(0);
-            }
+@keyframes ripple-effect {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
 
-            25% {
-                transform: translateX(-50%) translateY(-2px);
-            }
+@keyframes truckDrive {
+    0% { transform: translateX(-50%) translateY(0); }
+    25% { transform: translateX(-50%) translateY(-2px); }
+    50% { transform: translateX(-50%) translateY(0); }
+    75% { transform: translateX(-50%) translateY(2px); }
+    100% { transform: translateX(-50%) translateY(0); }
+}
 
-            50% {
-                transform: translateX(-50%) translateY(0);
-            }
+.submit-btn:hover i {
+    animation: truckDrive 1s infinite;
+}
 
-            75% {
-                transform: translateX(-50%) translateY(2px);
-            }
+.submit-btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple-effect 0.6s linear;
+    background: rgba(255, 255, 255, 0.5);
+    pointer-events: none; 
+    z-index: 0;
+}
 
-            100% {
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-
-        .submit-btn:hover i {
-            animation: truckDrive 1s infinite;
-        }
-
+@keyframes ripple-effect {
+    to { transform: scale(4); opacity: 0; }
+}
+*/
 
         #okRestockBtn {
             padding: 8px 16px;
@@ -616,11 +622,13 @@
                     </div>
                 </div>
 
-                <button class="alert-btn" id="alertBtn">
-                    <i class="fas fa-bell" style="margin-right: 8px;"></i>
-                    Alert
-                    <span class="badge" id="alertBadge">3</span>
+                <button class="alert-btn has-notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Alerts</span>
                 </button>
+
+
+
 
             </div>
 
@@ -730,18 +738,24 @@
             </div>
 
             <p>Supplier</p>
-            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:10px;">
-                <select style="width:100%; padding:8px;">
-                    <option>Dropdown 1</option>
+            <div style="display: grid; grid-template-columns: 3fr 0.5fr 0.5fr; gap: 10px; margin-bottom: 10px;">
+                <select style="width: 100%; padding: 8px;">
+                    <option>Supplier Name</option>
                 </select>
-                <input type="text" placeholder="Textbox 1" style="padding:8px;" />
-                <select style="width:100%; padding:8px;">
-                    <option>Dropdown 2</option>
+                <input type="text" placeholder="Address" disabled style="padding: 8px;" />
+                <input type="text" placeholder="Contact" disabled style="padding: 8px;" />
+                <select style="width: 100%; padding: 8px;">
+                    <option>Buying Unit of Measure</option>
                 </select>
-                <input type="text" placeholder="Textbox 2" style="padding:8px;" />
+                <input type="text" placeholder="Multiplier" style="padding: 8px;" />
+                <input type="text" placeholder="Cost Price" disabled style="padding: 8px;" />
             </div>
 
-            <input type="text" placeholder="Amount" disabled style="width:100%; padding:8px; margin-bottom:20px;" />
+
+            <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+    <input type="text" placeholder="Amount" disabled style="width:125px; padding:8px;" />
+</div>
+
 
             <div style="display:flex; justify-content:flex-end; gap:10px;">
                 <button class="cancel-btn"
@@ -758,7 +772,7 @@
 
 
     <script>
-        const alertBtn = document.getElementById("alertBtn");
+        const alertBtn = document.querySelector(".alert-btn");
         const alertModal = document.getElementById("alertModal");
         const alertCloseBtn = alertModal.querySelector(".close-btn");
 
@@ -766,28 +780,39 @@
         alertCloseBtn.addEventListener("click", () => alertModal.style.display = "none");
 
         const restockModal = document.getElementById("restockModal");
-        const restockButtons = document.querySelectorAll(".restock-btn");
         const restockCloseBtn = restockModal.querySelector(".close-btn");
         const cancelBtn = restockModal.querySelector(".cancel-btn");
 
-        restockButtons.forEach((button, index) => {
-            button.addEventListener("click", () => {
-                document.getElementById("restockProductName").value = `Product ${index + 1}`;
-                document.getElementById("restockProductStock").value = 10 + index;
+        alertModal.addEventListener("click", (e) => {
+            if (e.target && e.target.classList.contains("restock-btn")) {
+                const row = e.target.closest(".table-row");
+                const productName = row.children[0].innerText;
+                const stockCount = row.children[1].innerText;
+
+                document.getElementById("restockProductName").value = productName;
+                document.getElementById("restockProductStock").value = stockCount;
 
                 restockModal.style.display = "block";
-            });
+            }
         });
 
-        restockCloseBtn.onclick = cancelBtn.onclick = function () {
-            restockModal.style.display = "none";
-        }
+        restockCloseBtn.onclick = cancelBtn.onclick = () => restockModal.style.display = "none";
 
-        window.onclick = function (event) {
-            if (event.target == restockModal) {
-                restockModal.style.display = "none";
-            }
-        }
+        window.onclick = (event) => {
+            if (event.target === alertModal) alertModal.style.display = "none";
+            if (event.target === restockModal) restockModal.style.display = "none";
+        };
+    </script>
+
+    <script>
+        const submitBtn = restockModal.querySelector(".submit-btn");
+
+submitBtn.addEventListener("click", () => {
+    alert("Order Submitted");
+
+    restockModal.style.display = "none";
+});
+
     </script>
 
 </body>
