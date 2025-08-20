@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Sidebar</title>
+    <title>Staff Admin Page</title>
     <style>
         :root {
             /* Updated color scheme */
