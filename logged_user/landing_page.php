@@ -35,7 +35,7 @@ include '../includes/headeruser.php';
         /* Hero Section */
         .landing-hero-section {
             position: relative;
-            width: 100vw;
+            width: 100%;
             min-height: 100vh;
             background: url('../images/user/landingpagebackground.PNG') center center/cover no-repeat;
             display: flex;
@@ -166,6 +166,28 @@ include '../includes/headeruser.php';
             transition: none;
             padding: 20px 0;
             min-height: 420px;
+        }
+
+        /* Smooth slide/fade animations for carousel */
+        .featured-items.slide-left-out,
+        .featured-items.slide-right-out {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: transform 0.35s ease, opacity 0.35s ease;
+        }
+        .featured-items.slide-right-out {
+            transform: translateX(-40px);
+        }
+        .featured-items.slide-left-in,
+        .featured-items.slide-right-in {
+            opacity: 1;
+            transform: translateX(0);
+            transition: transform 0.35s ease, opacity 0.35s ease;
+        }
+
+        /* Placeholder items to preserve layout */
+        .featured-item.empty {
+            visibility: hidden;
         }
 
         .featured-item {
@@ -332,7 +354,7 @@ include '../includes/headeruser.php';
 
         .tile-categories-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 30px;
             justify-content: center;
         }
@@ -344,6 +366,7 @@ include '../includes/headeruser.php';
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             transition: transform 0.3s, box-shadow 0.3s;
             position: relative;
+            cursor: pointer;
         }
 
         .tile-category:hover {
@@ -403,6 +426,23 @@ include '../includes/headeruser.php';
             transform: translateY(-2px);
         }
 
+        /* Make wrapping links block-level and inherit colors */
+        .tile-category-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Reduce motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
         /* Media Queries */
         @media (max-width: 1200px) {
             .featured-items {
@@ -421,7 +461,7 @@ include '../includes/headeruser.php';
                 height: 140px;
             }
             .tile-categories-grid {
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
         }
 
@@ -489,7 +529,7 @@ include '../includes/headeruser.php';
                 height: 120px;
             }
             .tile-categories-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
         }
 
@@ -583,49 +623,57 @@ include '../includes/headeruser.php';
             </div>
             
             <div class="tile-categories-grid">
-                <div class="tile-category">
-                    <div class="tile-category-img">
-                        <img src="../images/user/tile3.jpg" alt="Ceramic Tiles">
+                <a class="tile-category-link" href="../product_view_homepage.php?category=Ceramic" aria-label="View Ceramic Tiles">
+                    <div class="tile-category">
+                        <div class="tile-category-img">
+                            <img src="../images/user/tile3.jpg" alt="Ceramic Tiles">
+                        </div>
+                        <div class="tile-category-content">
+                            <h3 class="tile-category-title">Ceramic Tiles</h3>
+                            <p class="tile-category-desc">Durable and versatile ceramic tiles for any space</p>
+                            <span class="explore-btn" role="button">Explore</span>
+                        </div>
                     </div>
-                    <div class="tile-category-content">
-                        <h3 class="tile-category-title">Ceramic Tiles</h3>
-                        <p class="tile-category-desc">Durable and versatile ceramic tiles for any space</p>
-                        <a href="#" class="explore-btn">Explore</a>
+                </a>
+
+                <a class="tile-category-link" href="../product_view_homepage.php?category=Porcelain" aria-label="View Porcelain Tiles">
+                    <div class="tile-category">
+                        <div class="tile-category-img">
+                            <img src="../images/user/tile4.jpg" alt="Porcelain Tiles">
+                        </div>
+                        <div class="tile-category-content">
+                            <h3 class="tile-category-title">Porcelain Tiles</h3>
+                            <p class="tile-category-desc">Premium quality porcelain for high-end finishes</p>
+                            <span class="explore-btn" role="button">Explore</span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="tile-category">
-                    <div class="tile-category-img">
-                        <img src="../images/user/tile4.jpg" alt="Porcelain Tiles">
+                </a>
+
+                <a class="tile-category-link" href="../product_view_homepage.php?category=Mosaic" aria-label="View Mosaic Tiles">
+                    <div class="tile-category">
+                        <div class="tile-category-img">
+                            <img src="../images/user/tile5.jpg" alt="Mosaic Tiles">
+                        </div>
+                        <div class="tile-category-content">
+                            <h3 class="tile-category-title">Mosaic Tiles</h3>
+                            <p class="tile-category-desc">Artistic designs for unique decorative accents</p>
+                            <span class="explore-btn" role="button">Explore</span>
+                        </div>
                     </div>
-                    <div class="tile-category-content">
-                        <h3 class="tile-category-title">Porcelain Tiles</h3>
-                        <p class="tile-category-desc">Premium quality porcelain for high-end finishes</p>
-                        <a href="#" class="explore-btn">Explore</a>
+                </a>
+
+                <a class="tile-category-link" href="../product_view_homepage.php?category=Natural%20Stone" aria-label="View Natural Stone Tiles">
+                    <div class="tile-category">
+                        <div class="tile-category-img">
+                            <img src="../images/user/tile2.jpg" alt="Natural Stone Tiles">
+                        </div>
+                        <div class="tile-category-content">
+                            <h3 class="tile-category-title">Natural Stone</h3>
+                            <p class="tile-category-desc">Elegant natural stone for luxurious spaces</p>
+                            <span class="explore-btn" role="button">Explore</span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="tile-category">
-                    <div class="tile-category-img">
-                        <img src="../images/user/tile5.jpg" alt="Mosaic Tiles">
-                    </div>
-                    <div class="tile-category-content">
-                        <h3 class="tile-category-title">Mosaic Tiles</h3>
-                        <p class="tile-category-desc">Artistic designs for unique decorative accents</p>
-                        <a href="#" class="explore-btn">Explore</a>
-                    </div>
-                </div>
-                
-                <div class="tile-category">
-                    <div class="tile-category-img">
-                        <img src="../images/user/tile2.jpg" alt="Natural Stone Tiles">
-                    </div>
-                    <div class="tile-category-content">
-                        <h3 class="tile-category-title">Natural Stone</h3>
-                        <p class="tile-category-desc">Elegant natural stone for luxurious spaces</p>
-                        <a href="#" class="explore-btn">Explore</a>
-                    </div>
-                </div>
+                </a>
             </div>
         </div>
     </section>
@@ -661,7 +709,7 @@ include '../includes/headeruser.php';
             if (window.innerWidth <= 600) return 1;
             if (window.innerWidth <= 900) return 2;
             if (window.innerWidth <= 1200) return 3;
-            return 4;
+            return 5;
         };
 
         let currentPage = 0;
