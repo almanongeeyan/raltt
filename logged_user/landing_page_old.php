@@ -171,7 +171,7 @@ include '../includes/headeruser.php';
     </section>
 
     <!-- Featured Items Section -->
-    <section class="relative bg-gradient-to-br from-light via-white to-accent/30 text-textdark py-12 md:py-20 text-center mobile-padding overflow-x-hidden">
+    <section class="bg-light text-textdark py-12 md:py-20 text-center mobile-padding">
       <div class="mb-8">
         <span class="block text-base md:text-[1.1rem] font-medium tracking-wider text-textlight mb-2">Premium Selection</span>
         <h2 class="text-2xl md:text-[2.5rem] font-black leading-tight text-primary m-0">Featured Items</h2>
@@ -179,12 +179,12 @@ include '../includes/headeruser.php';
           Explore our handpicked selection of premium tiles that combine quality craftsmanship with exceptional design for your home or business.
         </div>
       </div>
-  <div class="flex items-center justify-center gap-2 md:gap-4 relative max-w-full w-full mx-auto mt-10">
+      <div class="flex items-center justify-center gap-4 md:gap-8 relative max-w-full w-full mx-auto mt-10">
         <button class="bg-white border border-gray-200 rounded-full w-10 h-10 md:w-12 md:h-12 text-lg md:text-xl text-primary flex items-center justify-center shadow-md hover:bg-primary hover:text-white transition-all duration-200 outline-none prev" aria-label="Previous">
           <i class="fas fa-chevron-left"></i>
         </button>
         <div class="featured-items-container w-full max-w-full overflow-hidden">
-          <div class="featured-items flex gap-2 md:gap-4 w-full py-5 min-h-[320px] md:min-h-[420px]">
+          <div class="featured-items flex gap-4 md:gap-8 w-full py-5 min-h-[320px] md:min-h-[420px]">
             <!-- Items will be populated by JavaScript -->
           </div>
         </div>
@@ -193,7 +193,6 @@ include '../includes/headeruser.php';
         </button>
       </div>
       <div class="featured-pagination flex justify-center gap-3 mt-6 md:mt-9"></div>
-      <div class="pointer-events-none absolute inset-0 z-0 opacity-10 bg-[url('../images/user/landingpagetile1.png')] bg-no-repeat bg-right-bottom bg-contain"></div>
     </section>
 
     <!-- Tile Selection Section -->
@@ -331,7 +330,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Premium Ceramic Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱1,250</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2 rounded-full border-2 border-primary text-primary font-semibold text-xs md:text-sm bg-transparent transition-all hover:bg-primary hover:text-white shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -343,7 +342,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Porcelain Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱950</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2 rounded-full border-2 border-primary text-primary font-semibold text-xs md:text-sm bg-transparent transition-all hover:bg-primary hover:text-white shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -356,7 +355,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Mosaic Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱1,750</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2 rounded-full border-2 border-primary text-primary font-semibold text-xs md:text-sm bg-transparent transition-all hover:bg-primary hover:text-white shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -368,7 +367,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Natural Stone Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱850</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2 rounded-full border-2 border-primary text-primary font-semibold text-xs md:text-sm bg-transparent transition-all hover:bg-primary hover:text-white shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -381,29 +380,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Classic Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱2,100</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
-    <style>
-      .add-to-cart-button {
-        background: #CF8756;
-        color: #fff;
-        border: none;
-        border-radius: 30px;
-        padding: 10px 20px;
-        font-size: 0.95rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        justify-content: center;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      }
-      .add-to-cart-button:hover {
-        background: #A86A42;
-      }
-    </style>
+                  <button class="inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2 rounded-full border-2 border-primary text-primary font-semibold text-xs md:text-sm bg-transparent transition-all hover:bg-primary hover:text-white shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -456,32 +433,36 @@ include '../includes/headeruser.php';
       function initCarousel() {
         const container = document.querySelector('.featured-items');
         if (!container) return;
-        container.innerHTML = '';
+        
         const perPage = itemsPerPage();
         const itemWidth = calculateItemWidth();
+        
         // Set container width based on number of items
         container.style.width = `${featuredItems.length * (itemWidth + 32)}px`;
+        
         // Create items
         featuredItems.forEach((item, index) => {
           const div = document.createElement('div');
           div.className = 'featured-item';
           div.style.width = `${itemWidth}px`;
+          
           // Card content
           div.innerHTML = `
-            <div class="relative bg-white rounded-3xl shadow-2xl p-4 md:p-6 w-full flex flex-col items-center border border-gray-100 transition-all duration-300 group hover:shadow-2xl hover:-translate-y-2 hover:scale-105 overflow-hidden">
-              <span class="absolute top-3 left-3 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">Featured</span>
-              <div class="w-[120px] h-[120px] md:w-[160px] md:h-[160px] flex items-center justify-center bg-gradient-to-br from-accent/30 to-light rounded-xl mb-4 md:mb-6 shadow-inner overflow-hidden">
-                <img src="${item.img}" alt="${item.title}" class="w-[90%] h-[90%] object-contain rounded-xl transition-transform duration-300 group-hover:scale-105 bg-gray-100 drop-shadow-lg" />
+            <div class="bg-white rounded-2xl shadow-featured p-4 md:p-6 w-full flex flex-col items-center border border-gray-100 transition-all duration-300 relative group hover:shadow-lg hover:-translate-y-2 hover:scale-105">
+              <div class="w-[120px] h-[120px] md:w-[160px] md:h-[160px] flex items-center justify-center bg-gray-50 rounded-xl mb-4 md:mb-6 shadow-sm overflow-hidden">
+                <img src="${item.img}" alt="${item.title}" class="w-[90%] h-[90%] object-contain rounded-xl transition-transform duration-300 group-hover:scale-105 bg-gray-100" />
               </div>
-              <div class="text-base md:text-[1.1rem] font-extrabold text-primary mb-1 text-center tracking-wide">${item.title}</div>
+              <div class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-2 text-center">${item.title}</div>
               <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4 text-center">${item.price}</div>
-              <button class="inline-flex items-center gap-2 px-4 py-2 md:px-6 md:py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-xs md:text-sm shadow-lg hover:from-secondary hover:to-primary hover:scale-105 transition-all">
+              <button class="inline-flex items-center gap-2 px-4 py-2 md:px-6 md:py-2 rounded-full bg-primary text-white font-semibold text-xs md:text-sm shadow hover:bg-secondary transition-all">
                 <i class="fa fa-shopping-cart"></i> Add to Cart
               </button>
             </div>
           `;
+          
           container.appendChild(div);
         });
+        
         renderPagination();
         updateCarouselPosition();
       }

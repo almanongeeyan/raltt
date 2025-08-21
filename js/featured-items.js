@@ -87,7 +87,9 @@ function updateFeaturedItems(container, start, end) {
             </div>
             <div class="item-title">${item.title}</div>
             <div class="item-price">${item.price}</div>
-            <button class="add-to-cart"><i class="fa fa-lock"></i> ADD TO CART</button>
+            <button class="add-to-cart inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2 rounded-full border-2 border-primary text-primary font-semibold text-xs md:text-sm bg-transparent transition-all hover:bg-primary hover:text-white shadow">
+                <i class="fa fa-shopping-cart"></i> Add to Cart
+            </button>
         `;
         container.appendChild(div);
     });
