@@ -331,7 +331,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Premium Ceramic Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱1,250</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -343,7 +343,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Porcelain Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱950</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -356,7 +356,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Mosaic Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱1,750</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -368,7 +368,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Natural Stone Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱850</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
                 </div>
               </div>
             </div>
@@ -381,7 +381,7 @@ include '../includes/headeruser.php';
                 <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Classic Tile</h3>
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱2,100</div>
                 <div class="flex justify-center gap-2">
-                  <button class="add-to-cart-button"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
     <style>
       .add-to-cart-button {
         background: #CF8756;
