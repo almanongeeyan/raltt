@@ -419,7 +419,7 @@ include '../includes/headeruser.php';
         background-size: 20px 20px;
         background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         opacity: 0.3;
-        z-index: 1;
+        z-index: 0; /* Lower z-index so it does not cover interactive elements */
       }
 
       .tile-categories-grid {
@@ -1145,59 +1145,18 @@ include '../includes/headeruser.php';
         .product-header h2 {
           font-size: 1.8rem;
         }
-      }
-
-      @media (max-width: 600px) {
-        /* Show 3 items per slide on mobile */
-        .featured-items {
-          max-width: 300px;
-          gap: 10px;
+        .product-header p {
+          display: none;
         }
-        .featured-item {
-          width: 90px;
-          padding: 12px 8px;
-          min-height: 220px;
-        }
-        .featured-img-wrap {
-          width: 70px;
-          height: 70px;
-          margin-bottom: 15px;
-        }
-        .featured-item .item-title {
-          font-size: 0.8rem;
-          margin-bottom: 5px;
-        }
-        .featured-item .item-price {
-          font-size: 0.9rem;
-          margin-bottom: 12px;
-        }
-        .featured-item .add-to-cart {
-          padding: 6px 12px;
-          font-size: 0.75rem;
-        }
-        .tile-category {
-          min-width: 120px;
-          width: 120px;
-        }
-        .tile-category-img {
-          height: 90px;
-        }
-        .tile-category-content {
-          padding: 10px;
-        }
-        .tile-category-title {
-          font-size: 0.8rem;
-        }
-        .tile-category-desc {
-          font-size: 0.65rem;
+        .product-grid {
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         }
         .explore-btn.add-to-cart-btn {
-          padding: 8px 12px;
-          font-size: 0.7rem;
-          gap: 4px;
-        }
-        .explore-btn.add-to-cart-btn i {
-          font-size: 0.65rem;
+          width: 100%;
+          justify-content: center;
+          padding: 12px 20px;
+          font-size: 0.9rem;
+          margin-top: 10px;
         }
       }
 
@@ -1433,7 +1392,7 @@ include '../includes/headeruser.php';
                 Durable and versatile ceramic tiles for any space
               </p>
               <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
+                <i class="fa fa-search"></i> Explore Now
               </button>
             </div>
           </div>
@@ -1448,7 +1407,7 @@ include '../includes/headeruser.php';
                 Premium quality porcelain for high-end finishes
               </p>
               <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
+                <i class="fa fa-search"></i> Explore Now
               </button>
             </div>
           </div>
@@ -1463,7 +1422,7 @@ include '../includes/headeruser.php';
                 Artistic designs for unique decorative accents
               </p>
               <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
+                <i class="fa fa-search"></i> Explore Now
               </button>
             </div>
           </div>
@@ -1478,7 +1437,7 @@ include '../includes/headeruser.php';
                 Elegant natural stone for luxurious spaces
               </p>
               <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
+                <i class="fa fa-search"></i> Explore Now
               </button>
             </div>
           </div>
@@ -1493,7 +1452,7 @@ include '../includes/headeruser.php';
                 High-end premium tiles for luxury spaces
               </p>
               <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
+                <i class="fa fa-search"></i> Explore Now
               </button>
             </div>
           </div>
@@ -1871,11 +1830,10 @@ include '../includes/headeruser.php';
           prevBtn.addEventListener('click', prevFeatured);
         }
 
-        // Handle image loading errors
-        const images = document.querySelectorAll('img');
+        // Handle image loading errors (only for featured/product images, not tile-category images)
+        const images = document.querySelectorAll('.featured-img-wrap img, .product-card-img-wrap img');
         images.forEach(img => {
           img.addEventListener('error', function() {
-            // Replace broken images with a placeholder or hide them
             this.style.display = 'none';
             const parent = this.parentElement;
             if (parent) {
@@ -1884,14 +1842,10 @@ include '../includes/headeruser.php';
               parent.style.display = 'flex';
               parent.style.alignItems = 'center';
               parent.style.justifyContent = 'center';
-              
-              // Create placeholder text safely
               const placeholder = document.createElement('span');
               placeholder.style.color = '#999';
               placeholder.style.fontSize = '0.9rem';
               placeholder.textContent = 'Image not available';
-              
-              // Clear parent content safely
               while (parent.firstChild) {
                 parent.removeChild(parent.firstChild);
               }
@@ -1902,27 +1856,12 @@ include '../includes/headeruser.php';
 
         // Animate tile categories when they come into view
         const tileCategories = document.querySelectorAll('.tile-category');
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('animate');
-                observer.unobserve(entry.target);
-              }
-            });
-          },
-          { threshold: 0.1 }
-        );
-
+        // Always add click event listeners immediately
         tileCategories.forEach((category) => {
-          observer.observe(category);
-          
           // Add click functionality to tile categories
           category.addEventListener('click', function() {
             const title = this.querySelector('.tile-category-title').textContent;
             const description = this.querySelector('.tile-category-desc').textContent;
-            
-            // Show modal with tile category information
             Swal.fire({
               title: title,
               text: description,
@@ -1933,10 +1872,30 @@ include '../includes/headeruser.php';
               cancelButtonText: 'Close'
             });
           });
-          
           // Add hover effect for better UX
           category.style.cursor = 'pointer';
         });
+
+        // Animate with IntersectionObserver (optional, for fade-in effect only)
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add('animate');
+                  observer.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.1 }
+          );
+          tileCategories.forEach((category) => {
+            observer.observe(category);
+          });
+        } else {
+          // Fallback: add animate class immediately
+          tileCategories.forEach((category) => category.classList.add('animate'));
+        }
 
         renderFeaturedItems();
       });
