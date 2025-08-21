@@ -516,13 +516,15 @@
             // Validate confirm password
             function validateConfirmPassword(password, confirmPassword) {
                 const matchStatus = document.getElementById('password-match-status');
-                
+                if (!password) {
+                    matchStatus.textContent = '';
+                    return false;
+                }
                 if (password !== confirmPassword) {
                     matchStatus.textContent = 'Passwords do not match';
                     matchStatus.style.color = 'red';
                     return false;
                 }
-                
                 matchStatus.textContent = 'Passwords match';
                 matchStatus.style.color = 'green';
                 return true;
