@@ -1,41 +1,4 @@
-<?php
-// Enforce session and cache control to prevent back navigation after logout
-session_start();
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
 
-// Additional security headers
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');
-header('X-XSS-Protection: 1; mode=block');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header('Content-Security-Policy: default-src \'self\' https: data: \'unsafe-inline\' \'unsafe-eval\'; img-src \'self\' https: data:; style-src \'self\' https: \'unsafe-inline\'; script-src \'self\' https: \'unsafe-inline\' \'unsafe-eval\';');
-
-if (!isset($_SESSION['logged_in'])) {
-    header('Location: ../connection/tresspass.php');
-    exit();
-}
-include '../includes/headeruser.php';
-?>
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rich Anne Lea Tiles Trading - Landing Page</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
-    <style>
       /* General Styles */
       :root {
         --primary-color: #7d310a;
@@ -422,48 +385,119 @@ include '../includes/headeruser.php';
         z-index: 1;
       }
 
+      .tile-categories-container {
+        position: relative;
+        z-index: 2;
+      }
+
       .tile-categories-grid {
         display: flex;
         flex-wrap: nowrap;
-        justify-content: center;
-        gap: 20px;
-        padding: 20px 0;
+        gap: 15px;
+        padding: 40px 0;
         max-width: 1400px;
         margin: 0 auto;
+        width: 95%;
         overflow-x: auto;
         scrollbar-width: none;
         -ms-overflow-style: none;
+        justify-content: center;
       }
 
       .tile-categories-grid::-webkit-scrollbar {
         display: none;
       }
 
-      /* Tile Categories Navigation Buttons - HIDDEN */
-      .tile-categories-nav {
-        display: none;
+      /* Smooth scrolling for tile categories */
+      .tile-categories-grid {
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Touch-friendly scrolling indicators */
+      .tile-categories-section::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 60px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1));
+        pointer-events: none;
+        z-index: 3;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .tile-categories-section:hover::after {
+        opacity: 1;
+      }
+
+      @media (max-width: 900px) {
+        .tile-categories-section::after {
+          display: none;
+        }
+      }
+
+      /* Ensure tile categories fit in one line */
+      .tile-categories-grid {
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Optimize tile category sizing for different screen widths */
+      @media (min-width: 1400px) {
+        .tile-categories-grid {
+          gap: 20px;
+        }
+        .tile-category {
+          min-width: 200px;
+          max-width: 200px;
+        }
+      }
+
+      @media (min-width: 1200px) and (max-width: 1399px) {
+        .tile-categories-grid {
+          gap: 18px;
+        }
+        .tile-category {
+          min-width: 180px;
+          max-width: 180px;
+        }
+      }
+
+      @media (min-width: 900px) and (max-width: 1199px) {
+        .tile-categories-grid {
+          gap: 15px;
+        }
+        .tile-category {
+          min-width: 160px;
+          max-width: 160px;
+        }
       }
 
       .tile-category {
         background: #fff;
         border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s cubic-bezier(0.4, 1.4, 0.6, 1.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        transition: all 0.4s cubic-bezier(0.4, 1.4, 0.6, 1.1);
         position: relative;
         opacity: 0;
         transform: translateY(20px);
-        min-width: 200px;
-        width: 200px;
-        flex-shrink: 0;
-        display: flex;
-        flex-direction: column;
         cursor: pointer;
-        border: 1px solid #f0f0f0;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        min-width: 160px;
+        max-width: 160px;
+        flex-shrink: 0;
+        animation: fadeInUp 0.8s ease-out forwards;
       }
 
       .tile-category.animate {
-        animation: fadeInUp 0.5s forwards;
+        animation: fadeInUp 0.8s ease-out forwards;
       }
 
       .tile-category:nth-child(1) {
@@ -483,10 +517,30 @@ include '../includes/headeruser.php';
       }
 
       .tile-category:hover {
-        box-shadow: 0 12px 40px rgba(207, 135, 86, 0.15),
-          0 4px 15px rgba(0, 0, 0, 0.08);
-        transform: translateY(-10px) scale(1.02);
-        border-color: var(--secondary-color);
+        transform: translateY(-15px) scale(1.03);
+        box-shadow: 0 20px 50px rgba(207, 135, 86, 0.25),
+                     0 8px 25px rgba(0, 0, 0, 0.15);
+        border: 2px solid var(--secondary-color);
+      }
+
+      .tile-category::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, 
+                                  rgba(207, 135, 86, 0.1) 0%, 
+                                  rgba(232, 165, 106, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .tile-category:hover::before {
+        opacity: 1;
       }
 
       .tile-category-img {
@@ -500,7 +554,7 @@ include '../includes/headeruser.php';
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.5s;
+        transition: transform 0.6s cubic-bezier(0.4, 1.4, 0.6, 1.1);
         background-color: #f5f5f5;
       }
 
@@ -522,31 +576,44 @@ include '../includes/headeruser.php';
       }
 
       .tile-category:hover .tile-category-img img {
-        transform: scale(1.05);
+        transform: scale(1.1) rotate(2deg);
       }
 
       .tile-category-content {
-        padding: 15px;
+        padding: 20px 15px;
         text-align: center;
         background: #fff;
         flex: 1;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        position: relative;
+        z-index: 2;
       }
 
       .tile-category-title {
         font-size: 1.1rem;
         font-weight: 700;
         color: #333;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
+        transition: color 0.3s ease;
+      }
+
+      .tile-category:hover .tile-category-title {
+        color: var(--primary-color);
       }
 
       .tile-category-desc {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         color: #666;
         margin-bottom: 15px;
         flex: 1;
+        line-height: 1.4;
+        transition: color 0.3s ease;
+      }
+
+      .tile-category:hover .tile-category-desc {
+        color: var(--text-dark);
       }
 
       .explore-btn {
@@ -572,19 +639,19 @@ include '../includes/headeruser.php';
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        padding: 10px 16px;
+        gap: 8px;
+        padding: 12px 20px;
         background: var(--primary-color);
         color: white;
         border-radius: 30px;
         font-weight: 600;
         border: none;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 1.4, 0.6, 1.1);
-        font-size: 0.8rem;
+        transition: all 0.4s cubic-bezier(0.4, 1.4, 0.6, 1.1);
+        font-size: 0.9rem;
         box-shadow: 0 4px 12px rgba(207, 135, 86, 0.2);
         width: 100%;
-        max-width: 160px;
+        max-width: 180px;
         margin: 0 auto;
         position: relative;
         overflow: hidden;
@@ -598,8 +665,8 @@ include '../includes/headeruser.php';
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.6s ease;
       }
 
       .explore-btn.add-to-cart-btn:hover::before {
@@ -608,22 +675,22 @@ include '../includes/headeruser.php';
 
       .explore-btn.add-to-cart-btn:hover {
         background: var(--secondary-color);
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(207, 135, 86, 0.4);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 12px 25px rgba(207, 135, 86, 0.4);
       }
 
       .explore-btn.add-to-cart-btn:active {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(207, 135, 86, 0.3);
+        transform: translateY(-1px) scale(1.02);
+        box-shadow: 0 6px 15px rgba(207, 135, 86, 0.3);
       }
 
       .explore-btn.add-to-cart-btn i {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         transition: transform 0.3s ease;
       }
 
       .explore-btn.add-to-cart-btn:hover i {
-        transform: scale(1.1);
+        transform: scale(1.2) rotate(5deg);
       }
 
       /* New Section Styles */
@@ -635,6 +702,7 @@ include '../includes/headeruser.php';
 
       .shop-collection-container {
         display: flex;
+        flex-direction: column;
         gap: 30px;
         max-width: 1500px;
         margin: 0 auto;
@@ -642,15 +710,17 @@ include '../includes/headeruser.php';
       }
 
       .filter-sidebar {
-        flex-basis: 280px;
-        flex-shrink: 0;
+        width: 100%;
         background: #fff;
-        padding: 30px;
+        padding: 25px;
         border-radius: 20px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
         height: fit-content;
         position: relative;
         z-index: 10;
+        margin-bottom: 30px;
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       .filter-sidebar h3 {
@@ -658,16 +728,23 @@ include '../includes/headeruser.php';
         font-weight: 700;
         color: var(--primary-color);
         margin-bottom: 25px;
+        text-align: center;
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 10px;
       }
 
       .filter-group {
         border-bottom: 1px solid #eee;
         padding-bottom: 20px;
         margin-bottom: 20px;
+        background: rgba(249, 245, 242, 0.3);
+        border-radius: 15px;
+        padding: 20px;
       }
 
       .filter-group:last-child {
         border-bottom: none;
+        margin-bottom: 0;
       }
 
       .filter-group h4 {
@@ -675,6 +752,7 @@ include '../includes/headeruser.php';
         font-weight: 600;
         color: var(--dark-color);
         margin-bottom: 15px;
+        text-align: center;
       }
 
       .filter-checkbox-group,
@@ -682,6 +760,7 @@ include '../includes/headeruser.php';
         display: flex;
         flex-direction: column;
         gap: 12px;
+        max-width: 100%;
       }
 
       .filter-checkbox,
@@ -691,12 +770,21 @@ include '../includes/headeruser.php';
         font-size: 0.9rem;
         color: var(--text-light);
         cursor: pointer;
-        transition: color 0.2s;
+        transition: all 0.2s ease;
+        padding: 10px 15px;
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       }
 
       .filter-checkbox:hover,
       .filter-radio:hover {
         color: var(--primary-color);
+        background: rgba(207, 135, 86, 0.05);
+        border-color: var(--secondary-color);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
 
       .filter-checkbox input,
@@ -711,6 +799,7 @@ include '../includes/headeruser.php';
         background-color: #f9f9f9;
         transition: all 0.2s;
         cursor: pointer;
+        flex-shrink: 0;
       }
 
       .filter-radio input {
@@ -744,26 +833,34 @@ include '../includes/headeruser.php';
 
       .filter-apply-btn {
         width: 100%;
-        padding: 12px;
-        background-color: var(--primary-color);
+        padding: 15px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: #fff;
         border: none;
-        border-radius: 10px;
+        border-radius: 15px;
         font-size: 1rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
         margin-top: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(125, 49, 10, 0.3);
       }
 
       .filter-apply-btn:hover {
-        background-color: var(--secondary-color);
+        background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 6px 20px rgba(125, 49, 10, 0.4);
+      }
+
+      .filter-apply-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(125, 49, 10, 0.3);
       }
 
       .product-display-main {
-        flex: 1;
+        width: 100%;
         min-width: 0;
       }
 
@@ -941,7 +1038,18 @@ include '../includes/headeruser.php';
         background-color: #d9534f;
       }
 
-      /* Media Queries */
+      /* Enhanced Responsive Design */
+      @media (max-width: 1400px) {
+        .tile-categories-grid {
+          gap: 18px;
+          width: 98%;
+        }
+        .tile-category {
+          min-width: 180px;
+          max-width: 180px;
+        }
+      }
+
       @media (max-width: 1200px) {
         .featured-items {
           max-width: 900px;
@@ -959,12 +1067,13 @@ include '../includes/headeruser.php';
           width: 140px;
           height: 140px;
         }
-        .tile-category {
-          min-width: 180px;
-          width: 180px;
+        .tile-categories-grid {
+          gap: 15px;
+          width: 98%;
         }
-        .tile-category-img {
-          height: 130px;
+        .tile-category {
+          min-width: 160px;
+          max-width: 160px;
         }
         .product-grid {
           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -1016,32 +1125,27 @@ include '../includes/headeruser.php';
           width: 120px;
           height: 120px;
         }
+        .tile-categories-grid {
+          gap: 12px;
+          width: 98%;
+          padding: 20px 0;
+        }
         .tile-category {
-          min-width: 160px;
-          width: 160px;
+          min-width: 140px;
+          max-width: 140px;
         }
         .tile-category-img {
-          height: 120px;
-        }
-        .tile-category-title {
-          font-size: 1rem;
-        }
-        .tile-category-desc {
-          font-size: 0.75rem;
+          height: 130px;
         }
         .shop-collection-container {
           flex-direction: column;
-          gap: 30px;
+          gap: 20px;
         }
         .filter-sidebar {
           width: 100%;
-          flex-basis: auto;
+          padding: 20px;
+          margin-bottom: 20px;
           order: 1;
-          margin-bottom: 30px;
-          padding: 25px;
-          position: relative;
-          top: 0;
-          right: 0;
         }
         .product-display-main {
           order: 2;
@@ -1095,27 +1199,32 @@ include '../includes/headeruser.php';
           width: 100px;
           height: 100px;
         }
+        .tile-categories-grid {
+          gap: 10px;
+          width: 98%;
+          padding: 15px 0;
+        }
         .tile-category {
-          min-width: 140px;
-          width: 140px;
+          min-width: 120px;
+          max-width: 120px;
         }
         .tile-category-img {
-          height: 100px;
+          height: 110px;
         }
         .tile-category-content {
-          padding: 12px;
+          padding: 15px 10px;
         }
         .tile-category-title {
-          font-size: 0.9rem;
+          font-size: 0.95rem;
         }
         .tile-category-desc {
-          font-size: 0.7rem;
+          font-size: 0.75rem;
         }
         .explore-btn.add-to-cart-btn {
           width: 100%;
           justify-content: center;
-          padding: 10px 16px;
-          font-size: 0.85rem;
+          padding: 8px 12px;
+          font-size: 0.75rem;
           margin-top: 8px;
         }
         .product-grid {
@@ -1123,12 +1232,12 @@ include '../includes/headeruser.php';
           gap: 15px;
         }
         .filter-sidebar {
-          padding: 20px;
-          margin-bottom: 20px;
+          padding: 18px;
+          margin-bottom: 18px;
         }
         .filter-sidebar h3 {
           font-size: 1.1rem;
-          margin-bottom: 20px;
+          margin-bottom: 18px;
         }
         .filter-group {
           padding-bottom: 15px;
@@ -1175,29 +1284,73 @@ include '../includes/headeruser.php';
           padding: 6px 12px;
           font-size: 0.75rem;
         }
+        .tile-categories-grid {
+          gap: 8px;
+          width: 98%;
+          padding: 12px 0;
+        }
         .tile-category {
-          min-width: 120px;
-          width: 120px;
+          min-width: 100px;
+          max-width: 100px;
         }
         .tile-category-img {
-          height: 90px;
+          height: 100px;
         }
         .tile-category-content {
-          padding: 10px;
+          padding: 12px 8px;
         }
         .tile-category-title {
-          font-size: 0.8rem;
+          font-size: 0.85rem;
         }
         .tile-category-desc {
-          font-size: 0.65rem;
+          font-size: 0.7rem;
         }
         .explore-btn.add-to-cart-btn {
-          padding: 8px 12px;
-          font-size: 0.7rem;
+          padding: 6px 8px;
+          font-size: 0.65rem;
           gap: 4px;
         }
         .explore-btn.add-to-cart-btn i {
-          font-size: 0.65rem;
+          font-size: 0.6rem;
+        }
+        /* Premium tiles section mobile improvements */
+        .filter-sidebar {
+          padding: 15px;
+          margin-bottom: 15px;
+          order: 2;
+        }
+        .filter-sidebar h3 {
+          font-size: 0.9rem;
+          margin-bottom: 12px;
+        }
+        .filter-group {
+          padding-bottom: 10px;
+          margin-bottom: 10px;
+        }
+        .filter-checkbox-group,
+        .filter-radio-group {
+          gap: 6px;
+        }
+        .filter-checkbox,
+        .filter-radio {
+          font-size: 0.8rem;
+        }
+        .filter-checkbox input,
+        .filter-radio input {
+          width: 14px;
+          height: 14px;
+          margin-right: 6px;
+        }
+        .filter-apply-btn {
+          padding: 8px;
+          font-size: 0.8rem;
+          margin-top: 12px;
+        }
+        .product-display-main {
+          order: 1;
+        }
+        .product-header {
+          margin-bottom: 20px;
         }
       }
 
@@ -1230,27 +1383,58 @@ include '../includes/headeruser.php';
         .section-header .big-text {
           font-size: 1.8rem;
         }
+        .featured-items {
+          max-width: 280px;
+          gap: 8px;
+        }
+        .featured-item {
+          width: 85px;
+          padding: 10px 6px;
+          min-height: 200px;
+        }
+        .featured-img-wrap {
+          width: 65px;
+          height: 65px;
+          margin-bottom: 12px;
+        }
+        .featured-item .item-title {
+          font-size: 0.75rem;
+          margin-bottom: 4px;
+        }
+        .featured-item .item-price {
+          font-size: 0.8rem;
+          margin-bottom: 10px;
+        }
+        .featured-item .add-to-cart {
+          padding: 5px 10px;
+          font-size: 0.7rem;
+        }
+        .tile-categories-grid {
+          gap: 6px;
+          width: 98%;
+          padding: 10px 0;
+        }
         .tile-category {
-          min-width: 110px;
-          width: 110px;
+          min-width: 90px;
+          max-width: 90px;
         }
         .tile-category-img {
-          height: 80px;
+          height: 90px;
         }
         .tile-category-content {
-          padding: 8px;
+          padding: 10px 6px;
         }
         .tile-category-title {
           font-size: 0.75rem;
         }
         .tile-category-desc {
-          font-size: 0.6rem;
+          font-size: 0.65rem;
         }
         .explore-btn.add-to-cart-btn {
           width: 100%;
           justify-content: center;
-          padding: 6px 10px;
-          font-size: 0.65rem;
+          padding: 5px 6px;
+          font-size: 0.55rem;
           margin-top: 6px;
         }
         .product-grid {
@@ -1274,16 +1458,36 @@ include '../includes/headeruser.php';
           font-size: 1rem;
         }
         .filter-sidebar {
-          padding: 18px;
-          margin-bottom: 15px;
+          padding: 12px;
+          margin-bottom: 12px;
+          order: 2;
         }
         .filter-sidebar h3 {
-          font-size: 1rem;
-          margin-bottom: 15px;
+          font-size: 0.8rem;
+          margin-bottom: 10px;
         }
         .filter-group {
-          padding-bottom: 12px;
-          margin-bottom: 12px;
+          padding-bottom: 8px;
+          margin-bottom: 8px;
+        }
+        .filter-checkbox-group,
+        .filter-radio-group {
+          gap: 5px;
+        }
+        .filter-checkbox,
+        .filter-radio {
+          font-size: 0.75rem;
+        }
+        .filter-checkbox input,
+        .filter-radio input {
+          width: 12px;
+          height: 12px;
+          margin-right: 5px;
+        }
+        .filter-apply-btn {
+          padding: 6px;
+          font-size: 0.75rem;
+          margin-top: 10px;
         }
         .product-header {
           flex-direction: column;
@@ -1293,654 +1497,537 @@ include '../includes/headeruser.php';
         .product-header h2 {
           font-size: 1.6rem;
         }
+        .product-display-main {
+          order: 1;
+        }
       }
 
       @media (max-width: 400px) {
         .featured-items {
-          max-width: 280px;
+          max-width: 260px;
           gap: 6px;
         }
         .featured-item {
-          width: 85px;
-          padding: 10px 6px;
-          min-height: 200px;
+          width: 80px;
+          padding: 8px 5px;
+          min-height: 180px;
         }
         .featured-img-wrap {
           width: 60px;
           height: 60px;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
         .featured-item .item-title {
           font-size: 0.7rem;
+          margin-bottom: 3px;
         }
         .featured-item .item-price {
-          font-size: 0.8rem;
+          font-size: 0.75rem;
+          margin-bottom: 8px;
         }
         .featured-item .add-to-cart {
-          padding: 5px 10px;
-          font-size: 0.7rem;
+          padding: 4px 8px;
+          font-size: 0.65rem;
+        }
+        .tile-categories-grid {
+          gap: 5px;
+          width: 98%;
+          padding: 8px 0;
         }
         .tile-category {
-          min-width: 100px;
-          width: 100px;
+          min-width: 80px;
+          max-width: 80px;
         }
         .tile-category-img {
-          height: 70px;
+          height: 80px;
         }
         .tile-category-content {
-          padding: 6px;
+          padding: 8px 5px;
         }
         .tile-category-title {
           font-size: 0.7rem;
         }
         .tile-category-desc {
-          font-size: 0.55rem;
+          font-size: 0.6rem;
         }
         .explore-btn.add-to-cart-btn {
-          padding: 5px 8px;
-          font-size: 0.6rem;
+          padding: 4px 5px;
+          font-size: 0.5rem;
         }
         .shop-collection-section {
           padding: 30px 2vw;
         }
-      }
-    </style>
-  </head>
-
-  <body>
-    <?php
-    // Extra check in body to force redirect if session is not valid
-    if (!isset($_SESSION['logged_in'])) {
-        echo "<script>window.location.href='../connection/tresspass.php';</script>";
-        exit();
-    }
-    ?>
-    <script>
-      // Detect browser back navigation and force check for session
-      window.addEventListener('pageshow', function (event) {
-        if (
-          event.persisted ||
-          (window.performance && window.performance.navigation.type === 2)
-        ) {
-          fetch(window.location.href, { cache: 'reload', credentials: 'same-origin' }).catch(
-            () => {
-              window.location.href = '../connection/tresspass.php';
-            }
-          );
+        .filter-sidebar {
+          border-radius: 12px;
+          padding: 10px;
+          margin-bottom: 10px;
         }
-      });
-    </script>
-    <section class="landing-hero-section">
-      <div class="landing-hero-content">
-        <img
-          src="../images/user/landingpagetile1.png"
-          alt="Landing Tile"
-          class="center-hero-img"
-        />
-        <div class="landing-hero-text-overlay">
-          <div class="small-text">STYLE IN YOUR EVERY STEP.</div>
-          <div class="big-text">CHOOSE YOUR<br />TILES NOW.</div>
-          <div class="description">
-            Discover our premium collection of tiles that combine elegance,
-            durability, and style to transform any space into a masterpiece.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="featured-section">
-      <div class="section-header">
-        <span class="small-text">Premium Selection</span>
-        <h2 class="big-text">Featured Items</h2>
-        <div class="description">
-          Explore our handpicked selection of premium tiles that combine quality
-          craftsmanship with exceptional design for your home or business.
-        </div>
-      </div>
-      <div class="featured-carousel">
-        <button class="featured-arrow prev" aria-label="Previous">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="featured-items-container">
-          <div class="featured-items"></div>
-        </div>
-        <button class="featured-arrow next" aria-label="Next">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-      <div class="featured-pagination"></div>
-    </section>
-
-    <section class="tile-categories-section">
-      <div class="tile-categories-container">
-        <div class="section-header">
-          <span class="small-text">Explore Our Collection</span>
-          <h2 class="big-text">Our Tile Selection</h2>
-          <div class="description">
-            From classic ceramics to luxurious natural stone, find the perfect
-            tiles to match your style and needs.
-          </div>
-        </div>
-
-        <div class="tile-categories-grid">
-          <div class="tile-category">
-            <div class="tile-category-img">
-              <img src="../images/user/tile1.jpg" alt="Ceramic Tiles" />
-            </div>
-            <div class="tile-category-content">
-              <h3 class="tile-category-title">Ceramic Tiles</h3>
-              <p class="tile-category-desc">
-                Durable and versatile ceramic tiles for any space
-              </p>
-              <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
-              </button>
-            </div>
-          </div>
-
-          <div class="tile-category">
-            <div class="tile-category-img">
-              <img src="../images/user/tile2.jpg" alt="Porcelain Tiles" />
-            </div>
-            <div class="tile-category-content">
-              <h3 class="tile-category-title">Porcelain Tiles</h3>
-              <p class="tile-category-desc">
-                Premium quality porcelain for high-end finishes
-              </p>
-              <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
-              </button>
-            </div>
-          </div>
-
-          <div class="tile-category">
-            <div class="tile-category-img">
-              <img src="../images/user/tile3.jpg" alt="Mosaic Tiles" />
-            </div>
-            <div class="tile-category-content">
-              <h3 class="tile-category-title">Mosaic Tiles</h3>
-              <p class="tile-category-desc">
-                Artistic designs for unique decorative accents
-              </p>
-              <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
-              </button>
-            </div>
-          </div>
-
-          <div class="tile-category">
-            <div class="tile-category-img">
-              <img src="../images/user/tile4.jpg" alt="Natural Stone Tiles" />
-            </div>
-            <div class="tile-category-content">
-              <h3 class="tile-category-title">Natural Stone</h3>
-              <p class="tile-category-desc">
-                Elegant natural stone for luxurious spaces
-              </p>
-              <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
-              </button>
-            </div>
-          </div>
-
-          <div class="tile-category">
-            <div class="tile-category-img">
-              <img src="../images/user/tile5.jpg" alt="Premium Tiles" />
-            </div>
-            <div class="tile-category-content">
-              <h3 class="tile-category-title">Premium Tiles</h3>
-              <p class="tile-category-desc">
-                High-end premium tiles for luxury spaces
-              </p>
-              <button class="explore-btn add-to-cart-btn">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Navigation buttons removed as requested -->
-      </div>
-    </section>
-
-    <section class="shop-collection-section">
-      <div class="shop-collection-container">
-        <div class="filter-sidebar">
-          <h3 class="sidebar-title">Categories</h3>
-          <div class="filter-group">
-            <div class="filter-checkbox-group">
-              <label class="filter-checkbox">
-                <input type="checkbox" name="category" />
-                Ceramic Tiles
-              </label>
-              <label class="filter-checkbox">
-                <input type="checkbox" name="category" />
-                Porcelain Tiles
-              </label>
-              <label class="filter-checkbox">
-                <input type="checkbox" name="category" />
-                Mosaic Tiles
-              </label>
-              <label class="filter-checkbox">
-                <input type="checkbox" name="category" />
-                Natural Stone
-              </label>
-              <label class="filter-checkbox">
-                <input type="checkbox" name="category" />
-                Outdoor Tiles
-              </label>
-            </div>
-          </div>
-
-          <h3 class="sidebar-title">Price Range</h3>
-          <div class="filter-group">
-            <div class="filter-radio-group">
-              <label class="filter-radio">
-                <input type="radio" name="price-range" />
-                Under ₱500
-              </label>
-              <label class="filter-radio">
-                <input type="radio" name="price-range" />
-                ₱500 - ₱1000
-              </label>
-              <label class="filter-radio">
-                <input type="radio" name="price-range" />
-                ₱1000 - ₱2000
-              </label>
-              <label class="filter-radio">
-                <input type="radio" name="price-range" />
-                Over ₱2000
-              </label>
-            </div>
-          </div>
-
-          <button class="filter-apply-btn">Apply Filters</button>
-        </div>
-
-        <div class="product-display-main">
-          <div class="product-header">
-            <div>
-              <h2 class="big-text">Premium Tiles</h2>
-              <p>
-                Browse our extensive collection of premium tiles for every room
-                in your home or business.
-              </p>
-            </div>
-            
-          </div>
-
-          <div class="product-grid">
-            <div class="product-card">
-              <span class="label bestseller">Bestseller</span>
-              <div class="product-card-img-wrap">
-                <img
-                  src="../images/user/tile1.jpg"
-                  alt="Premium Ceramic Tile"
-                />
-              </div>
-              <div class="product-card-info">
-                <h3>Premium Ceramic Tile</h3>
-                <div class="price">₱1,250</div>
-                <div class="product-card-buttons">
-                  <button class="product-card-btn add-to-cart-btn">
-                    <i class="fa fa-shopping-cart"></i> Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="product-card">
-              <div class="product-card-img-wrap">
-                <img
-                  src="../images/user/tile2.jpg"
-                  alt="Porcelain Tile"
-                />
-              </div>
-              <div class="product-card-info">
-                <h3>Porcelain Tile</h3>
-                <div class="price">₱950</div>
-                <div class="product-card-buttons">
-                  <button class="product-card-btn add-to-cart-btn">
-                    <i class="fa fa-shopping-cart"></i> Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="product-card">
-              <span class="label">New</span>
-              <div class="product-card-img-wrap">
-                <img
-                  src="../images/user/tile3.jpg"
-                  alt="Mosaic Tile"
-                />
-              </div>
-              <div class="product-card-info">
-                <h3>Mosaic Tile</h3>
-                <div class="price">₱1,750</div>
-                <div class="product-card-buttons">
-                  <button class="product-card-btn add-to-cart-btn">
-                    <i class="fa fa-shopping-cart"></i> Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="product-card">
-              <div class="product-card-img-wrap">
-                <img
-                  src="../images/user/tile4.jpg"
-                  alt="Natural Stone Tile"
-                />
-              </div>
-              <div class="product-card-info">
-                <h3>Natural Stone Tile</h3>
-                <div class="price">₱850</div>
-                <div class="product-card-buttons">
-                  <button class="product-card-btn add-to-cart-btn">
-                    <i class="fa fa-shopping-cart"></i> Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="product-card">
-              <span class="label sale">Sale</span>
-              <div class="product-card-img-wrap">
-                <img
-                  src="../images/user/tile5.jpg"
-                  alt="Classic Tile"
-                />
-              </div>
-              <div class="product-card-info">
-                <h3>Classic Tile</h3>
-                <div class="price">₱2,100</div>
-                <div class="product-card-buttons">
-                  <button class="product-card-btn add-to-cart-btn">
-                    <i class="fa fa-shopping-cart"></i> Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <script>
-      const featuredItems = [
-        {
-          img: '../images/user/tile1.jpg',
-          title: 'Premium Ceramic Tile',
-          price: '₱1,250',
-        },
-        {
-          img: '../images/user/tile2.jpg',
-          title: 'Porcelain Tile',
-          price: '₱950',
-        },
-        {
-          img: '../images/user/tile3.jpg',
-          title: 'Mosaic Tile',
-          price: '₱1,750',
-        },
-        {
-          img: '../images/user/tile4.jpg',
-          title: 'Natural Stone Tile',
-          price: '₱850',
-        },
-        {
-          img: '../images/user/tile5.jpg',
-          title: 'Classic Tile',
-          price: '₱2,100',
-        },
-      ];
-
-      const itemsPerPage = () => {
-        if (window.innerWidth <= 600) return 3; // Show 3 items on mobile
-        if (window.innerWidth <= 900) return 2;
-        if (window.innerWidth <= 1200) return 3;
-        return 5;
-      };
-
-      let currentPage = 0;
-      let animating = false;
-
-      function renderFeaturedItems(direction = 0) {
-        const container = document.querySelector('.featured-items');
-        if (!container) return;
-        const perPage = itemsPerPage();
-        const pageCount = Math.ceil(featuredItems.length / perPage);
-
-        if (currentPage < 0) currentPage = pageCount - 1;
-        if (currentPage >= pageCount) currentPage = 0;
-
-        const start = currentPage * perPage;
-        const end = start + perPage;
-
-        if (direction !== 0 && !animating) {
-          animating = true;
-          
-          // Calculate the exact translation needed
-          const itemWidth = 220 + 32; // item width + gap
-          const translateAmount = direction > 0 ? -itemWidth : itemWidth;
-          
-          container.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-          container.style.transform = `translateX(${translateAmount}px)`;
-
-          setTimeout(() => {
-            container.style.transition = 'none';
-            updateFeaturedItems(container, start, end);
-            container.style.transform = 'translateX(0)';
-
-            setTimeout(() => {
-              container.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-              animating = false;
-            }, 50);
-          }, 600);
-        } else {
-          updateFeaturedItems(container, start, end);
+        .filter-sidebar h3 {
+          font-size: 0.75rem;
+          margin-bottom: 8px;
         }
-        renderPagination();
+        .filter-group {
+          padding: 10px;
+          margin-bottom: 10px;
+        }
+        .filter-checkbox-group,
+        .filter-radio-group {
+          gap: 4px;
+        }
+        .filter-checkbox,
+        .filter-radio {
+          padding: 6px 8px;
+          font-size: 0.7rem;
+        }
+        .filter-checkbox input,
+        .filter-radio input {
+          width: 10px;
+          height: 10px;
+          margin-right: 4px;
+        }
+        .filter-apply-btn {
+          border-radius: 12px;
+          font-size: 0.7rem;
+          padding: 6px;
+          margin-top: 8px;
+        }
       }
 
-      function updateFeaturedItems(container, start, end) {
-        // Clear container safely
-        while (container.firstChild) {
-          container.removeChild(container.firstChild);
+      /* Touch device optimizations */
+      @media (hover: none) and (pointer: coarse) {
+        .tile-category:hover {
+          transform: none;
         }
         
-        const itemsToRender = featuredItems.slice(start, end);
-
-        // Handle cases where the last page has fewer items
-        while (itemsToRender.length < itemsPerPage()) {
-          itemsToRender.push({
-            img: '',
-            title: '',
-            price: '',
-            isEmpty: true,
-          });
-        }
-
-        itemsToRender.forEach((item, index) => {
-          const div = document.createElement('div');
-          div.className = 'featured-item';
-          div.style.animationDelay = `${index * 0.1}s`;
-
-          if (item.isEmpty) {
-            div.classList.add('empty');
-            div.style.visibility = 'hidden';
-          } else {
-            // Create elements safely instead of using innerHTML
-            const imgWrap = document.createElement('div');
-            imgWrap.className = 'featured-img-wrap';
-            
-            const img = document.createElement('img');
-            img.src = item.img || '';
-            img.alt = item.title || '';
-            img.loading = 'lazy';
-            
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'item-title';
-            titleDiv.textContent = item.title || '';
-            
-            const priceDiv = document.createElement('div');
-            priceDiv.className = 'item-price';
-            priceDiv.textContent = item.price || '';
-            
-            const button = document.createElement('button');
-            button.className = 'add-to-cart';
-            button.innerHTML = '<i class="fa fa-shopping-cart"></i> Add to Cart';
-            
-            imgWrap.appendChild(img);
-            div.appendChild(imgWrap);
-            div.appendChild(titleDiv);
-            div.appendChild(priceDiv);
-            div.appendChild(button);
-          }
-          container.appendChild(div);
-        });
-      }
-
-      function renderPagination() {
-        const perPage = itemsPerPage();
-        const pageCount = Math.ceil(featuredItems.length / perPage);
-        const pagination = document.querySelector('.featured-pagination');
-        if (!pagination) return;
-        
-        // Clear pagination safely
-        while (pagination.firstChild) {
-          pagination.removeChild(pagination.firstChild);
+        .tile-category:active {
+          transform: translateY(-5px) scale(1.02);
         }
         
-        for (let i = 0; i < pageCount; i++) {
-          const dot = document.createElement('span');
-          dot.className = 'featured-dot' + (i === currentPage ? ' active' : '');
-          dot.title = `Show items ${i * perPage + 1} - ${Math.min(
-            (i + 1) * perPage,
-            featuredItems.length
-          )}`;
-          
-          // Use addEventListener instead of onclick for better security
-          dot.addEventListener('click', () => {
-            if (animating || i === currentPage) return;
-            const direction = i > currentPage ? 1 : -1;
-            currentPage = i;
-            renderFeaturedItems(direction);
-          });
-          
-          pagination.appendChild(dot);
+        .featured-item:hover {
+          transform: none;
         }
-      }
-
-      function nextFeatured() {
-        if (animating) return;
-        const perPage = itemsPerPage();
-        const pageCount = Math.ceil(featuredItems.length / perPage);
-        currentPage = (currentPage + 1) % pageCount;
-        renderFeaturedItems(1);
-      }
-
-      function prevFeatured() {
-        if (animating) return;
-        const perPage = itemsPerPage();
-        const pageCount = Math.ceil(featuredItems.length / perPage);
-        currentPage = (currentPage - 1 + pageCount) % pageCount;
-        renderFeaturedItems(-1);
-      }
-
-      window.addEventListener('resize', () => {
-        const newPerPage = itemsPerPage();
-        const oldPerPage = document.querySelectorAll('.featured-item:not(.empty)')
-          .length;
-        if (newPerPage !== oldPerPage) {
-          currentPage = 0;
-          renderFeaturedItems();
-        }
-      });
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const nextBtn = document.querySelector('.featured-arrow.next');
-        const prevBtn = document.querySelector('.featured-arrow.prev');
         
-        // Use addEventListener instead of onclick for better security
-        if (nextBtn) {
-          nextBtn.addEventListener('click', nextFeatured);
+        .featured-item:active {
+          transform: translateY(-5px) scale(1.01);
         }
-        if (prevBtn) {
-          prevBtn.addEventListener('click', prevFeatured);
+        
+        .product-card:hover {
+          transform: none;
         }
+        
+        .product-card:active {
+          transform: translateY(-3px);
+        }
+      }
 
-        // Handle image loading errors
-        const images = document.querySelectorAll('img');
-        images.forEach(img => {
-          img.addEventListener('error', function() {
-            // Replace broken images with a placeholder or hide them
-            this.style.display = 'none';
-            const parent = this.parentElement;
-            if (parent) {
-              parent.style.background = 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%)';
-              parent.style.backgroundSize = '20px 20px';
-              parent.style.display = 'flex';
-              parent.style.alignItems = 'center';
-              parent.style.justifyContent = 'center';
-              
-              // Create placeholder text safely
-              const placeholder = document.createElement('span');
-              placeholder.style.color = '#999';
-              placeholder.style.fontSize = '0.9rem';
-              placeholder.textContent = 'Image not available';
-              
-              // Clear parent content safely
-              while (parent.firstChild) {
-                parent.removeChild(parent.firstChild);
-              }
-              parent.appendChild(placeholder);
-            }
-          });
-        });
+      /* Enhanced accessibility and focus states */
+      .tile-category:focus {
+        outline: 3px solid var(--secondary-color);
+        outline-offset: 2px;
+      }
 
-        // Animate tile categories when they come into view
-        const tileCategories = document.querySelectorAll('.tile-category');
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('animate');
-                observer.unobserve(entry.target);
-              }
-            });
-          },
-          { threshold: 0.1 }
-        );
+      .tile-category:focus-visible {
+        outline: 3px solid var(--secondary-color);
+        outline-offset: 2px;
+      }
 
-        tileCategories.forEach((category) => {
-          observer.observe(category);
-          
-          // Add click functionality to tile categories
-          category.addEventListener('click', function() {
-            const title = this.querySelector('.tile-category-title').textContent;
-            const description = this.querySelector('.tile-category-desc').textContent;
-            
-            // Show modal with tile category information
-            Swal.fire({
-              title: title,
-              text: description,
-              icon: 'info',
-              confirmButtonText: 'Explore',
-              confirmButtonColor: '#7d310a',
-              showCancelButton: true,
-              cancelButtonText: 'Close'
-            });
-          });
-          
-          // Add hover effect for better UX
-          category.style.cursor = 'pointer';
-        });
+      .featured-item:focus {
+        outline: 3px solid var(--secondary-color);
+        outline-offset: 2px;
+      }
 
-        renderFeaturedItems();
-      });
-    </script>
-  </body>
-</html>
+      .product-card:focus {
+        outline: 3px solid var(--secondary-color);
+        outline-offset: 2px;
+      }
 
+      /* Improved button focus states */
+      .explore-btn:focus,
+      .add-to-cart-btn:focus,
+      .featured-arrow:focus {
+        outline: 3px solid var(--secondary-color);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px rgba(207, 135, 86, 0.3);
+      }
+
+      /* Smooth scrolling for better UX */
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Loading states for better perceived performance */
+      .tile-category.loading {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .tile-category.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid var(--secondary-color);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 10;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Enhanced mobile responsiveness */
+      @media (max-width: 480px) {
+        .tile-categories-grid {
+          gap: 8px;
+          width: 95%;
+        }
+        
+        .tile-category {
+          min-width: 85px;
+          max-width: 85px;
+        }
+        
+        .tile-category-img {
+          height: 85px;
+        }
+        
+        .tile-category-content {
+          padding: 10px 6px;
+        }
+        
+        .tile-category-title {
+          font-size: 0.75rem;
+        }
+        
+        .tile-category-desc {
+          font-size: 0.65rem;
+        }
+        
+        .explore-btn.add-to-cart-btn {
+          padding: 6px 8px;
+          font-size: 0.6rem;
+        }
+      }
+
+      /* Landscape mobile optimization */
+      @media (max-width: 900px) and (orientation: landscape) {
+        .landing-hero-section {
+          min-height: 70vh;
+          padding-top: 60px;
+        }
+        
+        .center-hero-img {
+          max-height: 40vh;
+        }
+        
+        .tile-categories-grid {
+          gap: 10px;
+        }
+        
+        .tile-category {
+          min-width: 120px;
+          max-width: 120px;
+        }
+        
+        .tile-category-img {
+          height: 100px;
+        }
+      }
+
+      /* High contrast mode support */
+      @media (prefers-contrast: high) {
+        .tile-category {
+          border: 2px solid #000;
+        }
+        
+        .tile-category:hover {
+          border-color: var(--primary-color);
+        }
+        
+        .explore-btn.add-to-cart-btn {
+          border: 2px solid var(--primary-color);
+        }
+      }
+
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        .tile-category,
+        .featured-item,
+        .product-card {
+          transition: none;
+        }
+        
+        .tile-category:hover,
+        .featured-item:hover,
+        .product-card:hover {
+          transform: none;
+        }
+        
+        .tile-category-img img,
+        .featured-img-wrap img,
+        .product-card-img-wrap img {
+          transition: none;
+        }
+        
+        .tile-category:hover .tile-category-img img,
+        .featured-item:hover .featured-img-wrap img,
+        .product-card:hover .product-card-img-wrap img {
+          transform: none;
+        }
+      }
+
+      /* Keyboard navigation support */
+      .keyboard-navigation .tile-category:focus,
+      .keyboard-navigation .featured-item:focus,
+      .keyboard-navigation .product-card:focus {
+        outline: 3px solid var(--secondary-color);
+        outline-offset: 3px;
+        box-shadow: 0 0 0 3px rgba(207, 135, 86, 0.3);
+      }
+
+      .keyboard-navigation .explore-btn:focus,
+      .keyboard-navigation .add-to-cart-btn:focus,
+      .keyboard-navigation .featured-arrow:focus {
+        outline: 3px solid var(--secondary-color);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px rgba(207, 135, 86, 0.3);
+      }
+
+      /* Enhanced focus indicators for better accessibility */
+      .tile-category:focus-visible,
+      .featured-item:focus-visible,
+      .product-card:focus-visible {
+        outline: 3px solid var(--secondary-color);
+        outline-offset: 3px;
+        box-shadow: 0 0 0 3px rgba(207, 135, 86, 0.3);
+      }
+
+      /* Skip link for accessibility */
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 6px;
+        background: var(--primary-color);
+        color: white;
+        padding: 8px;
+        text-decoration: none;
+        border-radius: 4px;
+        z-index: 1000;
+        transition: top 0.3s;
+      }
+
+      .skip-link:focus {
+        top: 6px;
+      }
+
+      /* Enhanced button states */
+      .explore-btn.add-to-cart-btn:active {
+        transform: translateY(-1px) scale(0.98);
+      }
+
+      .featured-arrow:active {
+        transform: scale(0.95);
+      }
+
+      /* Improved mobile touch targets */
+      @media (max-width: 600px) {
+        .explore-btn.add-to-cart-btn {
+          min-height: 44px; /* Minimum touch target size */
+        }
+        
+        .featured-arrow {
+          min-width: 44px;
+          min-height: 44px;
+        }
+        
+        .featured-dot {
+          min-width: 12px;
+          min-height: 12px;
+        }
+      }
+
+      /* Print optimization */
+      @media print {
+        .tile-category,
+        .featured-item,
+        .product-card {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+        
+        .tile-category-img,
+        .featured-img-wrap,
+        .product-card-img-wrap {
+          max-height: 200px;
+        }
+      }
+
+      /* Mobile-specific filter improvements */
+      @media (max-width: 600px) {
+        .filter-sidebar {
+          border-radius: 15px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+          padding: 15px;
+          margin-bottom: 15px;
+          max-width: 100%;
+          overflow: hidden;
+        }
+        
+        .filter-sidebar h3 {
+          border-bottom: 2px solid var(--primary-color);
+          padding-bottom: 8px;
+          font-size: 0.9rem;
+          margin-bottom: 12px;
+          text-align: center;
+        }
+        
+        .filter-group {
+          background: rgba(249, 245, 242, 0.5);
+          border-radius: 10px;
+          padding: 12px;
+          margin-bottom: 12px;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        
+        .filter-checkbox-group,
+        .filter-radio-group {
+          gap: 6px;
+          max-width: 100%;
+        }
+        
+        .filter-checkbox,
+        .filter-radio {
+          background: white;
+          padding: 8px 10px;
+          border-radius: 8px;
+          border: 1px solid #eee;
+          transition: all 0.2s ease;
+          font-size: 0.8rem;
+          max-width: 100%;
+          box-sizing: border-box;
+          word-wrap: break-word;
+        }
+        
+        .filter-checkbox:hover,
+        .filter-radio:hover {
+          background: rgba(207, 135, 86, 0.1);
+          border-color: var(--secondary-color);
+        }
+        
+        .filter-checkbox input:checked + span,
+        .filter-radio input:checked + span {
+          color: var(--primary-color);
+          font-weight: 600;
+        }
+        
+        .filter-apply-btn {
+          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+          border-radius: 15px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          box-shadow: 0 4px 15px rgba(125, 49, 10, 0.3);
+          padding: 8px;
+          font-size: 0.8rem;
+          margin-top: 12px;
+          max-width: 100%;
+        }
+        
+        .filter-apply-btn:active {
+          transform: translateY(1px);
+          box-shadow: 0 2px 8px rgba(125, 49, 10, 0.3);
+        }
+      }
+
+      @media (max-width: 500px) {
+        .filter-sidebar {
+          padding: 12px;
+          margin-bottom: 12px;
+          border-radius: 12px;
+        }
+        
+        .filter-sidebar h3 {
+          font-size: 0.8rem;
+          margin-bottom: 10px;
+        }
+        
+        .filter-group {
+          padding: 10px;
+          margin-bottom: 10px;
+        }
+        
+        .filter-checkbox-group,
+        .filter-radio-group {
+          gap: 5px;
+        }
+        
+        .filter-checkbox,
+        .filter-radio {
+          padding: 6px 8px;
+          font-size: 0.75rem;
+        }
+        
+        .filter-checkbox input,
+        .filter-radio input {
+          width: 12px;
+          height: 12px;
+          margin-right: 5px;
+        }
+        
+        .filter-apply-btn {
+          border-radius: 12px;
+          font-size: 0.75rem;
+          padding: 6px;
+          margin-top: 10px;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .filter-sidebar {
+          border-radius: 12px;
+          padding: 10px;
+          margin-bottom: 10px;
+        }
+        
+        .filter-sidebar h3 {
+          font-size: 0.75rem;
+          margin-bottom: 8px;
+        }
+        
+        .filter-group {
+          padding: 8px;
+          margin-bottom: 8px;
+        }
+        
+        .filter-checkbox-group,
+        .filter-radio-group {
+          gap: 4px;
+        }
+        
+        .filter-checkbox,
+        .filter-radio {
+          padding: 5px 6px;
+          font-size: 0.7rem;
+        }
+        
+        .filter-checkbox input,
+        .filter-radio input {
+          width: 10px;
+          height: 10px;
+          margin-right: 4px;
+        }
+        
+        .filter-apply-btn {
+          border-radius: 10px;
+          font-size: 0.7rem;
+          padding: 5px;
+          margin-top: 8px;
+        }
+      }

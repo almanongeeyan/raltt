@@ -19,6 +19,9 @@
             --input-border-color: #ddd;
             --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             --viewport-padding: 24px;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
         }
 
         html {
@@ -40,7 +43,7 @@
             align-items: center;
             min-height: 100dvh;
             padding: var(--viewport-padding) 16px;
-            overflow: hidden; /* Hide page scrollbar */
+            overflow: hidden;
             color: var(--text-color);
             position: relative;
         }
@@ -77,16 +80,15 @@
             width: 100%;
             max-width: 450px;
             max-height: calc(100dvh - (var(--viewport-padding) * 2));
-            overflow-y: auto; /* Allow internal scroll if needed */
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            -ms-overflow-style: none; /* IE/Edge */
-            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Hide internal scrollbar for WebKit */
         .signup-container::-webkit-scrollbar {
             width: 0;
             height: 0;
@@ -308,6 +310,40 @@
             min-height: 16px;
         }
 
+        .validation-message {
+            text-align: left;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            min-height: 16px;
+        }
+
+        .password-requirements {
+            text-align: left;
+            font-size: 0.7rem;
+            color: var(--light-text-color);
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
+
+        .password-strength-meter {
+            height: 5px;
+            margin-top: 5px;
+            border-radius: 3px;
+            background-color: #eee;
+            overflow: hidden;
+        }
+
+        .password-strength-meter-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Password strength colors */
+        .strength-weak { background-color: var(--error-color); width: 33%; }
+        .strength-medium { background-color: var(--warning-color); width: 66%; }
+        .strength-strong { background-color: var(--success-color); width: 100%; }
+
         /* Compact adjustments for short viewports */
         @media (max-height: 800px) {
             html { font-size: 14px; }
@@ -350,6 +386,7 @@
                 <div class="input-group">
                     <input type="text" maxlength="30" id="fullname" name="fullname" autocomplete="off" placeholder="Enter your full name" required>
                 </div>
+                <div id="name-validation" class="validation-message"></div>
             </div>
             
             <div class="form-group">
@@ -373,6 +410,7 @@
                 <div class="input-group">
                     <input type="text" id="house_address" name="house_address" autocomplete="off" placeholder="Enter your house number, street, etc." required>
                 </div>
+                <div id="address-validation" class="validation-message"></div>
             </div>
             
             <div class="form-group">
@@ -387,18 +425,25 @@
             <div class="form-group">
                 <label for="password">Password</label>
                 <div class="input-group">
-                    <input type="password" id="password" maxlength="10" minlength="8" autocomplete="off" name="password" placeholder="Enter your password" required>
+                    <input type="password" id="password" minlength="8" autocomplete="off" name="password" placeholder="Enter your password (minimum 8 characters)" required>
                     <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePasswordVisibility('password')"></i>
                 </div>
+                <div class="password-requirements">
+                    Password must be at least 8 characters long
+                </div>
+                <div class="password-strength-meter">
+                    <div class="password-strength-meter-fill" id="password-strength-meter"></div>
+                </div>
+                <div id="password-validation" class="validation-message"></div>
             </div>
             
             <div class="form-group">
                 <label for="confirm_password">Confirm Password</label>
                 <div class="input-group">
-                    <input type="password" maxlength="10" minlength="8" id="confirm_password" autocomplete="off" name="confirm_password" placeholder="Confirm your password" required>
+                    <input type="password" minlength="8" id="confirm_password" autocomplete="off" name="confirm_password" placeholder="Confirm your password" required>
                     <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePasswordVisibility('confirm_password')"></i>
                 </div>
-                <div id="password-match-status" style="font-size: 0.8rem; text-align: left; margin-top: 5px;"></div>
+                <div id="password-match-status" class="validation-message"></div>
             </div>
             
             <button type="submit" class="btn-submit" id="signup-submit-btn" disabled>Sign up</button>
@@ -428,6 +473,88 @@
                     icon.classList.add("fa-eye-slash");
                 }
             };
+
+            // Password strength checker
+            function checkPasswordStrength(password) {
+                let strength = 0;
+                const meter = document.getElementById('password-strength-meter');
+                
+                if (password.length >= 8) strength += 20;
+                if (password.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) strength += 20;
+                if (password.match(/([0-9])/)) strength += 20;
+                if (password.match(/([!,@,#,$,%,^,&,*,?,_,~])/)) strength += 20;
+                if (password.length > 10) strength += 20;
+                
+                // Update the strength meter
+                meter.className = 'password-strength-meter-fill';
+                if (strength <= 20) {
+                    meter.classList.add('strength-weak');
+                } else if (strength <= 60) {
+                    meter.classList.add('strength-medium');
+                } else {
+                    meter.classList.add('strength-strong');
+                }
+                
+                return strength;
+            }
+
+            // Validate password
+            function validatePassword(password) {
+                const validationMsg = document.getElementById('password-validation');
+                
+                if (password.length < 8) {
+                    validationMsg.textContent = 'Password must be at least 8 characters long';
+                    validationMsg.style.color = 'red';
+                    return false;
+                }
+                
+                validationMsg.textContent = 'Password meets requirements';
+                validationMsg.style.color = 'green';
+                return true;
+            }
+
+            // Validate confirm password
+            function validateConfirmPassword(password, confirmPassword) {
+                const matchStatus = document.getElementById('password-match-status');
+                
+                if (password !== confirmPassword) {
+                    matchStatus.textContent = 'Passwords do not match';
+                    matchStatus.style.color = 'red';
+                    return false;
+                }
+                
+                matchStatus.textContent = 'Passwords match';
+                matchStatus.style.color = 'green';
+                return true;
+            }
+
+            // Validate name
+            function validateName(name) {
+                const validationMsg = document.getElementById('name-validation');
+                
+                if (name.trim().length < 2) {
+                    validationMsg.textContent = 'Please enter a valid name';
+                    validationMsg.style.color = 'red';
+                    return false;
+                }
+                
+                validationMsg.textContent = '';
+                return true;
+            }
+
+            // Validate address
+            function validateAddress(address) {
+                const validationMsg = document.getElementById('address-validation');
+                
+                if (address.trim().length < 5) {
+                    validationMsg.textContent = 'Please enter a valid address';
+                    validationMsg.style.color = 'red';
+                    return false;
+                }
+                
+                validationMsg.textContent = '';
+                return true;
+            }
 
             // Geolocation functions
             async function fetchAddress(latitude, longitude) {
@@ -539,30 +666,21 @@
             const signupSubmitBtn = document.getElementById('signup-submit-btn');
             const passwordInput = document.getElementById('password');
             const confirmPasswordInput = document.getElementById('confirm_password');
-            const passwordMatchStatus = document.getElementById('password-match-status');
+            const fullnameInput = document.getElementById('fullname');
+            const houseAddressInput = document.getElementById('house_address');
 
             let isNumberVerified = false;
             
             // Enhanced form completion check
             function checkFormCompletion() {
-                const requiredInputs = [
-                    document.getElementById('fullname'),
-                    document.getElementById('house_address'),
-                    document.getElementById('address'),
-                    passwordInput,
-                    confirmPasswordInput
-                ];
+                const isNameValid = validateName(fullnameInput.value);
+                const isAddressValid = validateAddress(houseAddressInput.value);
+                const isPasswordValid = validatePassword(passwordInput.value);
+                const isPasswordMatch = validateConfirmPassword(passwordInput.value, confirmPasswordInput.value);
+                const isLocationSet = document.getElementById('address').value.trim() !== '';
                 
-                const allFilled = requiredInputs.every(input => {
-                    if (input.readOnly) {
-                        return input.value.trim() !== '';
-                    }
-                    return !input.disabled && input.value.trim() !== '';
-                });
-                
-                const passwordsMatch = passwordInput.value === confirmPasswordInput.value;
-                
-                signupSubmitBtn.disabled = !(allFilled && isNumberVerified && passwordsMatch);
+                signupSubmitBtn.disabled = !(isNameValid && isNumberVerified && isAddressValid && 
+                                            isPasswordValid && isPasswordMatch && isLocationSet);
             }
 
             // Phone verification
@@ -703,24 +821,33 @@
                 }
             });
 
-            // Password matching validation
-            confirmPasswordInput.addEventListener('input', function() {
-                if (passwordInput.value !== this.value) {
-                    passwordMatchStatus.style.color = 'red';
-                    passwordMatchStatus.textContent = 'Passwords do not match';
-                } else {
-                    passwordMatchStatus.style.color = 'green';
-                    passwordMatchStatus.textContent = 'Passwords match';
-                }
+            // Password validation on input
+            passwordInput.addEventListener('input', function() {
+                checkPasswordStrength(this.value);
+                validatePassword(this.value);
+                validateConfirmPassword(this.value, confirmPasswordInput.value);
                 checkFormCompletion();
             });
 
-            // Real-time form validation
-            document.querySelectorAll('#signupForm input').forEach(input => {
-                input.addEventListener('input', checkFormCompletion);
+            // Confirm password validation
+            confirmPasswordInput.addEventListener('input', function() {
+                validateConfirmPassword(passwordInput.value, this.value);
+                checkFormCompletion();
             });
 
-            // Form submission - UPDATED TO ACTUALLY SUBMIT DATA
+            // Name validation
+            fullnameInput.addEventListener('input', function() {
+                validateName(this.value);
+                checkFormCompletion();
+            });
+
+            // Address validation
+            houseAddressInput.addEventListener('input', function() {
+                validateAddress(this.value);
+                checkFormCompletion();
+            });
+
+            // Form submission
             signupForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -739,6 +866,15 @@
                         icon: 'error',
                         title: 'Password Mismatch',
                         text: 'Please make sure your passwords match.'
+                    });
+                    return;
+                }
+
+                if (passwordInput.value.length < 8) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Password Too Short',
+                        text: 'Password must be at least 8 characters long.'
                     });
                     return;
                 }
