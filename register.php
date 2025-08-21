@@ -520,7 +520,7 @@
 
             // Phone verification
             sendCodeBtn.addEventListener('click', async () => {
-                const phoneNumber = phoneInput.value;
+                const phoneNumber = phoneInput.value.trim();
                 if (!phoneNumber || !phoneInput.checkValidity()) {
                     verifyStatusDiv.style.color = 'red';
                     verifyStatusDiv.textContent = 'Please enter a valid phone number in format +639xxxxxxxxx';
@@ -534,13 +534,22 @@
                 verifyStatusDiv.style.color = 'blue';
 
                 try {
-                    // Simulate API call (replace with actual fetch)
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // For demo purposes, we'll simulate success
-                    verifyStatusDiv.textContent = 'Code sent! Check your phone.';
-                    verifyStatusDiv.style.color = 'green';
-                    verificationForm.style.display = 'block';
+                    const resp = await fetch('connection/send_verification.php', {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        body: new URLSearchParams({ phone_number: phoneNumber })
+                    });
+                    const data = await resp.json();
+
+                    if (data && data.success) {
+                        verifyStatusDiv.textContent = 'Code sent! Check your phone.';
+                        verifyStatusDiv.style.color = 'green';
+                        verificationForm.style.display = 'block';
+                        sendCodeBtn.textContent = 'Resend';
+                        sendCodeBtn.disabled = false;
+                    } else {
+                        throw new Error((data && data.message) || 'Failed to send code.');
+                    }
                 } catch (error) {
                     console.error('Error:', error);
                     verifyStatusDiv.textContent = error.message || 'Failed to send code. Please try again.';
@@ -553,10 +562,10 @@
 
             // Verification code confirmation
             confirmCodeBtn.addEventListener('click', async () => {
-                const phoneNumber = phoneInput.value;
-                const verificationCode = verificationCodeInput.value;
+                const phoneNumber = phoneInput.value.trim();
+                const verificationCode = verificationCodeInput.value.trim();
                 
-                if (!verificationCode || verificationCode.length !== 6) {
+                if (!verificationCode || verificationCode.length !== 6 || !/^\d{6}$/.test(verificationCode)) {
                     verifyStatusDiv.style.color = 'red';
                     verifyStatusDiv.textContent = 'Please enter a valid 6-digit code.';
                     return;
@@ -568,26 +577,34 @@
                 verifyStatusDiv.style.color = 'blue';
 
                 try {
-                    // Simulate API call (replace with actual fetch)
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // For demo purposes, we'll accept any 6-digit code
-                    verifyStatusDiv.textContent = 'Phone number verified successfully! ✅';
-                    verifyStatusDiv.style.color = 'green';
-                    confirmCodeBtn.style.backgroundColor = '#4CAF50';
-                    confirmCodeBtn.textContent = 'Verified';
-                    isNumberVerified = true;
-                    phoneInput.disabled = true;
-                    verificationCodeInput.disabled = true;
-                    
-                    // Add hidden field for verified phone number
-                    const hiddenPhoneInput = document.createElement('input');
-                    hiddenPhoneInput.type = 'hidden';
-                    hiddenPhoneInput.name = 'verified_phone';
-                    hiddenPhoneInput.value = phoneNumber;
-                    signupForm.appendChild(hiddenPhoneInput);
-                    
-                    checkFormCompletion();
+                    const resp = await fetch('connection/check_verification.php', {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        body: new URLSearchParams({ phone_number: phoneNumber, verification_code: verificationCode })
+                    });
+                    const data = await resp.json();
+
+                    if (data && data.success) {
+                        verifyStatusDiv.textContent = 'Phone number verified successfully! ✅';
+                        verifyStatusDiv.style.color = 'green';
+                        confirmCodeBtn.style.backgroundColor = '#4CAF50';
+                        confirmCodeBtn.textContent = 'Verified';
+                        isNumberVerified = true;
+                        phoneInput.disabled = true;
+                        verificationCodeInput.disabled = true;
+                        sendCodeBtn.disabled = true;
+                        
+                        // Add hidden field for verified phone number
+                        const hiddenPhoneInput = document.createElement('input');
+                        hiddenPhoneInput.type = 'hidden';
+                        hiddenPhoneInput.name = 'verified_phone';
+                        hiddenPhoneInput.value = phoneNumber;
+                        signupForm.appendChild(hiddenPhoneInput);
+                        
+                        checkFormCompletion();
+                    } else {
+                        throw new Error((data && data.message) || 'Invalid code. Please try again.');
+                    }
                 } catch (error) {
                     console.error('Error:', error);
                     verifyStatusDiv.textContent = error.message || 'Invalid code. Please try again.';

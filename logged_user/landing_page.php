@@ -168,6 +168,29 @@ include '../includes/headeruser.php';
             min-height: 420px;
         }
 
+        /* Slide animations for carousel swaps */
+        .slide-left-out { animation: slideLeftOut 0.35s ease both; }
+        .slide-left-in { animation: slideLeftIn 0.35s ease both; }
+        .slide-right-out { animation: slideRightOut 0.35s ease both; }
+        .slide-right-in { animation: slideRightIn 0.35s ease both; }
+
+        @keyframes slideLeftOut {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(-40px); opacity: 0; }
+        }
+        @keyframes slideLeftIn {
+            0% { transform: translateX(40px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideRightOut {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(40px); opacity: 0; }
+        }
+        @keyframes slideRightIn {
+            0% { transform: translateX(-40px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
         .featured-item {
             background: #fff;
             border-radius: 20px;
@@ -328,6 +351,45 @@ include '../includes/headeruser.php';
             margin: 0;
             line-height: 1.1;
             color: #fff;
+        }
+
+        /* Premium Tiles banner above grid */
+        .premium-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            background: linear-gradient(90deg, rgba(207,135,86,0.25), rgba(125,49,10,0.35));
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin: 0 auto 28px;
+            max-width: 900px;
+            text-align: left;
+        }
+        .premium-banner .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #CF8756;
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(207,135,86,0.45);
+            flex-shrink: 0;
+        }
+        .premium-banner .title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.4px;
+        }
+        .premium-banner .subtitle {
+            font-size: 0.95rem;
+            color: #f0e7e2;
+            opacity: 0.95;
         }
 
         .tile-categories-grid {
@@ -581,6 +643,13 @@ include '../includes/headeruser.php';
                 <span class="small-text">Explore Our Collection</span>
                 <h2 class="big-text">Our Tile Selection</h2>
             </div>
+            <div class="premium-banner" role="note" aria-label="Premium Tiles">
+                <div class="icon" aria-hidden="true"><i class="fa-solid fa-gem"></i></div>
+                <div class="text">
+                    <div class="title">Premium Tiles</div>
+                    <div class="subtitle">Browse our extensive collection of premium tiles for every room in your home or business.</div>
+                </div>
+            </div>
             
             <div class="tile-categories-grid">
                 <div class="tile-category">
@@ -633,28 +702,24 @@ include '../includes/headeruser.php';
     <script>
         const featuredItems = [{
             img: '../images/user/tile1.jpg',
-            title: 'Long-Length 2.0',
-            price: 'P22.00',
-        }, {
-            img: '../images/user/tile1.jpg',
-            title: 'Speed 500 Ignite',
-            price: 'P120.00',
+            title: 'Premium Ceramic Tile',
+            price: '₱1,250',
         }, {
             img: '../images/user/tile2.jpg',
-            title: 'Jordan Hyper Grip Ot',
-            price: 'P50.00',
+            title: 'Porcelain Tile',
+            price: '₱950',
         }, {
             img: '../images/user/tile3.jpg',
-            title: 'Swimming Cap Slin',
-            price: 'P22.00',
+            title: 'Mosaic Tile',
+            price: '₱1,750',
         }, {
             img: '../images/user/tile4.jpg',
-            title: 'Soccer Ball Club America',
-            price: 'P30.00',
+            title: 'Natural Stone Tile',
+            price: '₱850',
         }, {
             img: '../images/user/tile5.jpg',
-            title: 'Hyperadapt Shield Lite Half-Zip',
-            price: 'P110.00',
+            title: 'Classic Tile',
+            price: '₱2,100',
         }];
 
         const itemsPerPage = () => {
