@@ -4,6 +4,12 @@ session_start();
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header("Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self';");
 if (!isset($_SESSION['logged_in'])) {
     header('Location: ../connection/tresspass.php');
     exit();
@@ -533,6 +539,16 @@ include '../includes/headeruser.php';
                 height: 160px;
             }
         }
+
+        /* Slide animations added for carousel transitions */
+        @keyframes slideLeftOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-20px); } }
+        @keyframes slideLeftIn  { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideRightOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(20px); } }
+        @keyframes slideRightIn  { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .slide-left-out { animation: slideLeftOut 0.35s ease forwards; }
+        .slide-left-in  { animation: slideLeftIn 0.35s ease forwards; }
+        .slide-right-out { animation: slideRightOut 0.35s ease forwards; }
+        .slide-right-in  { animation: slideRightIn 0.35s ease forwards; }
     </style>
 </head>
 
@@ -590,7 +606,7 @@ include '../includes/headeruser.php';
                     <div class="tile-category-content">
                         <h3 class="tile-category-title">Ceramic Tiles</h3>
                         <p class="tile-category-desc">Durable and versatile ceramic tiles for any space</p>
-                        <a href="#" class="explore-btn">Explore</a>
+                        <a href="#" class="explore-btn" aria-label="Explore Ceramic Tiles">Explore</a>
                     </div>
                 </div>
                 
@@ -601,7 +617,7 @@ include '../includes/headeruser.php';
                     <div class="tile-category-content">
                         <h3 class="tile-category-title">Porcelain Tiles</h3>
                         <p class="tile-category-desc">Premium quality porcelain for high-end finishes</p>
-                        <a href="#" class="explore-btn">Explore</a>
+                        <a href="#" class="explore-btn" aria-label="Explore Porcelain Tiles">Explore</a>
                     </div>
                 </div>
                 
@@ -612,7 +628,7 @@ include '../includes/headeruser.php';
                     <div class="tile-category-content">
                         <h3 class="tile-category-title">Mosaic Tiles</h3>
                         <p class="tile-category-desc">Artistic designs for unique decorative accents</p>
-                        <a href="#" class="explore-btn">Explore</a>
+                        <a href="#" class="explore-btn" aria-label="Explore Mosaic Tiles">Explore</a>
                     </div>
                 </div>
                 
@@ -623,7 +639,7 @@ include '../includes/headeruser.php';
                     <div class="tile-category-content">
                         <h3 class="tile-category-title">Natural Stone</h3>
                         <p class="tile-category-desc">Elegant natural stone for luxurious spaces</p>
-                        <a href="#" class="explore-btn">Explore</a>
+                        <a href="#" class="explore-btn" aria-label="Explore Natural Stone Tiles">Explore</a>
                     </div>
                 </div>
             </div>
@@ -631,31 +647,14 @@ include '../includes/headeruser.php';
     </section>
 
     <script>
-        const featuredItems = [{
-            img: '../images/user/tile1.jpg',
-            title: 'Long-Length 2.0',
-            price: 'P22.00',
-        }, {
-            img: '../images/user/tile1.jpg',
-            title: 'Speed 500 Ignite',
-            price: 'P120.00',
-        }, {
-            img: '../images/user/tile2.jpg',
-            title: 'Jordan Hyper Grip Ot',
-            price: 'P50.00',
-        }, {
-            img: '../images/user/tile3.jpg',
-            title: 'Swimming Cap Slin',
-            price: 'P22.00',
-        }, {
-            img: '../images/user/tile4.jpg',
-            title: 'Soccer Ball Club America',
-            price: 'P30.00',
-        }, {
-            img: '../images/user/tile5.jpg',
-            title: 'Hyperadapt Shield Lite Half-Zip',
-            price: 'P110.00',
-        }];
+        const peso = (value) => `₱${Number(value).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`;
+        const featuredItems = [
+            { img: '../images/user/tile1.jpg', title: 'Premium Ceramic Tile', price: 1250 },
+            { img: '../images/user/tile2.jpg', title: 'Porcelain Tile', price: 950 },
+            { img: '../images/user/tile3.jpg', title: 'Mosaic Tile', price: 1750 },
+            { img: '../images/user/tile4.jpg', title: 'Natural Stone Tile', price: 850 },
+            { img: '../images/user/tile5.jpg', title: 'Classic Tile', price: 2100 },
+        ];
 
         const itemsPerPage = () => {
             if (window.innerWidth <= 600) return 1;
@@ -722,8 +721,10 @@ include '../includes/headeruser.php';
                             <img src="${item.img}" alt="${item.title}" loading="lazy">
                         </div>
                         <div class="item-title">${item.title}</div>
-                        <div class="item-price">${item.price}</div>
-                        <button class="add-to-cart"><i class="fa fa-lock"></i> ADD TO CART</button>
+                        <div class="item-price">${peso(item.price)}</div>
+                        <button class="add-to-cart" type="button" aria-label="Add ${item.title} to cart">
+                            <i class="fa fa-shopping-cart" aria-hidden="true"></i> Add to Cart
+                        </button>
                     `;
                 }
                 container.appendChild(div);
