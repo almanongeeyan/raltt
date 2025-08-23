@@ -184,7 +184,7 @@ include '../includes/headeruser.php';
           <i class="fas fa-chevron-left"></i>
         </button>
         <div class="featured-items-container w-full max-w-full overflow-hidden">
-          <div class="featured-items flex gap-2 md:gap-4 w-full py-5 min-h-[320px] md:min-h-[420px]">
+          <div class="featured-items flex gap-0.5 md:gap-0.2 w-full py-5 min-h-[320px] md:min-h-[420px]">
             <!-- Items will be populated by JavaScript -->
           </div>
         </div>
