@@ -465,7 +465,7 @@
                     </li>
                     
                     <li class="sidebar-nav-item">
-                        <a href="../staffadmin_access/admin_addproduct.php" class="sidebar-nav-link">
+                        <a href="../staffadmin_access/admin_addproduct2.php" class="sidebar-nav-link">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                 <path d="M14 6H4a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V8a2 2 0 00-2-2zM4 22V8h10v14H4zm16-8v-2h-2V9h2V7h2v2h2v2h-2v2h2v2h2v2h-2v-2h-2v-2z"/>
                             </svg>
