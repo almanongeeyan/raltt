@@ -438,11 +438,11 @@
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_completeorder.php" class="dropdown-link">
+                                <a href="../staffadmin_access/admin_transactions.php" class="dropdown-link">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                                         <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
                                     </svg>
-                                    <span>Completed Orders</span>
+                                    <span>Transactions</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
