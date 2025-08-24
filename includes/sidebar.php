@@ -500,7 +500,51 @@
                                     <span>Inventory Reports</span>
                                 </a>
                             </li>
+                                <li class="dropdown-item">
+                                    <a href="#" class="dropdown-link">
+                                        <!-- Banner Icon (monochrome style) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                            <polyline points="4,4 12,12 20,4" fill="none" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                        <span>Banner</span>
+                                    </a>
+                                </li>
                         </ul>
+                        </li>
+                        <li class="sidebar-nav-item">
+                            <div class="sidebar-nav-link dropdown-menu-parent">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                    <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                                </svg>
+                                <span>Inquiry</span>
+                                <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </div>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-item">
+                                    <a href="#" class="dropdown-link">
+                                        <!-- Cancel Request Icon (monochrome style) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+                                            <line x1="6" y1="18" x2="18" y2="6" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                        <span>Cancel Request</span>
+                                    </a>
+                                </li>
+                                <li class="dropdown-item">
+                                    <a href="#" class="dropdown-link">
+                                        <!-- Customer Support Icon (monochrome style) -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                            <path d="M12 8v4" stroke="currentColor" stroke-width="2"/>
+                                            <circle cx="12" cy="16" r="1" fill="currentColor"/>
+                                        </svg>
+                                        <span>Customer Support</span>
+                                    </a>
+                                </li>
+                            </ul>
                     </li>
                 </ul>
             </div>
