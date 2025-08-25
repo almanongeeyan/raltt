@@ -9,6 +9,8 @@ session_destroy();
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
-// Redirect to tresspass page instead of index
-header('Location: tresspass.php');
+// Redirect to index.php if redirect param is set, else tresspass.php
+// Always redirect to /raltt/index.php if requested, else tresspass.php
+$redirect = isset($_GET['redirect']) && $_GET['redirect'] === 'index.php' ? '/raltt/index.php' : 'tresspass.php';
+header('Location: ' . $redirect);
 exit();

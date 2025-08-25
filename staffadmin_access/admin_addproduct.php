@@ -2,819 +2,330 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Products Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --sidebar-width: 250px;
-            --sidebar-collapsed-width: 80px;
-            --transition-speed: 0.3s;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            transition: padding-left var(--transition-speed);
-        }
-
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 20px;
-            transition: margin-left var(--transition-speed);
-        }
-
-        /* Adjust main content when sidebar is collapsed */
-        html.sidebar-collapsed .main-content {
-            margin-left: var(--sidebar-collapsed-width);
-        }
-
-        .dashboard-header {
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .dashboard-header h1 {
-            font-size: 24px;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-
-        .dashboard-content {
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .dashboard-content p {
-            color: #666;
-            margin: 0;
-            padding: 0;
-        }
-
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-            box-sizing: border-box;
-        }
-
-        .main-content h1 {
-            font-size: 48px;
-            margin-bottom: 5px;
-        }
-
-        .main-content hr {
-            border: 1px solid #000;
-            margin-bottom: 20px;
-        }
-
-        @media screen and (min-width: 1200px) {
-            .main-content {
-                padding: 40px;
-                margin-top: -30px;
-            }
-
-            .main-content h1 {
-                font-size: 48px;
-            }
-
-            .main-content p {
-                font-size: 18px;
-                line-height: 1.6;
-            }
-        }
-
-
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .search-container,
-        .filter-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .search-bar {
-            position: relative;
-            display: flex;
-            align-items: center;
-            background: #f1f1f1;
-            padding: 8px 12px;
-            border-radius: 8px;
-            width: 450px;
-            border: 1px solid gray;
-        }
-
-        .search-bar i {
-            margin-right: 8px;
-            color: #669;
-        }
-
-        .search-bar input {
-            border: none;
-            outline: none;
-            background: transparent;
-            width: 100%;
-            font-size: 16px;
-        }
-
-        .search-suggestions {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: #fff;
-            border: 1px solid #ccc;
-            border-top: none;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 10;
-            border-radius: 0 0 6px 6px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .search-suggestions div {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-
-        .search-suggestions div:hover {
-            background-color: #f0f0f0;
-        }
-
-
-        .filter-dropdown {
-            position: relative;
-            display: flex;
-            align-items: center;
-            background: #f1f1f1;
-            padding: 8px 12px;
-            border-radius: 3px;
-            min-width: 200px;
-            border: 1px solid Gray;
-        }
-
-        .filter-dropdown select {
-            border: none;
-            outline: none;
-            background: transparent;
-            font-size: 16px;
-            width: 100%;
-            appearance: none;
-            cursor: pointer;
-        }
-
-        .filter-dropdown i {
-            position: absolute;
-            right: 12px;
-            pointer-events: none;
-            color: #669;
-        }
-
-        .alert-btn {
-            position: relative;
-            background-color: #fff;
-            color: #ff4d4f;
-            border: 2px solid #ff4d4f;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            width: 200px;
+        .product-card {
             transition: all 0.3s ease;
         }
-
-        .alert-btn i {
-            margin-right: 8px;
-            transition: color 0.3s ease;
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
-
-        .alert-btn::after {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: 50%;
-            left: 50%;
-            background: rgba(255, 77, 79, 0.2);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-            transition: transform 0.6s ease, opacity 0.8s ease;
-            pointer-events: none;
-            z-index: 0;
+        .inventory-low {
+            background-color: #fef3f2;
+            color: #d92d20;
         }
-
-        .alert-btn:hover::after {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
+        .inventory-medium {
+            background-color: #fffaeb;
+            color: #dc6803;
         }
-
-        .alert-btn:hover {
-            background-color: #ff4d4f;
-            color: #fff;
-            border-color: #ff4d4f;
-        }
-
-        .alert-btn:hover i {
-            color: #fff;
-        }
-
-        .alert-btn span,
-        .alert-btn i {
-            position: relative;
-            z-index: 1;
-        }
-
-        .add-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            background-color: #3CB371;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 500;
-            text-decoration: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-
-        .add-btn:hover {
-            background-color: #33a16f;
-            transform: translateY(-2px);
-        }
-
-
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-            box-sizing: border-box;
-        }
-
-        .main-content h1 {
-            font-size: 48px;
-            margin-bottom: 5px;
-        }
-
-        .main-content hr {
-            border: 1px solid #000;
-            margin-bottom: 20px;
-        }
-
-        .card-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-top: 30px;
-            justify-items: center;
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .card {
-            width: 200px;
-            height: 265px;
-            background-color: #fff;
-            border-radius: 2px;
-            border: 1px solid rgba(128, 128, 128, 0.5);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-
-        .card-description {
-            width: 100%;
-            height: 35px;
-            border: 1px solid rgba(128, 128, 128, 0.5);
-            padding: 8px;
-            text-align: center;
-            font-size: 0.9rem;
-            border-radius: 4px;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-
-        @media screen and (max-width: 1200px) {
-            .card-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media screen and (max-width: 768px) {
-            .card-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .alert-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content {
-            background-color: #fff;
-            margin: 50px auto;
-            padding: 20px;
-            border: 2px solid red;
-            width: 500px;
-            height: 450px;
-            border-radius: 8px;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .product-table {
-            display: flex;
-            flex-direction: column;
-            margin-top: 20px;
-        }
-
-        .table-header,
-        .table-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .table-header div,
-        .table-row div {
-            flex: 1;
-            text-align: center;
-        }
-
-        .restock-btn {
-            padding: 5px 10px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .restock-btn:hover {
-            background-color: #218838;
-        }
-
-        .restock-modal {
-            display: none;
-            position: fixed;
-            z-index: 1100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .restock-modal .modal-content {
-            background-color: #fff;
-            margin: 80px auto;
-            padding: 20px 30px;
-            width: 650px;
-            height: 400px;
-            border-radius: 3px;
-            border: 1px solid #ccc;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-sizing: border-box;
-        }
-
-        .restock-modal .modal-content h2 {
-            font-size: 20px;
-            margin: 0 0 15px 0;
-            color: #333;
-        }
-
-        .restock-modal label {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .restock-modal .text-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .restock-modal input[type="text"],
-        .restock-modal select {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .restock-modal input[disabled] {
-            background-color: #f1f1f1;
-            color: #555;
-        }
-
-        .restock-modal .dropdown {
-            width: 375px;
-        }
-
-        .restock-modal .textbox {
-            flex: 1;
-        }
-
-        .restock-modal .bottom-row {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .restock-modal .submit-btn {
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
-        }
-
-        .restock-modal .submit-btn i {
-            font-size: 16px;
-        }
-
-        .restock-modal .submit-btn:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-        }
-
-        .restock-modal .cancel-btn {
-            background-color: #ccc;
-            color: #333;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-.submit-btn {
-    position: relative;
-    background-color: #28a745;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.submit-btn i {
-    position: absolute;
-    left: 10px;
-    transition: all 0.5s ease;
-    pointer-events: none;
-}
-
-.submit-btn span {
-    transition: opacity 0.3s ease;
-}
-
-.submit-btn:hover i {
-    left: 50%;
-    transform: translateX(-50%);
-}
-/*
-.submit-btn .ripple {
-    position: absolute;
-    border-radius: 50%;
-    transform: scale(0);
-    animation: ripple-effect 0.6s linear;
-    pointer-events: none; 
-    z-index: 0;
-}
-
-@keyframes ripple-effect {
-    to {
-        transform: scale(4);
-        opacity: 0;
-    }
-}
-
-@keyframes truckDrive {
-    0% { transform: translateX(-50%) translateY(0); }
-    25% { transform: translateX(-50%) translateY(-2px); }
-    50% { transform: translateX(-50%) translateY(0); }
-    75% { transform: translateX(-50%) translateY(2px); }
-    100% { transform: translateX(-50%) translateY(0); }
-}
-
-.submit-btn:hover i {
-    animation: truckDrive 1s infinite;
-}
-
-.submit-btn .ripple {
-    position: absolute;
-    border-radius: 50%;
-    transform: scale(0);
-    animation: ripple-effect 0.6s linear;
-    background: rgba(255, 255, 255, 0.5);
-    pointer-events: none; 
-    z-index: 0;
-}
-
-@keyframes ripple-effect {
-    to { transform: scale(4); opacity: 0; }
-}
-*/
-
-        #okRestockBtn {
-            padding: 8px 16px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        #okRestockBtn:hover {
-            background-color: #218838;
+        .inventory-high {
+            background-color: #ecfdf3;
+            color: #039855;
         }
     </style>
 </head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar is included and styled by its own file -->
+        <div class="hidden md:block" style="width:250px;"></div>
+        <main class="flex-1 min-h-screen md:ml-0" style="margin-left:0;">
+            <div class="max-w-7xl mx-auto py-8 px-4">
+                <!-- Page Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-boxes mr-3 text-blue-600"></i>Product Dashboard
+                    </h1>
+                </div>
 
-<body>
-    <div class="main-content">
-        <div class="dashboard-header">
-            <h1>Products Dashboard</h1>
-        </div>
-
-        <div class="toolbar">
-            <div class="search-container">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Product Search Bar" id="searchInput">
-                    <div class="search-suggestions" id="searchSuggestions">
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-blue-100 p-3 mr-4">
+                                <i class="fas fa-box text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Total Products</p>
+                                <h3 class="font-bold text-2xl">24</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-green-100 p-3 mr-4">
+                                <i class="fas fa-warehouse text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Total Inventory</p>
+                                <h3 class="font-bold text-2xl">1,248</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-amber-500">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-amber-100 p-3 mr-4">
+                                <i class="fas fa-exclamation-triangle text-amber-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Low Stock</p>
+                                <h3 class="font-bold text-2xl">3</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-purple-100 p-3 mr-4">
+                                <i class="fas fa-tags text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Categories</p>
+                                <h3 class="font-bold text-2xl">5</h3>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <button class="alert-btn has-notifications">
-                    <i class="fas fa-bell"></i>
-                    <span>Alerts</span>
-                </button>
-
-
-
-
-            </div>
-
-            <div class="filter-container">
-                <div class="filter-dropdown">
-                    <select>
-                        <option>Filter Dropdown</option>
-                        <option>FLORAL</option>
-                        <option>CLASSIC</option>
-                        <option>SHAPES</option>
-                        <option>NATURE</option>
-                    </select>
-                    <i class="fas fa-chevron-down"></i>
+                <!-- Search and Filter Section -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex flex-1 gap-2">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" placeholder="Enter product name, design or type ..." class="pl-10 w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" />
+                            </div>
+                            <select class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none">
+                                <option>All Categories</option>
+                                <option>Floral</option>
+                                <option>Geometric</option>
+                                <option>Classic</option>
+                            </select>
+                            <select class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none">
+                                <option>Stock Status</option>
+                                <option>In Stock</option>
+                                <option>Low Stock</option>
+                                <option>Out of Stock</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <!-- Low Stock Alert button removed -->
+                            <button id="openAddProductSidebar" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition flex items-center">
+                                <i class="fas fa-plus-circle mr-2"></i> Add Product
+                            </button>
+                <!-- Add Product Sidebar Drawer -->
+                <div id="addProductSidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col" style="max-width: 420px;">
+                    <div class="flex items-center px-6 py-4 border-b">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center"><i class="fas fa-plus-circle mr-2 text-blue-600"></i>Add New Product</h2>
+                    </div>
+                    <form class="flex-1 flex flex-col gap-4 px-6 py-6 overflow-y-auto">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Product Image</label>
+                            <input type="file" accept="image/*" class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Product Name</label>
+                            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter product name" required />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Product Price</label>
+                            <input type="number" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter price" required />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Product Type</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" required>
+                                <option value="">Select type</option>
+                                <option value="Tile">Tile</option>
+                                <option value="Countertop">Countertop</option>
+                                <option value="Outdoor">Outdoor</option>
+                                <option value="Wall">Wall</option>
+                                <option value="Floor">Floor</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Tile Design</label>
+                            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="e.g. Floral Blue" required />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Stock Count</label>
+                            <input type="number" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter stock count" required />
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" id="cancelAddProductSidebar" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 font-medium">Cancel</button>
+                            <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow">Add Product</button>
+                        </div>
+                    </form>
                 </div>
-                <a href="addtiles.php" class="add-btn">Add Product</a>
-            </div>
-        </div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="card-container">
-            <div class="card">
-                <h3 class="card-title">BLACK CLASSIC</h3>
-                <img src="images/classic.png" alt="Product 1">
-                <div class="card-description">
-                    Inventory Count: 037
+                <!-- Product Grid (Enhanced) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                    <!-- Product Card 1 -->
+                    <div class="product-card bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-lg p-6 flex flex-col items-center border border-blue-100 relative hover:shadow-2xl">
+                        <div class="absolute top-3 right-3 z-20">
+                            <div class="inventory-high text-xs font-semibold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                <i class="fas fa-check-circle"></i> In Stock
+                            </div>
+                        </div>
+                        <img src="../images/user/tile1.jpg" alt="Tile Sample 1" class="w-36 h-36 object-cover rounded-xl mb-4 border-4 border-blue-200 shadow-md transition-transform duration-300 hover:scale-105">
+                        <div class="font-bold text-xl text-gray-900 mb-1 text-center tracking-wide">Floral Blue</div>
+                        <div class="text-sm text-blue-500 mb-3 font-medium">Design #T-001</div>
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div class="bg-green-500 h-3 rounded-full transition-all duration-300" style="width: 75%"></div>
+                        </div>
+                        <div class="text-xs text-gray-700 font-semibold px-2 py-1 rounded bg-white shadow-sm mb-2">INVENTORY: 122</div>
+                        <div class="flex mt-4 space-x-3">
+                            <button class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 2 -->
+                    <div class="product-card bg-gradient-to-br from-amber-50 to-white rounded-2xl shadow-lg p-6 flex flex-col items-center border border-amber-100 relative hover:shadow-2xl">
+                        <div class="absolute top-3 right-3 z-20">
+                            <div class="inventory-medium text-xs font-semibold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i> Medium
+                            </div>
+                        </div>
+                        <img src="../images/user/tile2.jpg" alt="Tile Sample 2" class="w-36 h-36 object-cover rounded-xl mb-4 border-4 border-amber-200 shadow-md transition-transform duration-300 hover:scale-105">
+                        <div class="font-bold text-xl text-gray-900 mb-1 text-center tracking-wide">Black Diamond</div>
+                        <div class="text-sm text-amber-600 mb-3 font-medium">Design #T-002</div>
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div class="bg-amber-500 h-3 rounded-full transition-all duration-300" style="width: 45%"></div>
+                        </div>
+                        <div class="text-xs text-gray-700 font-semibold px-2 py-1 rounded bg-white shadow-sm mb-2">INVENTORY: 88</div>
+                        <div class="flex mt-4 space-x-3">
+                            <button class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 3 -->
+                    <div class="product-card bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg p-6 flex flex-col items-center border border-gray-200 relative hover:shadow-2xl">
+                        <div class="absolute top-3 right-3 z-20">
+                            <div class="inventory-high text-xs font-semibold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                <i class="fas fa-check-circle"></i> In Stock
+                            </div>
+                        </div>
+                        <img src="../images/user/tile3.jpg" alt="Tile Sample 3" class="w-36 h-36 object-cover rounded-xl mb-4 border-4 border-gray-300 shadow-md transition-transform duration-300 hover:scale-105">
+                        <div class="font-bold text-xl text-gray-900 mb-1 text-center tracking-wide">Classical Black</div>
+                        <div class="text-sm text-gray-500 mb-3 font-medium">Design #T-003</div>
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div class="bg-green-500 h-3 rounded-full transition-all duration-300" style="width: 65%"></div>
+                        </div>
+                        <div class="text-xs text-gray-700 font-semibold px-2 py-1 rounded bg-white shadow-sm mb-2">INVENTORY: 102</div>
+                        <div class="flex mt-4 space-x-3">
+                            <button class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 4 -->
+                    <div class="product-card bg-gradient-to-br from-green-50 to-white rounded-2xl shadow-lg p-6 flex flex-col items-center border border-green-100 relative hover:shadow-2xl">
+                        <div class="absolute top-3 right-3 z-20">
+                            <div class="inventory-low text-xs font-semibold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i> Low
+                            </div>
+                        </div>
+                        <img src="../images/user/tile4.jpg" alt="Tile Sample 4" class="w-36 h-36 object-cover rounded-xl mb-4 border-4 border-green-200 shadow-md transition-transform duration-300 hover:scale-105">
+                        <div class="font-bold text-xl text-gray-900 mb-1 text-center tracking-wide">Floral Beige Green</div>
+                        <div class="text-sm text-green-600 mb-3 font-medium">Design #T-004</div>
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div class="bg-red-500 h-3 rounded-full transition-all duration-300" style="width: 25%"></div>
+                        </div>
+                        <div class="text-xs text-gray-700 font-semibold px-2 py-1 rounded bg-white shadow-sm mb-2">INVENTORY: 25</div>
+                        <div class="flex mt-4 space-x-3">
+                            <button class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 5 (Sample) -->
+                    <div class="product-card bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg p-6 flex flex-col items-center border border-purple-100 relative hover:shadow-2xl">
+                        <div class="absolute top-3 right-3 z-20">
+                            <div class="inventory-high text-xs font-semibold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                <i class="fas fa-check-circle"></i> In Stock
+                            </div>
+                        </div>
+                        <img src="../images/user/tile5.jpg" alt="Tile Sample 5" class="w-36 h-36 object-cover rounded-xl mb-4 border-4 border-purple-200 shadow-md transition-transform duration-300 hover:scale-105">
+                        <div class="font-bold text-xl text-gray-900 mb-1 text-center tracking-wide">Modern White</div>
+                        <div class="text-sm text-purple-600 mb-3 font-medium">Design #T-005</div>
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div class="bg-green-500 h-3 rounded-full transition-all duration-300" style="width: 80%"></div>
+                        </div>
+                        <div class="text-xs text-gray-700 font-semibold px-2 py-1 rounded bg-white shadow-sm mb-2">INVENTORY: 140</div>
+                        <div class="flex mt-4 space-x-3">
+                            <button class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-3 py-2 rounded-lg shadow transition flex items-center" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-center mt-10">
+                    <nav class="inline-flex rounded-md shadow-sm">
+                        <a href="#" class="py-2 px-3 ml-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        <a href="#" class="py-2 px-4 leading-tight text-blue-600 bg-blue-50 border border-gray-300 hover:bg-blue-100 hover:text-blue-700">1</a>
+                        <a href="#" class="py-2 px-4 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">2</a>
+                        <a href="#" class="py-2 px-4 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">3</a>
+                        <a href="#" class="py-2 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </nav>
                 </div>
             </div>
-            <div class="card">
-                <h3 class="card-title">WHITE FLOOR</h3>
-                <img src="images/white.png" alt="Product 2">
-                <div class="card-description">
-                    Inventory Count: 100
-                </div>
-            </div>
-            <div class="card">
-                <h3 class="card-title">CLASSIC BLUE</h3>
-                <img src="images/blue.png" alt="Product 3">
-                <div class="card-description">
-                    Inventory Count: 057
-                </div>
-            </div>
-            <div class="card">
-                <h3 class="card-title">BEIGE FLOWER</h3>
-                <img src="images/beigeflo.png" alt="Product 4">
-                <div class="card-description">
-                    Inventory Count: 123
-                </div>
-            </div>
-            <div class="card">
-                <h3 class="card-title">DIAMOND TILE</h3>
-                <img src="images/diamond.png" alt="Product 5">
-                <div class="card-description">
-                    Inventory Count: 001
-                </div>
-            </div>
-        </div>
+        </main>
     </div>
-
-    <div id="alertModal" class="alert-modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2 class="modal-title" style="text-align:center; color:red;">LOW STOCK ALERT</h2>
-
-            <div class="product-table">
-                <div class="table-header">
-                    <div>Product</div>
-                    <div>Remaining Stocks</div>
-                    <div>Actions</div>
-                </div>
-
-                <div class="table-row">
-                    <div>Product 1</div>
-                    <div>10</div>
-                    <div><button class="restock-btn">Restock</button></div>
-                </div>
-
-                <div class="table-row">
-                    <div>Product 2</div>
-                    <div>13</div>
-                    <div><button class="restock-btn">Restock</button></div>
-                </div>
-
-                <div class="table-row">
-                    <div>Product 3</div>
-                    <div>14</div>
-                    <div><button class="restock-btn">Restock</button></div>
-                </div>
-
-                <div class="table-row">
-                    <div>Product 4</div>
-                    <div>17</div>
-                    <div><button class="restock-btn">Restock</button></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="restockModal" class="restock-modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-
-            <h3 style="text-align:left;">Order to Supplier</h3>
-
-            <p style="margin-top:10px;">Product</p>
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <input type="text" id="restockProductName" disabled style="flex:2; padding:8px;" />
-                <input type="text" id="restockProductStock" disabled style="flex:1; padding:8px;" />
-            </div>
-
-            <p>Supplier</p>
-            <div style="display: grid; grid-template-columns: 3fr 0.5fr 0.5fr; gap: 10px; margin-bottom: 10px;">
-                <select style="width: 100%; padding: 8px;">
-                    <option>Supplier Name</option>
-                </select>
-                <input type="text" placeholder="Address" disabled style="padding: 8px;" />
-                <input type="text" placeholder="Contact" disabled style="padding: 8px;" />
-                <select style="width: 100%; padding: 8px;">
-                    <option>Buying Unit of Measure</option>
-                </select>
-                <input type="text" placeholder="Multiplier" style="padding: 8px;" />
-                <input type="text" placeholder="Cost Price" disabled style="padding: 8px;" />
-            </div>
-
-
-            <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
-    <input type="text" placeholder="Amount" disabled style="width:125px; padding:8px;" />
-</div>
-
-
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button class="cancel-btn"
-                    style="background-color:#ccc; color:#000; padding:10px 20px; border-radius:5px;">Cancel</button>
-                <button class="submit-btn"
-                    style="background-color:#28a745; color:#fff; padding:10px 20px; border-radius:5px;">
-                    <i class="fas fa-truck"></i> Submit Order
-                </button>
-            </div>
-        </div>
-    </div>
-
-
-
-
-    <script>
-        const alertBtn = document.querySelector(".alert-btn");
-        const alertModal = document.getElementById("alertModal");
-        const alertCloseBtn = alertModal.querySelector(".close-btn");
-
-        alertBtn.addEventListener("click", () => alertModal.style.display = "block");
-        alertCloseBtn.addEventListener("click", () => alertModal.style.display = "none");
-
-        const restockModal = document.getElementById("restockModal");
-        const restockCloseBtn = restockModal.querySelector(".close-btn");
-        const cancelBtn = restockModal.querySelector(".cancel-btn");
-
-        alertModal.addEventListener("click", (e) => {
-            if (e.target && e.target.classList.contains("restock-btn")) {
-                const row = e.target.closest(".table-row");
-                const productName = row.children[0].innerText;
-                const stockCount = row.children[1].innerText;
-
-                document.getElementById("restockProductName").value = productName;
-                document.getElementById("restockProductStock").value = stockCount;
-
-                restockModal.style.display = "block";
-            }
-        });
-
-        restockCloseBtn.onclick = cancelBtn.onclick = () => restockModal.style.display = "none";
-
-        window.onclick = (event) => {
-            if (event.target === alertModal) alertModal.style.display = "none";
-            if (event.target === restockModal) restockModal.style.display = "none";
-        };
-    </script>
-
-    <script>
-        const submitBtn = restockModal.querySelector(".submit-btn");
-
-submitBtn.addEventListener("click", () => {
-    alert("Order Submitted");
-
-    restockModal.style.display = "none";
-});
-
-    </script>
-
 </body>
+<script>
+// Sidebar open/close logic
+const sidebar = document.getElementById('addProductSidebar');
+const openBtn = document.getElementById('openAddProductSidebar');
+const cancelBtn = document.getElementById('cancelAddProductSidebar');
 
+function openSidebar() {
+    sidebar.classList.remove('translate-x-full');
+    sidebar.classList.add('translate-x-0');
+    document.body.classList.add('overflow-hidden');
+}
+function closeSidebar() {
+    sidebar.classList.add('translate-x-full');
+    sidebar.classList.remove('translate-x-0');
+    document.body.classList.remove('overflow-hidden');
+}
+openBtn.addEventListener('click', openSidebar);
+cancelBtn.addEventListener('click', closeSidebar);
+</script>
 </html>

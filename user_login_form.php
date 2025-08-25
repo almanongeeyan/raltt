@@ -370,7 +370,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
         <button class="back-btn" onclick="goBack()"><i class="fa fa-arrow-left"></i></button>
         <div class="login-container">
             <div class="login-left">
-                <h1>Download our app!</h1>
+                <h1>
+                    Downlo<a href="admin_login_form.php" style="color:inherit;text-decoration:none;cursor:pointer;">a</a>d our app!
+                </h1>
                 <img src="images/loginphone.png" alt="App on phone" class="fixed-phone-mockup">
             </div>
 

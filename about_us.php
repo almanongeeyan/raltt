@@ -16,7 +16,7 @@ include 'includes/header.php';
         /* Fix overlay by header and add gradient to first section */
         .about-raltt-section {
             margin-top: 80px; /* header height */
-            background: linear-gradient(to bottom, #ffece2 0%, #f8f5f2 100%);
+            background: linear-gradient(135deg, #fff 60%, #fbeee6 100%);
             position: relative;
             z-index: 1;
         }
@@ -448,7 +448,7 @@ include 'includes/header.php';
                 address: "189 Deparo Road, Caloocan City",
                 hours: "10AM – 8PM",
                 contact: "0999 999 9999",
-                map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.54452055627!2d121.00282121478553!3d14.61198428978516!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397bd45c619b023%3A0xd64f1d41865c7112!2s189%20Deparo%20Rd%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1625000000000!5m2!1sen!2sph"
+                map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.2961451796805!2d121.017676499333!3d14.75233823334116!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b1c722c4d1b9%3A0xc107b82c47609263!2sRich%20Anne%20Tiles!5e0!3m2!1sen!2sph!4v1756129529669!5m2!1sen!2sph"
             },
             {
                 name: "VANGUARD",
@@ -456,7 +456,7 @@ include 'includes/header.php';
                 address: "Phase 6, Vanguard, Camarin, North Caloocan",
                 hours: "8AM – 5PM",
                 contact: "0999 999 9999",
-                map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.7495042220165!2d121.01133371478536!3d14.600989389786961!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b919d7d11f69%3A0x288d3d951a8a2522!2sVanguard%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1625000000000!5m2!1sen!2sph"
+                map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.297019964697!2d121.06286101292358!3d14.759202001446935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b919d7d11f69%3A0x288d3d951a8a2522!2sVanguard!5e0!3m2!1sen!2sph!4v1756129529669!5m2!1sen!2sph"
             },
             {
                 name: "BRIXTON",

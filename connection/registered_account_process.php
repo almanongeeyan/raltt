@@ -23,9 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Get and sanitize input data
 $fullname = trim($_POST['fullname'] ?? '');
 $phone = trim($_POST['verified_phone'] ?? ''); // Using the verified phone from hidden input
+
 $house_address = trim($_POST['house_address'] ?? '');
 $address = trim($_POST['address'] ?? '');
 $password = $_POST['password'] ?? '';
+$referral_code = trim($_POST['referral_code'] ?? ''); // Optional, if provided by user
+
 
 // Validate required fields
 $requiredFields = [
@@ -80,7 +83,8 @@ $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 // Generate a unique user ID (you can modify this as needed)
 $user_id = 'user_' . bin2hex(random_bytes(8));
 
-// Insert into database
+
+// Insert into database with new columns and defaults
 try {
     $stmt = $db_connection->prepare("
         INSERT INTO manual_accounts (
@@ -90,8 +94,10 @@ try {
             house_address,
             full_address,
             password_hash,
-            created_at,
-            updated_at
+            referral_code,
+            referral_coins,
+            referral_count,
+            account_status
         ) VALUES (
             :user_id,
             :full_name,
@@ -99,8 +105,10 @@ try {
             :house_address,
             :full_address,
             :password_hash,
-            NOW(),
-            NOW()
+            :referral_code,
+            :referral_coins,
+            :referral_count,
+            :account_status
         )
     ");
 
@@ -110,7 +118,11 @@ try {
         ':phone_number' => $phone,
         ':house_address' => $house_address,
         ':full_address' => $address,
-        ':password_hash' => $passwordHash
+        ':password_hash' => $passwordHash,
+        ':referral_code' => $referral_code,
+        ':referral_coins' => 0,
+        ':referral_count' => 1,
+        ':account_status' => 'active'
     ]);
 
     // Success response
@@ -118,7 +130,7 @@ try {
     $response['message'] = 'Registration successful!';
     $response['user_id'] = $user_id;
     http_response_code(201);
-    
+
 } catch (PDOException $e) {
     error_log("[".date('Y-m-d H:i:s')."] Registration error: " . $e->getMessage() . PHP_EOL, 3, "database_errors.log");
     $response['message'] = 'Database error during registration';

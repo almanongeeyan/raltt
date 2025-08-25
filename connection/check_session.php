@@ -1,7 +1,11 @@
 <?php
 // check_session.php: returns 'OK' if user session is valid, otherwise returns 'NO'
 session_start();
-if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
+if (
+    (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) ||
+    (isset($_SESSION['branch_staff_logged_in']) && $_SESSION['branch_staff_logged_in']) ||
+    (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'])
+) {
     echo 'OK';
 } else {
     echo 'NO';

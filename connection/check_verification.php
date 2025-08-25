@@ -30,9 +30,9 @@ require __DIR__ . '/../vendor/autoload.php';
 use Twilio\Rest\Client;
 use Twilio\Exceptions\TwilioException;
 
-// Your Twilio credentials
+// Your Twilio credentials (updated 2025-08-24, new set)
 $sid = "ACb859b1d0b98e99dd9948bcc0901b71e4";
-$token = "29f2a1c745f31079c1289a8d912c127e";
+$token = "c33453ea3d946b8e3726548c66f483c6";
 $verify_service_sid = "VA6d14e3699a4add30e49a090f0457c18e";
 
 // Check if required parameters are submitted
@@ -151,6 +151,6 @@ try {
     error_log("General Error in check_verification.php: " . $e->getMessage() . " for phone " . $phoneNumber . " from IP: " . $ip);
     
     http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'An unexpected error occurred. Please try again later.']);
+    echo json_encode(['status' => 'error', 'message' => 'An unexpected error occurred: ' . $e->getMessage()]);
 }
 ?>

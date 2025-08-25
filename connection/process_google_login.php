@@ -44,10 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Token is valid, get user data from the payload
-        $googleId = $payload['sub'];
-        $name = $payload['name'];
-        $email = $payload['email'];
-        $profilePicture = $payload['picture'] ?? null;
+    $googleId = $payload['sub'];
+    $fullName = $payload['name'];
+    $email = $payload['email'];
+    // Optional fields from payload (if available)
+    $phoneNumber = $payload['phone_number'] ?? null;
+    $houseAddress = null; // Not available from Google, can be set later
+    $fullAddress = null; // Not available from Google, can be set later
+    $referralCode = null; // Can be set later
 
         // Check if the database connection is valid
         if (!$conn) {
@@ -64,26 +68,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $userExists = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($userExists) {
-            // User exists, update their details
-            $stmt_update = $conn->prepare("UPDATE google_accounts SET name = ?, email = ?, profile_picture = ? WHERE google_id = ?");
-            $stmt_update->execute([$name, $email, $profilePicture, $googleId]);
+            // User exists, update their details and last_login
+            $stmt_update = $conn->prepare("UPDATE google_accounts SET full_name = ?, email = ?, last_login = NOW() WHERE google_id = ?");
+            $stmt_update->execute([$fullName, $email, $googleId]);
         } else {
-            // New user, insert a new record
-            $stmt_insert = $conn->prepare("INSERT INTO google_accounts (google_id, name, email, profile_picture) VALUES (?, ?, ?, ?)");
-            $stmt_insert->execute([$googleId, $name, $email, $profilePicture]);
+            // New user, insert a new record (other fields can be null/default)
+            $stmt_insert = $conn->prepare("INSERT INTO google_accounts (google_id, full_name, email, phone_number, house_address, full_address, referral_code) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt_insert->execute([$googleId, $fullName, $email, $phoneNumber, $houseAddress, $fullAddress, $referralCode]);
         }
 
         // Commit the transaction if everything was successful
         $conn->commit();
 
         // Set session variables for the logged-in user
-        $_SESSION['user_id'] = $googleId;
-        $_SESSION['user_name'] = $name;
-        $_SESSION['user_email'] = $email;
-        $_SESSION['logged_in'] = true;
+
+    $_SESSION['user_id'] = $googleId;
+    $_SESSION['user_name'] = $fullName;
+    $_SESSION['user_email'] = $email;
+    $_SESSION['logged_in'] = true;
+    // Set referral_count from DB if available, else default to 1
+    if ($userExists && isset($userExists['referral_count'])) {
+        $_SESSION['referral_count'] = $userExists['referral_count'];
+    } else {
+        // If new user, set to 1 (or whatever default you want)
+        $_SESSION['referral_count'] = 1;
+    }
 
         // Respond with success and user's name
-        echo json_encode(['success' => true, 'name' => $name, 'message' => 'Login successful.']);
+    echo json_encode(['success' => true, 'name' => $fullName, 'message' => 'Login successful.']);
 
     } catch (Google_Service_Exception $e) {
         // Catch specific Google API errors for better debugging

@@ -16,6 +16,15 @@ if (!isset($_SESSION['logged_in'])) {
     header('Location: ../connection/tresspass.php');
     exit();
 }
+
+// Show referral modal if referral_count == 1 - MUST BE AT TOP!
+
+
+// Always include the referral modal markup, but only auto-show if referral_count == 1
+include 'referral_form.php';
+include 'recommendation_form.php'; // Include recommendation modal markup
+$showReferralModal = (isset($_SESSION['referral_count']) && $_SESSION['referral_count'] == 1);
+
 include '../includes/headeruser.php';
 ?>
 <!DOCTYPE html>
@@ -38,6 +47,100 @@ include '../includes/headeruser.php';
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      // Pass PHP referral_count to JS and auto-open modal if 1
+  window.REFERRAL_COUNT = <?php echo isset($_SESSION['referral_count']) ? (int)$_SESSION['referral_count'] : 0; ?>;
+  window.SHOW_REFERRAL_MODAL = <?php echo $showReferralModal ? 'true' : 'false'; ?>;
+      
+      // Fallback functions in case modal script doesn't load
+      function openReferralModalFallback() {
+        const overlay = document.getElementById('referralModalOverlay');
+        const box = document.getElementById('referralModalBox');
+        if (overlay && box) {
+          overlay.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+          setTimeout(() => {
+            box.classList.remove('scale-90', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+          }, 10);
+        }
+      }
+
+      function closeReferralModalFallback() {
+        const overlay = document.getElementById('referralModalOverlay');
+        const box = document.getElementById('referralModalBox');
+        if (overlay && box) {
+          box.classList.remove('scale-100', 'opacity-100');
+          box.classList.add('scale-90', 'opacity-0');
+          setTimeout(() => {
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+            // Show recommendation modal after closing referral modal
+            if (typeof openRecommendationModal === 'function') {
+              openRecommendationModal();
+            } else {
+              // Fallback: show recommendation modal directly
+              const recOverlay = document.getElementById('recommendationModalOverlay');
+              const recBox = document.getElementById('recommendationModalBox');
+              if (recOverlay && recBox) {
+                recOverlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => {
+                  recBox.classList.remove('scale-90', 'opacity-0');
+                  recBox.classList.add('scale-100', 'opacity-100');
+                }, 10);
+              }
+            }
+          }, 250);
+        }
+      }
+      
+      // Simplified auto-open logic
+      document.addEventListener('DOMContentLoaded', function() {
+        // Set up close button event listener
+        const closeBtn = document.getElementById('closeReferralModal');
+        if (closeBtn) {
+          closeBtn.onclick = function() {
+            if (typeof closeReferralModal === 'function') {
+              closeReferralModal();
+              // After closing, show recommendation modal
+              setTimeout(function() {
+                if (typeof openRecommendationModal === 'function') {
+                  openRecommendationModal();
+                } else {
+                  // Fallback: show recommendation modal directly
+                  const recOverlay = document.getElementById('recommendationModalOverlay');
+                  const recBox = document.getElementById('recommendationModalBox');
+                  if (recOverlay && recBox) {
+                    recOverlay.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    setTimeout(() => {
+                      recBox.classList.remove('scale-90', 'opacity-0');
+                      recBox.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+                  }
+                }
+              }, 300);
+            } else {
+              closeReferralModalFallback();
+            }
+          };
+        }
+
+        // Auto-open modal if needed on first load
+        if (window.SHOW_REFERRAL_MODAL) {
+          const modalOverlay = document.getElementById('referralModalOverlay');
+          if (modalOverlay) {
+            if (typeof openReferralModal === 'function') {
+              openReferralModal();
+            } else {
+              openReferralModalFallback();
+            }
+          }
+        }
+
+  // Removed polling for referral_count every second
+      });
+      
       tailwind.config = {
         theme: {
           extend: {
@@ -170,16 +273,16 @@ include '../includes/headeruser.php';
       </div>
     </section>
 
-    <!-- Featured Items Section -->
+    <!-- Recommendation Items Section -->
     <section class="relative bg-gradient-to-br from-light via-white to-accent/30 text-textdark py-12 md:py-20 text-center mobile-padding overflow-x-hidden">
       <div class="mb-8">
-        <span class="block text-base md:text-[1.1rem] font-medium tracking-wider text-textlight mb-2">Premium Selection</span>
-        <h2 class="text-2xl md:text-[2.5rem] font-black leading-tight text-primary m-0">Featured Items</h2>
+        <span class="block text-base md:text-[1.1rem] font-medium tracking-wider text-textlight mb-2">Personalized For You</span>
+        <h2 class="text-2xl md:text-[2.5rem] font-black leading-tight text-primary m-0">Recommendation Items</h2>
         <div class="text-sm md:text-[1.1rem] text-textlight max-w-full md:max-w-[700px] mx-auto mt-5 leading-relaxed">
-          Explore our handpicked selection of premium tiles that combine quality craftsmanship with exceptional design for your home or business.
+          Explore our recommended selection of premium tiles, personalized for your style and needs.
         </div>
       </div>
-  <div class="flex items-center justify-center gap-2 md:gap-4 relative max-w-full w-full mx-auto mt-10">
+      <div class="flex items-center justify-center gap-2 md:gap-4 relative max-w-full w-full mx-auto mt-10">
         <button class="bg-white border border-gray-200 rounded-full w-10 h-10 md:w-12 md:h-12 text-lg md:text-xl text-primary flex items-center justify-center shadow-md hover:bg-primary hover:text-white transition-all duration-200 outline-none prev" aria-label="Previous">
           <i class="fas fa-chevron-left"></i>
         </button>
@@ -382,28 +485,6 @@ include '../includes/headeruser.php';
                 <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱2,100</div>
                 <div class="flex justify-center gap-2">
                   <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
-    <style>
-      .add-to-cart-button {
-        background: #CF8756;
-        color: #fff;
-        border: none;
-        border-radius: 30px;
-        padding: 10px 20px;
-        font-size: 0.95rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        justify-content: center;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      }
-      .add-to-cart-button:hover {
-        background: #A86A42;
-      }
-    </style>
                 </div>
               </div>
             </div>
@@ -545,103 +626,82 @@ include '../includes/headeruser.php';
           updateCarouselPosition();
         }
       }
-// Previous button functionality
-function prevFeatured() {
-    if (isAnimating) return;
-    
-    if (currentPage > 0) {
-        currentPage--;
-        updateCarouselPosition();
-    }
-}
 
-// Event listeners for navigation buttons
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the carousel
-    initCarousel();
-    
-    // Add event listeners for next/prev buttons
-    const nextBtn = document.querySelector('.next');
-    const prevBtn = document.querySelector('.prev');
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', nextFeatured);
-    }
-    
-    if (prevBtn) {
-        prevBtn.addEventListener('click', prevFeatured);
-    }
-    
-    // Handle window resize
-    let resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
-            currentPage = 0;
-            initCarousel();
-        }, 250);
-    });
-    
-    // Add event listeners for category filter buttons
-    const categoryButtons = document.querySelectorAll('.tile-selection .bg-white button');
-    categoryButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Redirect to products page with category filter
-            window.location.href = 'products.php?category=' + 
-                encodeURIComponent(this.closest('.bg-white').querySelector('h3').textContent);
-        });
-    });
-    
-    // Add event listeners for "Add to Cart" buttons
-    const addToCartButtons = document.querySelectorAll('button:has(.fa-shopping-cart)');
-    addToCartButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Get product details
-            const productCard = this.closest('.bg-white');
-            const productName = productCard.querySelector('h3').textContent;
-            const productPrice = productCard.querySelector('.text-secondary').textContent;
-            
-            // Show success message
-            Swal.fire({
-                title: 'Added to Cart!',
-                html: `<strong>${productName}</strong><br>${productPrice}`,
-                icon: 'success',
-                confirmButtonColor: '#7d310a',
-                confirmButtonText: 'Continue Shopping'
-            });
-        });
-    });
-    
-    // Apply filters button
-    const applyFiltersBtn = document.querySelector('.bg-white button:not(:has(.fa-shopping-cart))');
-    if (applyFiltersBtn) {
-        applyFiltersBtn.addEventListener('click', function() {
-            // Get selected categories
-            const selectedCategories = [];
-            document.querySelectorAll('input[name="category"]:checked').forEach(checkbox => {
-                selectedCategories.push(checkbox.nextSibling.textContent.trim());
-            });
-            
-            // Get selected price range
-            const selectedPrice = document.querySelector('input[name="price-range"]:checked');
-            const priceRange = selectedPrice ? selectedPrice.nextSibling.textContent.trim() : 'All Prices';
-            
-            // Show filter confirmation
-            Swal.fire({
-                title: 'Filters Applied',
-                html: `<strong>Categories:</strong> ${selectedCategories.join(', ') || 'All'}<br>
-                       <strong>Price Range:</strong> ${priceRange}`,
-                icon: 'info',
-                confirmButtonColor: '#7d310a',
-                confirmButtonText: 'OK'
-            });
-        });
-    }
-});
-</script>
+      // Previous button functionality
+      function prevFeatured() {
+          if (isAnimating) return;
+          
+          if (currentPage > 0) {
+              currentPage--;
+              updateCarouselPosition();
+          }
+      }
 
-</body>
+      // Event listeners for navigation buttons
+      document.addEventListener('DOMContentLoaded', function() {
+          // Initialize the carousel
+          initCarousel();
+          
+          // Add event listeners for next/prev buttons
+          const nextBtn = document.querySelector('.next');
+          const prevBtn = document.querySelector('.prev');
+          
+          if (nextBtn) {
+              nextBtn.addEventListener('click', nextFeatured);
+          }
+          
+          if (prevBtn) {
+              prevBtn.addEventListener('click', prevFeatured);
+          }
+          
+          // Handle window resize
+          let resizeTimer;
+          window.addEventListener('resize', function() {
+              clearTimeout(resizeTimer);
+              resizeTimer = setTimeout(function() {
+                  currentPage = 0;
+                  initCarousel();
+              }, 250);
+          });
+          
+          // Add event listeners for category filter buttons
+          const categoryButtons = document.querySelectorAll('.tile-selection .bg-white button');
+          categoryButtons.forEach(button => {
+              button.addEventListener('click', function() {
+                  // Redirect to products page with category filter
+                  window.location.href = 'products.php?category=' + 
+                      encodeURIComponent(this.closest('.bg-white').querySelector('h3').textContent);
+              });
+          });
+          
+          // Add event listeners for "Add to Cart" buttons
+          const addToCartButtons = document.querySelectorAll('button:has(.fa-shopping-cart)');
+          addToCartButtons.forEach(button => {
+              button.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  // Get product details
+                  const productCard = this.closest('.bg-white');
+                  const productName = productCard.querySelector('h3').textContent;
+                  const productPrice = productCard.querySelector('.text-secondary').textContent;
+                  
+                  // Show success message
+                  Swal.fire({
+                      title: 'Added to Cart!',
+                      html: `<strong>${productName}</strong><br>${productPrice}`,
+                      icon: 'success',
+                      confirmButtonColor: '#7d310a',
+                      confirmButtonText: 'Continue Shopping'
+                  });
+              });
+          });
+          
+          // Apply filters button
+          const applyFiltersBtn = document.querySelector('.bg-white button:not(:has(.fa-shopping-cart))');
+        // Removed filter confirmation popup
+      });
+    </script>
+
+  </body>
 </html>

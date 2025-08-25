@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 24, 2025 at 04:47 PM
+-- Generation Time: Aug 25, 2025 at 05:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,64 +24,60 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `manual_accounts`
+-- Table structure for table `branch_staff`
 --
 
-CREATE TABLE `manual_accounts` (
-  `id` int(11) NOT NULL,
-  `user_id` varchar(100) NOT NULL,
-  `full_name` varchar(255) NOT NULL,
-  `phone_number` varchar(20) NOT NULL,
-  `house_address` varchar(255) DEFAULT NULL,
-  `full_address` varchar(500) DEFAULT NULL,
+CREATE TABLE `branch_staff` (
+  `staff_id` int(11) NOT NULL,
+  `branch_id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `last_login` datetime DEFAULT NULL,
-  `referral_code` varchar(100) DEFAULT NULL,
-  `referral_coins` int(11) DEFAULT 0,
-  `referral_count` int(11) DEFAULT 1,
-  `account_status` varchar(20) DEFAULT 'active'
+  `email` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Triggers `manual_accounts`
+-- Dumping data for table `branch_staff`
 --
-DELIMITER $$
-CREATE TRIGGER `referral_code_manualcreate` BEFORE INSERT ON `manual_accounts` FOR EACH ROW BEGIN
-    IF NEW.referral_code IS NULL OR NEW.referral_code = '' THEN
-        SET NEW.referral_code = CONCAT(
-            SUBSTRING('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', FLOOR(1 + (RAND() * 62)), 1),
-            SUBSTRING('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', FLOOR(1 + (RAND() * 62)), 1),
-            SUBSTRING('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', FLOOR(1 + (RAND() * 62)), 1),
-            SUBSTRING('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', FLOOR(1 + (RAND() * 62)), 1),
-            SUBSTRING('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', FLOOR(1 + (RAND() * 62)), 1),
-            SUBSTRING('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', FLOOR(1 + (RAND() * 62)), 1)
-        );
-    END IF;
-END
-$$
-DELIMITER ;
+
+INSERT INTO `branch_staff` (`staff_id`, `branch_id`, `username`, `password_hash`, `email`) VALUES
+(1, 1, 'kiko_manager', '123123123', NULL),
+(2, 2, 'brixton_manager', '123123123', NULL),
+(3, 3, 'vanguard_manager', '123123123', NULL),
+(4, 4, 'samaria_manager', '123123123', NULL),
+(5, 5, 'deparo_manager', '123123123', NULL);
 
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `manual_accounts`
+-- Indexes for table `branch_staff`
 --
-ALTER TABLE `manual_accounts`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `branch_staff`
+  ADD PRIMARY KEY (`staff_id`),
+  ADD UNIQUE KEY `username` (`username`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `branch_id` (`branch_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT for table `manual_accounts`
+-- AUTO_INCREMENT for table `branch_staff`
 --
-ALTER TABLE `manual_accounts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `branch_staff`
+  MODIFY `staff_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `branch_staff`
+--
+ALTER TABLE `branch_staff`
+  ADD CONSTRAINT `branch_staff_ibfk_1` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
