@@ -18,6 +18,8 @@ $branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
 $sidebar_logo = 'STAFF';
 if ($branch_id && isset($branch_names[$branch_id])) {
     $sidebar_logo = $branch_names[$branch_id];
+    // Set branch_name in session for use in other pages (e.g., 'Kiko Branch')
+    $_SESSION['branch_name'] = $branch_names[$branch_id] . ' Branch';
 }
 ?>
 <!DOCTYPE html>
@@ -502,7 +504,7 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_addproduct.php" class="dropdown-link">
+                                <a href="../staffadmin_access/admin_branchesproduct.php" class="dropdown-link">
                                     <!-- Products Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Products</span>

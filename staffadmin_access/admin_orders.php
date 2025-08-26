@@ -82,52 +82,6 @@ include '../includes/sidebar.php';
                     <p class="text-gray-600 mt-2">Manage and track orders across all branches</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
-                        <div class="flex items-center">
-                            <div class="rounded-full bg-blue-100 p-3 mr-4">
-                                <i class="fas fa-clipboard-list text-blue-600"></i>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 text-sm">Total Orders</p>
-                                <h3 class="font-bold text-2xl">42</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
-                        <div class="flex items-center">
-                            <div class="rounded-full bg-green-100 p-3 mr-4">
-                                <i class="fas fa-check-circle text-green-600"></i>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 text-sm">Completed</p>
-                                <h3 class="font-bold text-2xl">24</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-amber-500">
-                        <div class="flex items-center">
-                            <div class="rounded-full bg-amber-100 p-3 mr-4">
-                                <i class="fas fa-clock text-amber-600"></i>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 text-sm">Pending</p>
-                                <h3 class="font-bold text-2xl">12</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
-                        <div class="flex items-center">
-                            <div class="rounded-full bg-purple-100 p-3 mr-4">
-                                <i class="fas fa-truck text-purple-600"></i>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 text-sm">In Transit</p>
-                                <h3 class="font-bold text-2xl">6</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
                     <?php
@@ -145,7 +99,22 @@ include '../includes/sidebar.php';
                         </div>
                         <div class="font-bold text-lg text-gray-900 mb-2 text-center tracking-wide flex-1 flex items-center justify-center"><?= $branch['name'] ?></div>
                         <div class="text-sm text-gray-600 mb-4 flex-1 flex items-center justify-center"><?= $branch['orders'] ?> Orders</div>
-                        <button class="view-orders-btn bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition flex items-center mt-2" data-branch="<?= $branch['name'] ?>">
+                        <?php
+                        // Get user's branch from session (use branch_id and map to branch name)
+                        if (!isset($user_branch_name)) {
+                            $branch_names = [
+                                1 => 'Deparo Branch',
+                                2 => 'Vanguard Branch',
+                                3 => 'Brixton Branch',
+                                4 => 'Samaria Branch',
+                                5 => 'Kiko Branch',
+                            ];
+                            $user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : 0;
+                            $user_branch_name = isset($branch_names[$user_branch_id]) ? $branch_names[$user_branch_id] : '';
+                        }
+                        $isUserBranch = ($user_branch_name === $branch['name']);
+                        ?>
+                        <button class="view-orders-btn <?= $isUserBranch ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-400 cursor-not-allowed opacity-60' ?> font-medium px-5 py-2.5 rounded-lg shadow-sm transition flex items-center mt-2" data-branch="<?= $branch['name'] ?>" <?= $isUserBranch ? '' : 'disabled' ?>>
                             <i class="fas fa-eye mr-2"></i> View Orders
                         </button>
                     </div>
@@ -191,6 +160,8 @@ const ordersData = {
     ],
 };
 
+
+const userBranch = <?php echo json_encode($user_branch_name ?? ''); ?>;
 const viewBtns = document.querySelectorAll('.view-orders-btn');
 const ordersModal = document.getElementById('ordersModal');
 const closeOrdersModalBtn = document.getElementById('closeOrdersModal');
@@ -202,8 +173,18 @@ const closeReceiptModalBtn = document.getElementById('closeReceiptModal');
 const receiptContent = document.getElementById('receiptContent');
 
 viewBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function(e) {
         const branch = this.getAttribute('data-branch');
+        if (branch !== userBranch) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Access Denied',
+                text: 'You can only view orders for your assigned branch (' + userBranch + ').',
+                confirmButtonColor: '#8A421D',
+            });
+            e.preventDefault();
+            return;
+        }
         branchNameSpan.textContent = branch;
         ordersModal.classList.remove('hidden');
         renderOrdersTable(branch);

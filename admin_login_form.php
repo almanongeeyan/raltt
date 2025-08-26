@@ -15,7 +15,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - RALTT</title>
+    <title>Staff Login - RALTT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -31,7 +31,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
         }
     </script>
         <div class="flex flex-col items-center mb-6">
-            <span class="text-3xl font-bold tracking-wide text-gray-900">Admin <span class="text-[#8A421D]">Login</span></span>
+            <span class="text-3xl font-bold tracking-wide text-gray-900">Staff <span class="text-[#8A421D]">Login</span></span>
             <span class="text-sm text-gray-500 mt-1">Restricted access for authorized personnel only</span>
         </div>
         <form id="adminLoginForm" class="space-y-6">
@@ -48,9 +48,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
             </div>
             <button type="submit" class="w-full py-2 px-4 bg-[#8A421D] hover:bg-[#6B3416] text-white font-semibold rounded-lg shadow transition duration-150">Log in</button>
         </form>
-        <div class="mt-6 text-center">
-            <a href="index.php" class="text-sm text-gray-500 hover:text-[#8A421D] transition">&larr; Back to Home</a>
-        </div>
+        
     </div>
     <script>
         // Prevent back button navigation after login

@@ -26,6 +26,41 @@ include 'recommendation_form.php'; // Include recommendation modal markup
 $showReferralModal = (isset($_SESSION['referral_count']) && $_SESSION['referral_count'] == 1);
 
 include '../includes/headeruser.php';
+
+// --- Branches data (add lat/lng for each branch) ---
+$branches = [
+  [ 'id' => 1, 'name' => 'Deparo',   'lat' => 14.752338, 'lng' => 121.017677 ],
+  [ 'id' => 2, 'name' => 'Vanguard', 'lat' => 14.759202, 'lng' => 121.062861 ],
+  [ 'id' => 3, 'name' => 'Brixton',  'lat' => 14.583121, 'lng' => 120.979313 ],
+  [ 'id' => 4, 'name' => 'Samaria',  'lat' => 14.757048, 'lng' => 121.033621 ],
+  [ 'id' => 5, 'name' => 'Kiko',     'lat' => 14.607425, 'lng' => 121.011685 ],
+];
+$user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
+$user_branch = null;
+foreach ($branches as $b) {
+  if ($b['id'] === $user_branch_id) { $user_branch = $b; break; }
+}
+echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRANCH = ' . json_encode($user_branch) . ';</script>';
+
+$branchOverlay = '<div id="branch-location-overlay" style="position:fixed;top:90px;left:24px;z-index:9999;background:rgba(30,30,30,0.90);color:#fff;padding:12px 22px 12px 16px;border-radius:16px;font-size:15px;box-shadow:0 2px 12px 0 rgba(0,0,0,0.13);pointer-events:auto;max-width:290px;line-height:1.5;font-family:Inter,sans-serif;backdrop-filter:blur(2px);border:1.5px solid #cf8756;opacity:0.97;display:block;">';
+$branchOverlay .= '<div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;">';
+$branchOverlay .= '<span style="display:inline-block;width:8px;height:8px;background:#cf8756;border-radius:50%;margin-right:10px;"></span>';
+$branchOverlay .= '<span style="font-weight:500;opacity:0.85;">You\'re currently browsing at</span>';
+
+$branchOverlay .= '</div>';
+$branchOverlay .= '<div style="display:flex;align-items:center;gap:6px;">';
+$branchOverlay .= '<span id="branch-current" style="font-weight:700;">';
+if ($user_branch) {
+  $branchOverlay .= htmlspecialchars($user_branch['name']) . ' Branch';
+} else {
+  $branchOverlay .= '<i>Locating branch...</i>';
+}
+$branchOverlay .= '</span>';
+$branchOverlay .= '<span id="branch-distance" style="font-size:12px;color:#cf8756;margin-left:4px;opacity:0.85;"></span>';
+$branchOverlay .= '<a id="branch-change-link" href="#" style="font-size:11px;color:#e8a56a;margin-left:8px;text-decoration:underline;cursor:pointer;opacity:0.85;pointer-events:auto;">Change</a>';
+$branchOverlay .= '</div>';
+$branchOverlay .= '</div>';
+echo $branchOverlay;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,6 +82,147 @@ include '../includes/headeruser.php';
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+    // --- Branch location overlay logic ---
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371; // km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+    function showNearestBranch(userLat, userLng) {
+      if (!window.BRANCHES) return;
+      let minDist = Infinity, nearest = null;
+      window.BRANCHES.forEach(b => {
+          const dist = haversine(userLat, userLng, b.lat, b.lng);
+          if (dist < minDist) { minDist = dist; nearest = b; }
+        });
+      if (nearest) {
+        // Update overlay visually
+        const el = document.getElementById('branch-current');
+        if (el) {
+          el.innerHTML = nearest.name + ' Branch';
+        }
+        // Show distance in km (smaller text) in both lines
+        const distEl = document.getElementById('branch-distance');
+        const distTopEl = document.getElementById('branch-distance-top');
+        if (distEl) {
+          distEl.innerHTML = '(' + minDist.toFixed(2) + ' km)';
+        }
+  // No top line distance
+        // Set branch in session via AJAX (if not already set)
+        if (!window.USER_BRANCH || window.USER_BRANCH.id !== nearest.id) {
+          fetch('set_branch.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'branch_id=' + encodeURIComponent(nearest.id)
+          }).then(() => {
+            window.USER_BRANCH = nearest;
+          });
+        }
+      }
+    }
+    // When user branch is set, try to show distance only beside branch if geolocation is available
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.USER_BRANCH && window.USER_BRANCH.id && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          const userLat = pos.coords.latitude, userLng = pos.coords.longitude;
+          const branch = window.BRANCHES.find(b=>b.id===window.USER_BRANCH.id);
+          if (branch) {
+            const dist = haversine(userLat, userLng, branch.lat, branch.lng);
+            const distEl = document.getElementById('branch-distance');
+            if (distEl) distEl.innerHTML = '(' + dist.toFixed(2) + ' km)';
+          }
+        });
+      }
+    });
+
+    // Branch change modal logic
+    function openBranchChangeModal(userLat, userLng) {
+      if (!window.BRANCHES) return;
+      let modal = document.getElementById('branch-change-modal');
+      if (modal) modal.remove();
+      modal = document.createElement('div');
+      modal.id = 'branch-change-modal';
+      modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;display:flex;align-items:center;justify-content:center;';
+      let html = `<div style="background:#fff;color:#222;padding:0;border-radius:22px;min-width:290px;max-width:95vw;box-shadow:0 8px 40px 0 rgba(0,0,0,0.18);font-family:Inter,sans-serif;position:relative;overflow:hidden;">
+        <div style="background:linear-gradient(90deg,#7d310a 0%,#cf8756 100%);padding:22px 28px 16px 28px;text-align:center;">
+          <button id='close-branch-modal' style='position:absolute;top:18px;right:22px;font-size:22px;background:none;border:none;color:#fff;cursor:pointer;transition:color .2s;' onmouseover="this.style.color='#f9f5f2'" onmouseout="this.style.color='#fff'">&times;</button>
+          <div style="font-size:22px;font-weight:900;letter-spacing:0.5px;color:#fff;">Select Branch</div>
+          <div style="margin-top:6px;font-size:13px;opacity:0.92;color:#fff;">Choose a branch to display. Distance is shown if location is available.</div>
+        </div>
+        <div style='padding:22px 28px 18px 28px;display:flex;flex-direction:column;gap:10px;'>`;
+      window.BRANCHES.forEach(b => {
+          let dist = '';
+          if (typeof userLat === 'number' && typeof userLng === 'number') {
+            dist = ' (' + haversine(userLat, userLng, b.lat, b.lng).toFixed(2) + ' km)';
+          }
+          const isSelected = window.USER_BRANCH && window.USER_BRANCH.id === b.id;
+          if (isSelected) {
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;font-size:16px;font-weight:600;border:none;outline:none;cursor:default;border-radius:12px;box-shadow:0 2px 12px 0 rgba(207,135,86,0.10);background:linear-gradient(90deg,#7d310a 0%,#cf8756 100%);color:#fff;gap:10px;opacity:1;position:relative;">
+              <span><i class="fa fa-map-marker-alt" style="margin-right:7px;color:#fff;"></i>${b.name} Branch</span>
+              <span style='font-size:13px;color:#fff;background:rgba(207,135,86,0.95);padding:2px 10px 2px 10px;border-radius:8px;${dist?'':'opacity:0.5;'}'>${dist}</span>
+              <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#fff;font-size:18px;"><i class='fa fa-check-circle'></i></span>
+            </div>`;
+          } else {
+            html += `<button data-branch="${b.id}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;font-size:16px;font-weight:600;border:none;outline:none;cursor:pointer;border-radius:12px;transition:background .18s,color .18s,box-shadow .18s;margin:0;background:#f9f5f2;color:#7d310a;gap:10px;" onmouseover="this.style.background='linear-gradient(90deg,#cf8756 0%,#e8a56a 100%)';this.style.color='#fff'" onmouseout="this.style.background='#f9f5f2';this.style.color='#7d310a'">
+              <span><i class="fa fa-map-marker-alt" style="margin-right:7px;color:#cf8756;"></i>${b.name} Branch</span>
+              <span style='font-size:13px;color:#fff;background:rgba(207,135,86,0.95);padding:2px 10px 2px 10px;border-radius:8px;${dist?'':'opacity:0.5;'}'>${dist}</span>
+            </button>`;
+          }
+      });
+      html += `</div>
+      </div>`;
+      modal.innerHTML = html;
+      document.body.appendChild(modal);
+      // Button events
+      modal.querySelectorAll('button[data-branch]').forEach(btn => {
+        btn.onclick = function() {
+          const branchId = this.getAttribute('data-branch');
+          fetch('set_branch.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'branch_id=' + encodeURIComponent(branchId)
+          }).then(() => {
+            window.USER_BRANCH = window.BRANCHES.find(b=>b.id==branchId);
+            document.body.removeChild(modal);
+            location.reload();
+          });
+        };
+      });
+      document.getElementById('close-branch-modal').onclick = function() {
+        document.body.removeChild(modal);
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const changeLink = document.getElementById('branch-change-link');
+      if (changeLink) {
+        changeLink.onclick = function(e) {
+          e.preventDefault();
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(pos) {
+              openBranchChangeModal(pos.coords.latitude, pos.coords.longitude);
+            }, function() {
+              openBranchChangeModal();
+            }, {timeout:5000});
+          } else {
+            openBranchChangeModal();
+          }
+        };
+      }
+    });
+    // Only auto-detect nearest branch if not set in session
+    if (!window.USER_BRANCH || !window.USER_BRANCH.id) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          showNearestBranch(pos.coords.latitude, pos.coords.longitude);
+        }, function(err) {}, {timeout:5000});
+      }
+    }
       // Pass PHP referral_count to JS and auto-open modal if 1
   window.REFERRAL_COUNT = <?php echo isset($_SESSION['referral_count']) ? (int)$_SESSION['referral_count'] : 0; ?>;
   window.SHOW_REFERRAL_MODAL = <?php echo $showReferralModal ? 'true' : 'false'; ?>;
