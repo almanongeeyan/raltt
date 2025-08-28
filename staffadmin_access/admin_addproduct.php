@@ -158,7 +158,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                         <button id="btnForTiles" type="button" class="flex-1 px-4 py-2 rounded-lg font-semibold border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 focus:bg-blue-100 focus:outline-none">For Tiles</button>
                         <button id="btnForOthers" type="button" class="flex-1 px-4 py-2 rounded-lg font-semibold border border-gray-400 text-gray-700 bg-white hover:bg-gray-100 focus:bg-gray-200 focus:outline-none">For Others</button>
                     </div>
-                    <form id="formForTiles" class="flex-1 flex flex-col gap-4 px-6 py-6 overflow-y-auto" action="store_product.php" method="POST" enctype="multipart/form-data">
+                    <form id="formForTiles" class="flex-1 flex flex-col gap-4 px-6 py-6 overflow-y-auto" action="processes/store_product.php" method="POST" enctype="multipart/form-data">
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Tile Image</label>
                             <input type="file" name="product_image" accept="image/*" class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
@@ -205,7 +205,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                             <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow">Add Product</button>
                         </div>
                     </form>
-                    <form id="formForOthers" class="flex-1 flex-col gap-4 px-6 py-6 overflow-y-auto hidden" action="store_product.php" method="POST" enctype="multipart/form-data">
+                    <form id="formForOthers" class="flex-1 flex-col gap-4 px-6 py-6 overflow-y-auto hidden" action="processes/store_product.php" method="POST" enctype="multipart/form-data">
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Product Image</label>
                             <input type="file" name="product_image" accept="image/*" class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
@@ -224,12 +224,8 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                             <label class="block text-gray-700 font-medium mb-1">Product Name</label>
                             <input type="text" name="product_name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter product name" required />
                         </div>
-                        <div>
-                            <label class="inline-flex items-center mt-2">
-                                <input type="checkbox" name="is_archived" value="1" class="form-checkbox h-5 w-5 text-blue-600">
-                                <span class="ml-2 text-gray-700">Archive this product (hidden from users)</span>
-                            </label>
-                        </div>
+                        
+                        
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Product Description</label>
                             <textarea name="product_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter product description" required></textarea>
@@ -241,6 +237,12 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Stock Count</label>
                             <input type="number" name="stock_count" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter stock count" required />
+                        </div>
+                        <div>
+                            <label class="inline-flex items-center mt-2">
+                                <input type="checkbox" name="is_archived" value="1" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="ml-2 text-gray-700">Archive this product (hidden from users)</span>
+                            </label>
                         </div>
                         <div class="flex justify-end gap-2 mt-4">
                             <button type="button" id="cancelAddProductSidebar2" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 font-medium">Cancel</button>
@@ -282,7 +284,7 @@ function handleProductForm(formId, productType) {
         e.preventDefault();
         const formData = new FormData(form);
         formData.set('product_type', productType);
-        fetch('store_product.php', {
+    fetch('processes/store_product.php', {
             method: 'POST',
             body: formData
         })
@@ -480,7 +482,7 @@ function filterProducts() {
 
 function loadProducts() {
     const showArchived = document.getElementById('showArchivedCheckbox')?.checked ? 1 : 0;
-    fetch('get_products.php?show_archived=' + showArchived)
+    fetch('processes/get_products.php?show_archived=' + showArchived)
         .then(res => res.json())
         .then(products => {
             allProducts = products;
@@ -537,7 +539,7 @@ function showEditModal(product) {
     document.getElementById('editProductForm').onsubmit = function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-        fetch('edit_product.php', {
+    fetch('processes/edit_product.php', {
             method: 'POST',
             body: formData
         })
@@ -574,7 +576,7 @@ document.addEventListener('click', function(e) {
             cancelButtonText: 'Cancel',
         }).then(result => {
             if (result.isConfirmed) {
-                fetch('archive_product.php', {
+                fetch('processes/archive_product.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ product_id: id, unarchive: 0 })
@@ -604,7 +606,7 @@ document.addEventListener('click', function(e) {
             cancelButtonText: 'Cancel',
         }).then(result => {
             if (result.isConfirmed) {
-                fetch('archive_product.php', {
+                fetch('processes/archive_product.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ product_id: id, unarchive: 1 })

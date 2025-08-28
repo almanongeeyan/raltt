@@ -81,8 +81,8 @@ echo $branchOverlay;
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-    // --- Branch location overlay logic ---
+  <script>
+  // --- Branch location overlay logic ---
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371; // km
       const dLat = (lat2 - lat1) * Math.PI / 180;

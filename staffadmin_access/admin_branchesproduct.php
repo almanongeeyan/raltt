@@ -99,7 +99,7 @@ viewBtns.forEach(btn => {
 });
 
 // Fetch live product counts for each branch
-fetch('get_branch_product_counts.php')
+fetch('processes/get_branch_product_counts.php')
     .then(res => res.json())
     .then(counts => {
         Object.entries(counts).forEach(([branchId, count]) => {

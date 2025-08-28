@@ -1,6 +1,6 @@
 <?php
 // get_products.php
-require_once '../connection/connection.php';
+require_once '../../connection/connection.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 $branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;

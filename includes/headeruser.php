@@ -758,5 +758,78 @@ setInterval(function() {
         }
     });
 </script>
+<script>
+// --- Geolocation enforcement (polling every second) ---
+function showGeolocationRequired() {
+    document.body.innerHTML = '';
+    document.body.style.background = '#1a1a1a';
+    var div = document.createElement('div');
+    div.id = 'geo-required-message';
+    div.style = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#fff;font-family:Inter,sans-serif;text-align:center;';
+    div.innerHTML = '<h1 style="font-size:2.2rem;margin-bottom:18px;">Geolocation Required</h1>' +
+        '<p style="font-size:1.1rem;max-width:400px;">You must allow location access to use this website. Please enable geolocation in your browser settings and reload the page.</p>';
+    document.body.appendChild(div);
+}
+function showGeolocationNotSupported() {
+    document.body.innerHTML = '';
+    document.body.style.background = '#1a1a1a';
+    var div = document.createElement('div');
+    div.style = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#fff;font-family:Inter,sans-serif;text-align:center;';
+    div.innerHTML = '<h1 style="font-size:2.2rem;margin-bottom:18px;">Geolocation Not Supported</h1>' +
+        '<p style="font-size:1.1rem;max-width:400px;">Your browser does not support geolocation. Please use a compatible browser.</p>';
+    document.body.appendChild(div);
+}
+document.addEventListener('DOMContentLoaded', function() {
+    if (!navigator.geolocation) {
+        showGeolocationNotSupported();
+        return;
+    }
+    let geoOk = false;
+    let wasDenied = false;
+    let geoInterval = null;
+
+    function checkGeo() {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            if (!geoOk && wasDenied) {
+                // Only reload if permission changed from denied to allowed
+                location.reload();
+            }
+            geoOk = true;
+            wasDenied = false;
+        }, function(error) {
+            if (geoOk || error.code === error.PERMISSION_DENIED || error.code === error.POSITION_UNAVAILABLE) {
+                showGeolocationRequired();
+                wasDenied = true;
+            }
+            geoOk = false;
+        }, {timeout: 5000});
+    }
+
+    function startGeoCheck() {
+        if (!geoInterval) {
+            checkGeo();
+            geoInterval = setInterval(checkGeo, 1000);
+        }
+    }
+    function stopGeoCheck() {
+        if (geoInterval) {
+            clearInterval(geoInterval);
+            geoInterval = null;
+        }
+    }
+
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            startGeoCheck();
+        } else {
+            stopGeoCheck();
+        }
+    });
+    // Start checking only when tab is visible
+    if (document.visibilityState === 'visible') {
+        startGeoCheck();
+    }
+});
+</script>
 </body>
 </html>

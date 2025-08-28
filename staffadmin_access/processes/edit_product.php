@@ -1,6 +1,6 @@
 <?php
 // edit_product.php
-require_once '../connection/connection.php';
+require_once '../../connection/connection.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 header('Content-Type: application/json');

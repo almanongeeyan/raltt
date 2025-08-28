@@ -1,9 +1,7 @@
 <?php
 // store_product.php
-require_once '../connection/connection.php';
+require_once '../../connection/connection.php';
 
-// Handle POST request to store a product
-require_once '../connection/connection.php';
 
 function storeProduct($data, $file = null) {
     global $db_connection;
@@ -11,9 +9,9 @@ function storeProduct($data, $file = null) {
     $isTile = ($data['product_type'] === 'tile');
 
     $sql = "INSERT INTO products (
-        product_type, product_name, product_price, product_description, product_image, product_spec, tile_type, tile_design, sku, is_popular, is_best_seller, is_archived
+        product_type, product_name, product_price, product_description, product_image, product_spec, tile_type, tile_design, sku, is_popular, is_hot, is_best_seller, is_archived
     ) VALUES (
-        :product_type, :product_name, :product_price, :product_description, :product_image, :product_spec, :tile_type, :tile_design, :sku, :is_popular, :is_best_seller, :is_archived
+        :product_type, :product_name, :product_price, :product_description, :product_image, :product_spec, :tile_type, :tile_design, :sku, :is_popular, :is_hot, :is_best_seller, :is_archived
     )";
 
     // Handle image upload (optional)
@@ -33,6 +31,7 @@ function storeProduct($data, $file = null) {
     $stmt->bindValue(':tile_design', $isTile ? ($data['tile_design'] ?? null) : null);
     $stmt->bindValue(':sku', $data['sku'] ?? null);
     $stmt->bindValue(':is_popular', $data['is_popular'] ?? 0, PDO::PARAM_INT);
+    $stmt->bindValue(':is_hot', $data['is_hot'] ?? 0, PDO::PARAM_INT);
     $stmt->bindValue(':is_best_seller', $data['is_best_seller'] ?? 0, PDO::PARAM_INT);
     $stmt->bindValue(':is_archived', isset($data['is_archived']) ? (int)$data['is_archived'] : 0, PDO::PARAM_INT);
     $stmt->execute();

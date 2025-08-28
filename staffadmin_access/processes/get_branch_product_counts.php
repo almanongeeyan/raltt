@@ -1,6 +1,6 @@
 <?php
 // Returns an array of branch product counts: [branch_id => count]
-require_once '../connection/connection.php';
+require_once '../../connection/connection.php';
 
 $sql = "SELECT pb.branch_id, COUNT(DISTINCT pb.product_id) as product_count
         FROM product_branches pb
