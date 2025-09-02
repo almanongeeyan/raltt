@@ -18,26 +18,18 @@ include 'includes/header.php';
 
 <body>
     <section class="about-raltt-section">
-    <div class="about-raltt-grid">
-        <!-- Top Left Text -->
-        <div class="grid-top-left">
+    <div class="about-raltt-grid">        <div class="grid-top-left">
             <span class="highlight">RALTT:</span> Bring Your<br>
             Visions to Life:<br>
             Design Stunning Spaces,<br>
             with our <span class="highlight2">2D Tile Visualizer</span>
         </div>
-
-        <!-- Top Right Image -->
         <div class="grid-top-right">
             <img src="images/tile1.png" alt="Tiles Stack">
         </div>
-
-        <!-- Bottom Left Image -->
         <div class="grid-bottom-left">
             <img src="images/tile2.png" alt="Tile Samples">
         </div>
-
-        <!-- Bottom Right Text + Button -->
         <div class="grid-bottom-right">
             <p>
                 We will bring something new and refreshing to your usage 
