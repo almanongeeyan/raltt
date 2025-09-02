@@ -1,0 +1,14 @@
+[2025-08-18 11:28:58] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'raltt_db'
+[2025-08-18 11:29:32] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'raltt_db'
+[2025-08-18 11:38:00] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'raltt_db'
+[2025-08-18 11:38:11] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'raltt_db'
+[2025-08-19 10:51:31] PDO Error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.user' doesn't exist
+[2025-08-19 10:52:07] PDO Error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.user' doesn't exist
+[2025-08-19 10:56:20] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
+[2025-08-29 13:35:17] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
+[2025-08-29 14:11:13] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
+[2025-08-29 14:42:59] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
+[2025-08-29 14:44:43] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
+[2025-08-29 14:48:28] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
+[2025-08-30 14:21:25] Referral code error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'first_name' in 'field list'
+[2025-08-30 14:21:27] Referral code error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'first_name' in 'field list'
