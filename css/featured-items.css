@@ -35,7 +35,7 @@
 }
 .featured-items {
     display: flex;
-    gap: 30px;
+    gap: 16px;
     overflow: hidden;
     width: 1000px;
     min-height: 320px;
@@ -178,7 +178,7 @@
 @media (max-width: 800px) {
     .featured-items {
         width: 350px;
-        gap: 18px;
+    gap: 8px;
     }
     .featured-item {
         width: 140px;
@@ -191,7 +191,7 @@
 @media (max-width: 500px) {
     .featured-items {
         width: 180px;
-        gap: 0;
+    gap: 0;
     }
     .featured-section {
         padding: 20px 0 30px 0;

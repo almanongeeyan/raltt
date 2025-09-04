@@ -28,7 +28,51 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Get and sanitize input data
+
+// Branch staff login (by username/password, not phone)
+if (isset($_POST['username']) && isset($_POST['password']) && !empty($_POST['username']) && !empty($_POST['password'])) {
+    $username = trim($_POST['username']);
+    $password = $_POST['password'];
+    try {
+        $stmt = $db_connection->prepare("SELECT * FROM branch_staff WHERE username = ?");
+        $stmt->execute([$username]);
+        $staff = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$staff) {
+            $response['message'] = 'Username not found';
+            http_response_code(401);
+            echo json_encode($response);
+            exit();
+        }
+        // Accept plain password for legacy data, or password_verify for hashed
+        $password_valid = password_verify($password, $staff['password_hash']) || $password === $staff['password_hash'];
+        if (!$password_valid) {
+            $response['message'] = 'Incorrect password';
+            http_response_code(401);
+            echo json_encode($response);
+            exit();
+        }
+        // Set session for branch staff
+        $_SESSION['branch_staff_logged_in'] = true;
+        $_SESSION['branch_staff_id'] = $staff['staff_id'];
+        $_SESSION['branch_id'] = $staff['branch_id'];
+        $_SESSION['branch_staff_username'] = $staff['username'];
+        $response['status'] = 'success';
+        $response['message'] = 'Logged in as branch staff of branch ID: ' . $staff['branch_id'];
+        $response['branch_id'] = $staff['branch_id'];
+    $response['redirect'] = '/raltt/staffadmin_access/admin_analytics.php';
+        http_response_code(200);
+        echo json_encode($response);
+        exit();
+    } catch (PDOException $e) {
+        error_log("[".date('Y-m-d H:i:s')."] Branch staff login error: " . $e->getMessage() . PHP_EOL, 3, "database_errors.log");
+        $response['message'] = 'Database error during branch staff login';
+        http_response_code(500);
+        echo json_encode($response);
+        exit();
+    }
+}
+
+// Default: manual user login (phone/password)
 $phone = trim($_POST['phone'] ?? '');
 $password = $_POST['password'] ?? '';
 
@@ -83,6 +127,7 @@ try {
     $_SESSION['phone_number'] = $user['phone_number'];
     $_SESSION['full_name'] = $user['full_name'];
     $_SESSION['account_type'] = 'manual';
+    $_SESSION['referral_count'] = isset($user['referral_count']) ? $user['referral_count'] : null;
 
     // Update last login time
     $updateStmt = $db_connection->prepare("UPDATE manual_accounts SET last_login = NOW() WHERE user_id = ?");

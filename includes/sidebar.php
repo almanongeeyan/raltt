@@ -1,9 +1,33 @@
+<?php
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Branch name mapping
+$branch_names = [
+    1 => 'Deparo',
+    2 => 'Vangaurd',
+    3 => 'Brixton',
+    4 => 'Samaria',
+    5 => 'Kiko'
+];
+
+// Get branch_id from session (set this during staff login)
+$branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
+$sidebar_logo = 'STAFF';
+if ($branch_id && isset($branch_names[$branch_id])) {
+    $sidebar_logo = $branch_names[$branch_id];
+    // Set branch_name in session for use in other pages (e.g., 'Kiko Branch')
+    $_SESSION['branch_name'] = $branch_names[$branch_id] . ' Branch';
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Sidebar</title>
+    <title>Staff Admin Page</title>
     <style>
         :root {
             /* Updated color scheme */
@@ -399,10 +423,10 @@
         <div class="sidebar-content">
             <div class="sidebar-top">
                 <div class="sidebar-header">
-                    <div class="sidebar-logo">STAFF</div>
+                    <div class="sidebar-logo"><?php echo htmlspecialchars($sidebar_logo); ?></div>
                     <div class="user-info">
                         <p class="user-name">Rich Anne Lea</p>
-                        <p class="user-role">Tiles Trading</p>
+                        <p class="user-role"><strong>Tiles Trading</strong></p>
                     </div>
                 </div>
 
@@ -411,101 +435,124 @@
                 <ul class="sidebar-nav">
                     <li class="sidebar-nav-item">
                         <a href="../staffadmin_access/admin_analytics.php" class="sidebar-nav-link">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zM9 17H7v-7h2v7zm4 0h-2v-4h2v4zm4 0h-2v-2h2v2z"/>
-                            </svg>
-                            <span>Analytics</span>
+                            <!-- Dashboard Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                            <span>Dashboard</span>
                         </a>
                     </li>
-                    
                     <li class="sidebar-nav-item">
                         <div class="sidebar-nav-link dropdown-menu-parent">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <path d="M16 13V3h-2v3H3v14a2 2 0 002 2h14a2 2 0 002-2v-9h-5zM5 20V8h12v5H7v5h8v-3z"/>
-                            </svg>
+                            <!-- Sales Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17v-2a4 4 0 014-4h10a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                             <span>Sales</span>
-                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
+                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_orders.php" class="dropdown-link">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <path d="M16 13V3h-2v3H3v14a2 2 0 002 2h14a2 2 0 002-2v-9h-5zM5 20V8h12v5H7v5h8v-3z"/>
-                                    </svg>
+                                    <!-- Orders Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Orders</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_completeorder.php" class="dropdown-link">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
-                                    </svg>
-                                    <span>Completed Orders</span>
+                                <a href="../staffadmin_access/admin_transactions.php" class="dropdown-link">
+                                    <!-- Transactions Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17v-6a5 5 0 00-10 0v6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Transactions</span>
                                 </a>
                             </li>
+                        </ul>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <div class="sidebar-nav-link dropdown-menu-parent">
+                            <!-- Reports Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 17V9M15 17V13" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Reports</span>
+                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <ul class="dropdown-menu">
                             <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_financialreports.php" class="dropdown-link">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm4 2h2v10H9V7zm4 3h2v7h-2v-7z"/>
-                                    </svg>
+                                    <!-- Financial Reports Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 17v-6M12 17v-2M16 17v-4" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Financial Reports</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_salesreports.php" class="dropdown-link">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <path d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm2 4v2h10V7H7zm0 4v2h10v-2H7zm0 4v2h7v-2H7z"/>
-                                    </svg>
+                                    <!-- Sales Reports Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-4M12 17v-7M17 17v-2" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Sales Reports</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <li class="sidebar-nav-item">
-                        <a href="../staffadmin_access/admin_addproduct.php" class="sidebar-nav-link">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <path d="M14 6H4a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V8a2 2 0 00-2-2zM4 22V8h10v14H4zm16-8v-2h-2V9h2V7h2v2h2v2h-2v2h2v2h2v2h-2v-2h-2v-2z"/>
-                            </svg>
-                            <span>Products</span>
-                        </a>
-                    </li>
-                    
-                    <li class="sidebar-nav-item">
-                        <div class="sidebar-nav-link dropdown-menu-parent">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                <path d="M22 6h-4V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2H2c-1.1 0-2 .9-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-4h4a2 2 0 002-2V8a2 2 0 00-2-2zm-6-2h-4v2h4V4zM2 18V8h4v10H2zm6 0v-4h8v4H8zm14-4h-4V8h4v6z"/>
-                            </svg>
-                            <span>Supply</span>
-                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </div>
-                        <ul class="dropdown-menu">
-                            <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_addsupplier.php" class="dropdown-link">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <path d="M22 6h-4V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v2H2c-1.1 0-2 .9-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-4h4a2 2 0 002-2V8a2 2 0 00-2-2zm-6-2h-4v2h4V4zM2 18V8h4v10H2zm6 0v-4h8v4H8zm14-4h-4V8h4v6z"/>
-                                    </svg>
-                                    <span>Suppliers</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_inventoryreports.php" class="dropdown-link">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                        <path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm4 2h2v10H9V7zm4 3h2v7h-2v-7z"/>
-                                    </svg>
+                                    <!-- Inventory Reports Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-2M12 17v-4M17 17v-6" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Inventory Reports</span>
                                 </a>
                             </li>
                         </ul>
                     </li>
-                </ul>
+                    <li class="sidebar-nav-item">
+                        <div class="sidebar-nav-link dropdown-menu-parent">
+                            <!-- Maintenance Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7l-1-1-4 4 1 1a2 2 0 002.83 0l1.17-1.17a2 2 0 000-2.83zM3 17v2a2 2 0 002 2h2l9-9-4-4-9 9z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Maintenance</span>
+                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/admin_branchesproduct.php" class="dropdown-link">
+                                    <!-- Products Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Products</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/admin_addsupplier.php" class="dropdown-link">
+                                    <!-- Suppliers Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 20v-2a4 4 0 014-4h0a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Suppliers</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="#" class="dropdown-link">
+                                    <!-- Banner Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="4,4 12,12 20,4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Banner</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <div class="sidebar-nav-link dropdown-menu-parent">
+                            <!-- Inquiry Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v4" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+                            <span>Inquiry</span>
+                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item">
+                                <a href="#" class="dropdown-link">
+                                    <!-- Cancel Request Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/><line x1="6" y1="18" x2="18" y2="6" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Cancel Request</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="#" class="dropdown-link">
+                                    <!-- Customer Tickets Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 7V5a2 2 0 012-2h6a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                                    <span>Customer Tickets</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
             </div>
 
-            <a href="../index.php" class="logout-link">
+            <a href="../connection/logout.php?redirect=index.php" class="logout-link">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h10V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10v-2H4V5z"/>
                 </svg>
@@ -515,6 +562,20 @@
     </aside>
 
     <script>
+        // Session check every 0.1 second (100ms)
+        setInterval(function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '../connection/check_session.php', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var resp = xhr.responseText.trim();
+                    if (resp !== 'OK') {
+                        window.location.href = '../connection/tresspass.php';
+                    }
+                }
+            };
+            xhr.send();
+        }, 100);
         document.addEventListener('DOMContentLoaded', function() {
             const navLinks = document.querySelectorAll('.sidebar-nav-link, .dropdown-link');
             const dropdownParents = document.querySelectorAll('.dropdown-menu-parent');

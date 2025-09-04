@@ -62,7 +62,7 @@
 <body>
     <div class="main-content">
         <div class="dashboard-header">
-            <h1>Analytics Dashboard</h1>
+            <h1>Dashboard this contains the analytics, but no need to include the word analytics</h1>
         </div>
         <div class="dashboard-content">
             <p>Wag niyo burahin yung nasa taas, proceed na agad kayo sa laman, also make it responsive</p>

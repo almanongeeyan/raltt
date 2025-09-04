@@ -1,56 +1,156 @@
 <?php
-// check_verification.php
-
-// Load Composer's autoloader
-require __DIR__ . '/../vendor/autoload.php';
-
-use Twilio\Rest\Client;
-
-// The credentials below are hardcoded for simplicity.
-// For production, it's highly recommended to use environment variables.
-$sid = 'AC4ce3b22a6b0813ddabc8af53330f2b63';
-$token = '6ac768c348b35d8b86f276612c2fca8f';
-$verify_service_sid = 'VA332fb460c09cf1680db23118718cad64';
-
+// Enable CORS for cross-origin requests
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['phone_number']) || !isset($_POST['verification_code'])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid request.']);
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit();
 }
 
-$phoneNumber = trim($_POST['phone_number']);
-$verificationCode = trim($_POST['verification_code']);
-
-// This logic is crucial to convert a domestic number (e.g., 0917...) 
-// to the international E.164 format (+63917...) that Twilio requires.
-if (substr($phoneNumber, 0, 1) === '0' && strlen($phoneNumber) === 11) {
-    $phoneNumber = '+63' . substr($phoneNumber, 1);
-} elseif (strlen($phoneNumber) === 10 && substr($phoneNumber, 0, 1) === '9') {
-    $phoneNumber = '+63' . $phoneNumber;
+// Only allow POST requests
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+    exit();
 }
 
-// Ensure the number is now in the correct E.164 format before proceeding.
-if (!preg_match('/^\+[1-9]\d{1,14}$/', $phoneNumber)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid phone number format. Please use a number like 09171234567.']);
+// Check if Twilio PHP SDK is available
+if (!file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Twilio SDK not found. Please run composer install']);
+    exit();
+}
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Twilio\Rest\Client;
+use Twilio\Exceptions\TwilioException;
+
+// Your Twilio credentials (updated 2025-08-24, new set)
+$sid = "ACb859b1d0b98e99dd9948bcc0901b71e4";
+$token = "c33453ea3d946b8e3726548c66f483c6";
+$verify_service_sid = "VA6d14e3699a4add30e49a090f0457c18e";
+
+// Check if required parameters are submitted
+if (!isset($_POST['phone']) || empty($_POST['phone']) || !isset($_POST['code']) || empty($_POST['code'])) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Phone number and verification code are required.']);
+    exit();
+}
+
+$phoneNumber = trim($_POST['phone']);
+$verificationCode = trim($_POST['code']);
+
+// Validate phone number format
+if (!preg_match('/^\+639[0-9]{9}$/', $phoneNumber)) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Invalid phone number format.']);
+    exit();
+}
+
+// Validate verification code format (6 digits)
+if (!preg_match('/^[0-9]{6}$/', $verificationCode)) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Verification code must be 6 digits.']);
+    exit();
+}
+
+// Rate limiting for verification attempts
+session_start();
+$ip = $_SERVER['REMOTE_ADDR'];
+$rateLimitKey = "verification_check_attempts_" . $ip;
+$maxAttempts = 10;
+$timeWindow = 300; // 5 minutes
+
+if (!isset($_SESSION[$rateLimitKey])) {
+    $_SESSION[$rateLimitKey] = ['count' => 0, 'first_attempt' => time()];
+}
+
+// Reset counter if time window has passed
+if (time() - $_SESSION[$rateLimitKey]['first_attempt'] > $timeWindow) {
+    $_SESSION[$rateLimitKey] = ['count' => 0, 'first_attempt' => time()];
+}
+
+// Check if rate limit exceeded
+if ($_SESSION[$rateLimitKey]['count'] >= $maxAttempts) {
+    http_response_code(429);
+    echo json_encode(['status' => 'error', 'message' => 'Too many verification attempts. Please wait 5 minutes before trying again.']);
     exit();
 }
 
 try {
+    // Instantiate a new Twilio client
     $twilio = new Client($sid, $token);
-    $verification_check = $twilio->verify->v2->services($verify_service_sid)
-                                     ->verificationChecks
-                                     ->create([
-                                         "to" => $phoneNumber,
-                                         "code" => $verificationCode
-                                     ]);
-
-    if ($verification_check->status === 'approved') {
-        echo json_encode(['success' => true, 'message' => 'Verification successful!']);
+    
+    // Check the verification code
+    $verificationCheck = $twilio->verify->v2->services($verify_service_sid)
+                                           ->verificationChecks
+                                           ->create([
+                                               'to' => $phoneNumber,
+                                               'code' => $verificationCode
+                                           ]);
+    
+    // Increment rate limit counter
+    $_SESSION[$rateLimitKey]['count']++;
+    
+    // Check the verification status
+    if ($verificationCheck->status === 'approved') {
+        // Log successful verification
+        error_log("Phone number verified successfully: " . $phoneNumber . " from IP: " . $ip);
+        
+        echo json_encode([
+            'status' => 'success', 
+            'message' => 'Phone number verified successfully!',
+            'phone' => $phoneNumber
+        ]);
+    } elseif ($verificationCheck->status === 'pending') {
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'Verification code is incorrect. Please try again.'
+        ]);
+    } elseif ($verificationCheck->status === 'expired') {
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'Verification code has expired. Please request a new one.'
+        ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid verification code.']);
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'Verification failed. Please try again.'
+        ]);
     }
+
+} catch (TwilioException $e) {
+    // Log Twilio-specific errors
+    error_log("Twilio API Error during verification check for phone " . $phoneNumber . ": " . $e->getMessage() . " from IP: " . $ip);
+    
+    $errorMessage = 'Verification failed. ';
+    
+    // Provide user-friendly error messages for common Twilio errors
+    if ($e->getCode() === 21608 || stripos($e->getMessage(), 'unverified') !== false) {
+        $errorMessage = 'Twilio trial account limitation: you can only send SMS to verified numbers. Verify the phone number in your Twilio Console or upgrade your account.';
+    } elseif (stripos($e->getMessage(), 'not a valid phone number') !== false) {
+        $errorMessage .= 'Invalid phone number format.';
+    } elseif (stripos($e->getMessage(), 'authentication') !== false || stripos($e->getMessage(), '401') !== false) {
+        $errorMessage .= 'Authentication failed. Please check Twilio credentials.';
+    } elseif (stripos($e->getMessage(), 'quota') !== false || $e->getCode() === 20429) {
+        $errorMessage .= 'Service quota exceeded. Please try again later.';
+    } else {
+        $errorMessage .= 'Please try again later.';
+    }
+    
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => $errorMessage]);
+    
 } catch (Exception $e) {
-    error_log("Twilio verification check failed: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An error occurred during verification.']);
+    // Log general errors
+    error_log("General Error in check_verification.php: " . $e->getMessage() . " for phone " . $phoneNumber . " from IP: " . $ip);
+    
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'An unexpected error occurred: ' . $e->getMessage()]);
 }
+?>
