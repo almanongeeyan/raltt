@@ -32,7 +32,7 @@ use Twilio\Exceptions\TwilioException;
 
 // Your Twilio credentials
 $sid = "ACb859b1d0b98e99dd9948bcc0901b71e4";
-$token = "29f2a1c745f31079c1289a8d912c127e";
+$token = "89f0376667216d156594c2453b957191";
 $verify_service_sid = "VA6d14e3699a4add30e49a090f0457c18e";
 
 // Check if a phone number was submitted

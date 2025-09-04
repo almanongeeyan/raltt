@@ -23,22 +23,6 @@ if (!$product_id) {
     exit();
 }
 
-// Only allow updating fields that are editable in the modal
-$fields = [
-    'product_name', 'product_description', 'product_price', 'stock_count'
-];
-$set = [];
-$params = [];
-foreach ($fields as $field) {
-    if (isset($data[$field])) {
-        $set[] = "$field = :$field";
-        $params[":$field"] = $data[$field];
-    }
-}
-if (!$set) {
-    echo json_encode(['status' => 'error', 'message' => 'No fields to update.']);
-    exit();
-}
 
 try {
     // Update products table
@@ -59,6 +43,18 @@ try {
         $stmt2->bindValue(':product_id', $product_id, PDO::PARAM_INT);
         $stmt2->bindValue(':branch_id', $branch_id, PDO::PARAM_INT);
         $stmt2->execute();
+    }
+
+    // Update product_categories for tile products
+    if (isset($data['category_ids']) && is_array($data['category_ids'])) {
+        // Remove old
+        $del = $db_connection->prepare('DELETE FROM product_categories WHERE product_id = ?');
+        $del->execute([$product_id]);
+        // Insert new
+        $ins = $db_connection->prepare('INSERT IGNORE INTO product_categories (product_id, category_id) VALUES (?, ?)');
+        foreach ($data['category_ids'] as $catId) {
+            $ins->execute([$product_id, $catId]);
+        }
     }
 
     echo json_encode(['status' => 'success']);

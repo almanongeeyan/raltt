@@ -1,9 +1,12 @@
-<?php
-// referral_modal.php
-?>
+<!-- Code Owner Display -->
+<div style="text-align:center; margin-top:30px;">
+  <span style="font-size:1.2em; color:#888;">Code Owner (Coins)</span>
+</div>
 
-<div id="referralModalOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 hidden">
-  <div id="referralModalBox" class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all duration-300 scale-90 opacity-0">
+<?php // referral_modal.php ?>
+
+<div id="referralModalOverlay" class="fixed inset-0 bg-black bg-opacity-60 z-[9999] flex items-center justify-center p-4 hidden">
+  <div id="referralModalBox" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all duration-300 scale-90 opacity-0">
     <!-- Modal Header -->
     <div class="bg-gradient-to-r from-primary to-secondary p-6 text-center relative">
       <h2 class="text-2xl font-black text-white">Referral Program</h2>
@@ -43,6 +46,7 @@
       </p>
       
       <form id="referralForm" class="space-y-4">
+        <div id="referralResult" class="text-center text-sm mt-2"></div>
         <div>
           <label for="referralCode" class="block text-sm font-medium text-textdark mb-2">Referral Code</label>
           <div class="relative">
@@ -76,7 +80,7 @@
     </div>
   </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
 <script>
 // Modal control functions
 function openReferralModal() {
@@ -101,6 +105,26 @@ function closeReferralModal() {
     setTimeout(() => {
       overlay.style.display = 'none';
       document.body.style.overflow = '';
+      // Mark referral as completed so recommendation modal can show
+      localStorage.setItem('referralCompleted', 'true');
+      // Show recommendation modal after closing referral modal
+      setTimeout(function() {
+        if (typeof openRecommendationModal === 'function') {
+          openRecommendationModal();
+        } else {
+          // Fallback: show recommendation modal directly
+          const recOverlay = document.getElementById('recommendationModalOverlay');
+          const recBox = document.getElementById('recommendationModalBox');
+          if (recOverlay && recBox) {
+            recOverlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => {
+              recBox.classList.remove('scale-90', 'opacity-0');
+              recBox.classList.add('scale-100', 'opacity-100');
+            }, 10);
+          }
+        }
+      }, 300);
     }, 250);
   }
 }
@@ -111,70 +135,73 @@ document.getElementById('closeReferralModal').addEventListener('click', function
 });
 
 // Form submission handling
-document.getElementById('referralForm').addEventListener('submit', function(e) {
+document.getElementById('referralForm').onsubmit = function(e) {
   e.preventDefault();
-  
-  const referralCode = document.getElementById('referralCode').value.toUpperCase();
-  const regex = /^[A-Z0-9]{6}$/;
-  
+  const referralCode = document.getElementById('referralCode').value;
+  const resultDiv = document.getElementById('referralResult');
+  resultDiv.textContent = '';
+  const regex = /^[A-Za-z0-9]{6}$/;
   if (!regex.test(referralCode)) {
-    Swal.fire({
-      title: 'Invalid Format',
-      text: 'Please enter exactly 6 alphanumeric characters',
-      icon: 'error',
-      confirmButtonColor: '#7d310a'
-    });
-    return;
+    resultDiv.textContent = 'Please enter exactly 6 alphanumeric characters.';
+    resultDiv.style.color = '#b91c1c'; // red
+    return false;
   }
-  
-  // Submit via AJAX
   const formData = new FormData();
   formData.append('referral_code', referralCode);
-  
-  fetch('../connection/process_referral.php', {
+  fetch('processes/process_referral_code.php', {
     method: 'POST',
     body: formData,
     credentials: 'same-origin'
   })
-  .then(response => response.json())
-  .then(data => {
+  .then(async response => {
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      const text = await response.text();
+      resultDiv.textContent = text || 'An unknown error occurred.';
+      resultDiv.style.color = '#b91c1c';
+      return;
+    }
     if (data.success) {
-      Swal.fire({
-        title: 'Success!',
-        text: data.message,
-        icon: 'success',
-        confirmButtonColor: '#7d310a'
-      }).then(() => {
+  resultDiv.innerHTML = `<div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800 text-base font-medium shadow-sm">${data.message}</div>`;
+  resultDiv.style.color = '';
+      setTimeout(() => {
         closeReferralModal();
-        // Optional: redirect or refresh page
-        // window.location.reload();
-      });
+        localStorage.setItem('referralCompleted', 'true');
+        // Show recommendation modal after closing referral modal
+        setTimeout(function() {
+          if (typeof openRecommendationModal === 'function') {
+            openRecommendationModal();
+          } else {
+            // Fallback: show recommendation modal directly
+            const recOverlay = document.getElementById('recommendationModalOverlay');
+            const recBox = document.getElementById('recommendationModalBox');
+            if (recOverlay && recBox) {
+              recOverlay.style.display = 'flex';
+              document.body.style.overflow = 'hidden';
+              setTimeout(() => {
+                recBox.classList.remove('scale-90', 'opacity-0');
+                recBox.classList.add('scale-100', 'opacity-100');
+              }, 10);
+            }
+          }
+        }, 300);
+      }, 4000);
     } else {
-      Swal.fire({
-        title: 'Error',
-        text: data.message,
-        icon: 'error',
-        confirmButtonColor: '#7d310a'
-      });
+      resultDiv.textContent = data.message;
+      resultDiv.style.color = '#b91c1c';
     }
   })
   .catch(error => {
-    Swal.fire({
-      title: 'Error',
-      text: 'An error occurred while processing your request.',
-      icon: 'error',
-      confirmButtonColor: '#7d310a'
-    });
+    resultDiv.textContent = error && error.message ? error.message : 'An error occurred while processing your request.';
+    resultDiv.style.color = '#b91c1c';
   });
-});
+  return false;
+};
 
 // Input validation to allow only alphanumeric characters
 document.getElementById('referralCode').addEventListener('input', function(e) {
   this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
-});
-
-// Uppercase conversion on blur
-document.getElementById('referralCode').addEventListener('blur', function(e) {
-  this.value = this.value.toUpperCase();
 });
 </script>

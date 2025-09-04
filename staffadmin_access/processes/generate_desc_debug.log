@@ -1,0 +1,236 @@
+2025-08-31 11:50:39
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor , Modern ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor","Modern"]}
+
+2025-08-31 11:50:41
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor , Modern ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor","Modern"]}
+
+2025-08-31 11:50:41
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor , Modern ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor","Modern"]}
+
+2025-08-31 11:51:44
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor , Modern ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor","Modern"]}
+
+2025-08-31 11:51:44
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor , Modern ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor","Modern"]}
+
+2025-08-31 11:51:49
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor , Modern ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor","Modern"]}
+
+2025-08-31 11:51:50
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor , Modern ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor","Modern"]}
+
+2025-08-31 11:59:07
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "123" --price "123" --design "123" --stock "123" --categories "[ Black and White , Pool ]"
+INPUT: {"name":"123","price":"123","design":"123","stock":"123","categories":["Black and White","Pool"]}
+
+2025-08-31 12:00:46
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor"]}
+
+2025-08-31 12:00:47
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[ Black and White , Indoor ]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Indoor"]}
+
+2025-08-31 12:02:35
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[\"Floral\",\"Minimalist\"]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Floral","Minimalist"]}
+
+2025-08-31 12:02:36
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories "[\"Floral\",\"Minimalist\"]"
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Floral","Minimalist"]}
+
+2025-08-31 12:06:50
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "122.99" --design "123" --stock "123" --categories "[\"Black and White\",\"Minimalist\"]"
+INPUT: {"name":"Sample","price":"122.99","design":"123","stock":"123","categories":["Black and White","Minimalist"]}
+
+2025-08-31 12:06:51
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "122.99" --design "123" --stock "123" --categories "[\"Black and White\",\"Minimalist\"]"
+INPUT: {"name":"Sample","price":"122.99","design":"123","stock":"123","categories":["Black and White","Minimalist"]}
+
+2025-08-31 13:11:23
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "13" --categories WyJCbGFjayBhbmQgV2hpdGUiXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"13","categories":["Black and White"]}
+
+2025-08-31 13:13:16
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "13" --categories WyJCbGFjayBhbmQgV2hpdGUiXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"13","categories":["Black and White"]}
+
+2025-08-31 13:13:23
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "13" --categories WyJCbGFjayBhbmQgV2hpdGUiXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"13","categories":["Black and White"]}
+
+2025-08-31 13:15:16
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "123" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJGbG9yYWwiXQ==
+INPUT: {"name":"123","price":"123","design":"123","stock":"123","categories":["Black and White","Floral"]}
+
+2025-08-31 13:15:18
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "123" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJGbG9yYWwiXQ==
+INPUT: {"name":"123","price":"123","design":"123","stock":"123","categories":["Black and White","Floral"]}
+
+2025-08-31 13:18:19
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:28
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:31
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:32
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:37
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:38
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:40
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:41
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:42
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:45
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:47
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:48
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:50
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:52
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:53
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:55
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:56
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:57
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:18:58
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:28:19
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:28:20
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:28:22
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:28:23
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:28:25
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:28:26
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:28:27
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:28:29
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:34:16
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 13:34:22
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-08-31 14:35:08
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJNb2Rlcm4iLCJGbG9yYWwiXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Modern","Floral"]}
+
+2025-08-31 14:35:10
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "123" --stock "123" --categories WyJNb2Rlcm4iLCJGbG9yYWwiXQ==
+INPUT: {"name":"Sample","price":"123","design":"123","stock":"123","categories":["Modern","Floral"]}
+
+2025-08-31 14:49:22
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "123" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiXQ==
+INPUT: {"name":"123","price":"123","design":"123","stock":"123","categories":["Black and White"]}
+
+2025-08-31 16:24:58
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --design "Cute" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"Sample","price":"123","design":"Cute","stock":"123","categories":["Black and White","Modern"]}
+
+2025-09-01 02:23:12
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "122.98" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJJbmRvb3IiXQ==
+INPUT: {"name":"Sample","price":"122.98","design":"123","stock":"123","categories":["Black and White","Indoor"]}
+
+2025-09-01 02:29:48
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "123" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJNb2Rlcm4iXQ==
+INPUT: {"name":"123","price":"123","design":"123","stock":"123","categories":["Black and White","Modern"]}
+
+2025-09-01 04:07:46
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Gee" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJGbG9yYWwiXQ==
+INPUT: {"name":"Gee","price":"123","design":"123","stock":"123","categories":["Black and White","Floral"]}
+
+2025-09-01 04:07:48
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Gee" --price "123" --design "123" --stock "123" --categories WyJCbGFjayBhbmQgV2hpdGUiLCJGbG9yYWwiXQ==
+INPUT: {"name":"Gee","price":"123","design":"123","stock":"123","categories":["Black and White","Floral"]}
+
+2025-09-01 13:55:54
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Flower Tile" --price "120" --design "Vines and Floral" --stock "120" --categories WyJGbG9yYWwiLCJJbmRvb3IiXQ==
+INPUT: {"name":"Flower Tile","price":"120","design":"Vines and Floral","stock":"120","categories":["Floral","Indoor"]}
+
+2025-09-01 13:56:51
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hello" --price "120" --design "Blueish Minimalist" --stock "120" --categories WyJQb29sIl0=
+INPUT: {"name":"Hello","price":"120","design":"Blueish Minimalist","stock":"120","categories":["Pool"]}
+
+2025-09-01 14:00:25
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "120" --price "120" --design "Cute" --stock "123" --categories WyJNb2Rlcm4iXQ==
+INPUT: {"name":"120","price":"120","design":"Cute","stock":"123","categories":["Modern"]}
+

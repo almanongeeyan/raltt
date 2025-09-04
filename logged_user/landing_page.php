@@ -20,10 +20,48 @@ if (!isset($_SESSION['logged_in'])) {
 // Show referral modal if referral_count == 1 - MUST BE AT TOP!
 
 
-// Always include the referral modal markup, but only auto-show if referral_count == 1
+
+// Always include the referral modal markup, but only auto-show if has_used_referral_code == 'FALSE'
 include 'referral_form.php';
 include 'recommendation_form.php'; // Include recommendation modal markup
-$showReferralModal = (isset($_SESSION['referral_count']) && $_SESSION['referral_count'] == 1);
+
+// Determine if recommendation modal should be shown (user has no record in user_recommendations)
+$showRecommendationModal = false;
+if (isset($_SESSION['user_id'])) {
+  try {
+    require_once '../connection/connection.php';
+    $pdo = $conn ?? null;
+    if ($pdo) {
+      $stmt = $pdo->prepare('SELECT COUNT(*) as cnt FROM user_recommendations WHERE user_id = ?');
+      $stmt->execute([$_SESSION['user_id']]);
+      $row = $stmt->fetch(PDO::FETCH_ASSOC);
+      if ($row && isset($row['cnt']) && (int)$row['cnt'] === 0) {
+        $showRecommendationModal = true;
+      }
+    }
+  } catch (Exception $e) {
+    // Fallback: do not show modal on error
+  }
+}
+
+// Check has_used_referral_code from DB for the logged-in user
+$showReferralModal = false;
+if (isset($_SESSION['user_id'])) {
+  try {
+    require_once '../connection/connection.php';
+    $pdo = $conn ?? null;
+    if ($pdo) {
+      $stmt = $pdo->prepare('SELECT has_used_referral_code FROM users WHERE id = ? LIMIT 1');
+      $stmt->execute([$_SESSION['user_id']]);
+      $row = $stmt->fetch(PDO::FETCH_ASSOC);
+      if ($row && isset($row['has_used_referral_code']) && $row['has_used_referral_code'] === 'FALSE') {
+        $showReferralModal = true;
+      }
+    }
+  } catch (Exception $e) {
+    // Fallback: do not show modal on error
+  }
+}
 
 include '../includes/headeruser.php';
 
@@ -41,26 +79,7 @@ foreach ($branches as $b) {
   if ($b['id'] === $user_branch_id) { $user_branch = $b; break; }
 }
 echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRANCH = ' . json_encode($user_branch) . ';</script>';
-
-$branchOverlay = '<div id="branch-location-overlay" style="position:fixed;top:90px;left:24px;z-index:9999;background:rgba(30,30,30,0.90);color:#fff;padding:12px 22px 12px 16px;border-radius:16px;font-size:15px;box-shadow:0 2px 12px 0 rgba(0,0,0,0.13);pointer-events:auto;max-width:290px;line-height:1.5;font-family:Inter,sans-serif;backdrop-filter:blur(2px);border:1.5px solid #cf8756;opacity:0.97;display:block;">';
-$branchOverlay .= '<div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;">';
-$branchOverlay .= '<span style="display:inline-block;width:8px;height:8px;background:#cf8756;border-radius:50%;margin-right:10px;"></span>';
-$branchOverlay .= '<span style="font-weight:500;opacity:0.85;">You\'re currently browsing at</span>';
-
-$branchOverlay .= '</div>';
-$branchOverlay .= '<div style="display:flex;align-items:center;gap:6px;">';
-$branchOverlay .= '<span id="branch-current" style="font-weight:700;">';
-if ($user_branch) {
-  $branchOverlay .= htmlspecialchars($user_branch['name']) . ' Branch';
-} else {
-  $branchOverlay .= '<i>Locating branch...</i>';
-}
-$branchOverlay .= '</span>';
-$branchOverlay .= '<span id="branch-distance" style="font-size:12px;color:#cf8756;margin-left:4px;opacity:0.85;"></span>';
-$branchOverlay .= '<a id="branch-change-link" href="#" style="font-size:11px;color:#e8a56a;margin-left:8px;text-decoration:underline;cursor:pointer;opacity:0.85;pointer-events:auto;">Change</a>';
-$branchOverlay .= '</div>';
-$branchOverlay .= '</div>';
-echo $branchOverlay;
+// Branch overlay removed; now handled globally in headeruser.php
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -223,9 +242,9 @@ echo $branchOverlay;
         }, function(err) {}, {timeout:5000});
       }
     }
-      // Pass PHP referral_count to JS and auto-open modal if 1
-  window.REFERRAL_COUNT = <?php echo isset($_SESSION['referral_count']) ? (int)$_SESSION['referral_count'] : 0; ?>;
+    // Pass PHP referral_count to JS and auto-open modal if 1
   window.SHOW_REFERRAL_MODAL = <?php echo $showReferralModal ? 'true' : 'false'; ?>;
+  window.SHOW_RECOMMENDATION_MODAL = <?php echo $showRecommendationModal ? 'true' : 'false'; ?>;
       
       // Fallback functions in case modal script doesn't load
       function openReferralModalFallback() {
@@ -278,21 +297,23 @@ echo $branchOverlay;
           closeBtn.onclick = function() {
             if (typeof closeReferralModal === 'function') {
               closeReferralModal();
-              // After closing, show recommendation modal
+              // After closing, show recommendation modal only if allowed
               setTimeout(function() {
-                if (typeof openRecommendationModal === 'function') {
-                  openRecommendationModal();
-                } else {
-                  // Fallback: show recommendation modal directly
-                  const recOverlay = document.getElementById('recommendationModalOverlay');
-                  const recBox = document.getElementById('recommendationModalBox');
-                  if (recOverlay && recBox) {
-                    recOverlay.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                    setTimeout(() => {
-                      recBox.classList.remove('scale-90', 'opacity-0');
-                      recBox.classList.add('scale-100', 'opacity-100');
-                    }, 10);
+                if (window.SHOW_RECOMMENDATION_MODAL) {
+                  if (typeof openRecommendationModal === 'function') {
+                    openRecommendationModal();
+                  } else {
+                    // Fallback: show recommendation modal directly
+                    const recOverlay = document.getElementById('recommendationModalOverlay');
+                    const recBox = document.getElementById('recommendationModalBox');
+                    if (recOverlay && recBox) {
+                      recOverlay.style.display = 'flex';
+                      document.body.style.overflow = 'hidden';
+                      setTimeout(() => {
+                        recBox.classList.remove('scale-90', 'opacity-0');
+                        recBox.classList.add('scale-100', 'opacity-100');
+                      }, 10);
+                    }
                   }
                 }
               }, 300);
@@ -302,7 +323,7 @@ echo $branchOverlay;
           };
         }
 
-        // Auto-open modal if needed on first load
+        // Auto-open referral modal if needed on first load
         if (window.SHOW_REFERRAL_MODAL) {
           const modalOverlay = document.getElementById('referralModalOverlay');
           if (modalOverlay) {
@@ -312,9 +333,26 @@ echo $branchOverlay;
               openReferralModalFallback();
             }
           }
+        } else if (window.SHOW_RECOMMENDATION_MODAL) {
+          // If referral modal is not shown, auto-open recommendation modal if allowed
+          const recOverlay = document.getElementById('recommendationModalOverlay');
+          if (recOverlay) {
+            if (typeof openRecommendationModal === 'function') {
+              openRecommendationModal();
+            } else {
+              // Fallback: show recommendation modal directly
+              const recBox = document.getElementById('recommendationModalBox');
+              if (recBox) {
+                recOverlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => {
+                  recBox.classList.remove('scale-90', 'opacity-0');
+                  recBox.classList.add('scale-100', 'opacity-100');
+                }, 10);
+              }
+            }
+          }
         }
-
-  // Removed polling for referral_count every second
       });
       
       tailwind.config = {
@@ -450,6 +488,43 @@ echo $branchOverlay;
     </section>
 
     <!-- Recommendation Items Section -->
+    <?php
+    // --- Fetch recommended products for this user and branch ---
+    $recommendedProducts = [];
+    if (isset($_SESSION['user_id']) && isset($_SESSION['branch_id'])) {
+      require_once '../connection/connection.php';
+      $user_id = $_SESSION['user_id'];
+      $branch_id = (int)$_SESSION['branch_id'];
+      // Get top 3 recommended categories for user (ordered by rank)
+      $catStmt = $conn->prepare('SELECT category_id FROM user_recommendations WHERE user_id = ? ORDER BY rank ASC');
+      $catStmt->execute([$user_id]);
+      $userCats = $catStmt->fetchAll(PDO::FETCH_COLUMN);
+      if ($userCats) {
+        // For each category, get up to N products (more for 1st, less for 2nd/3rd), only for this branch
+        $catWeights = [0=>4, 1=>2, 2=>1]; // 1st:4, 2nd:2, 3rd:1
+        $usedProductIds = [];
+        foreach ($userCats as $i => $catId) {
+          $limit = $catWeights[$i] ?? 1;
+          $prodStmt = $conn->prepare('SELECT p.product_id, p.product_name, p.product_price, p.product_description, p.product_image, tc.category_name FROM products p JOIN product_categories pc ON p.product_id = pc.product_id JOIN tile_categories tc ON pc.category_id = tc.category_id JOIN product_branches pb ON p.product_id = pb.product_id WHERE pc.category_id = ? AND pb.branch_id = ? AND p.is_archived = 0 LIMIT ?');
+          $prodStmt->bindValue(1, $catId, PDO::PARAM_INT);
+          $prodStmt->bindValue(2, $branch_id, PDO::PARAM_INT);
+          $prodStmt->bindValue(3, $limit, PDO::PARAM_INT);
+          $prodStmt->execute();
+          foreach ($prodStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            if (in_array($row['product_id'], $usedProductIds)) continue;
+            $usedProductIds[] = $row['product_id'];
+            // Convert image blob to base64
+            if (!empty($row['product_image'])) {
+              $row['product_image'] = 'data:image/jpeg;base64,' . base64_encode($row['product_image']);
+            } else {
+              $row['product_image'] = null;
+            }
+            $recommendedProducts[] = $row;
+          }
+        }
+      }
+    }
+    ?>
     <section class="relative bg-gradient-to-br from-light via-white to-accent/30 text-textdark py-12 md:py-20 text-center mobile-padding overflow-x-hidden">
       <div class="mb-8">
         <span class="block text-base md:text-[1.1rem] font-medium tracking-wider text-textlight mb-2">Personalized For You</span>
@@ -474,6 +549,10 @@ echo $branchOverlay;
       <div class="featured-pagination flex justify-center gap-3 mt-6 md:mt-9"></div>
       <div class="pointer-events-none absolute inset-0 z-0 opacity-10 bg-[url('../images/user/landingpagetile1.png')] bg-no-repeat bg-right-bottom bg-contain"></div>
     </section>
+    <script>
+    // Recommended products from PHP
+    window.recommendedProducts = <?php echo json_encode($recommendedProducts); ?>;
+    </script>
 
     <!-- Tile Selection Section -->
     <section class="bg-dark text-white py-12 md:py-20 text-center relative overflow-hidden mobile-padding">
@@ -488,51 +567,73 @@ echo $branchOverlay;
         <div class="flex flex-nowrap justify-start md:justify-center gap-4 md:gap-5 py-5 w-full overflow-x-auto scrollbar-hide px-2 md:px-0">
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
-              <img src="../images/user/tile1.jpg" alt="Ceramic Tiles" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
+              <img src="../images/user/minimalist.png" alt="Minimalist" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
             </div>
             <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
-              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Ceramic Tiles</h3>
-              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Durable and versatile ceramic tiles for any space</p>
+              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Minimalist</h3>
+              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Sleek, simple, and modern tile designs for a clean look.</p>
+              <button id="minimalistExploreBtn" class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
+    <script>
+    // Redirect Minimalist Explore Now button to minimalist_products.php
+    document.addEventListener('DOMContentLoaded', function() {
+      const minimalistBtn = document.getElementById('minimalistExploreBtn');
+      if (minimalistBtn) {
+        minimalistBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'minimalist_products.php';
+        });
+      }
+    });
+    </script>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
+            <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
+              <img src="../images/user/floral.jpg" alt="Floral" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
+            </div>
+            <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
+              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Floral</h3>
+              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Beautiful floral patterns to bring nature indoors.</p>
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
-              <img src="../images/user/tile2.jpg" alt="Porcelain Tiles" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
+              <img src="../images/user/indoor.jpg" alt="Indoor" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
             </div>
             <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
-              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Porcelain Tiles</h3>
-              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Premium quality porcelain for high-end finishes</p>
+              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Indoor</h3>
+              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Tiles perfect for living rooms, kitchens, and bedrooms.</p>
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
-              <img src="../images/user/tile3.jpg" alt="Mosaic Tiles" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
+              <img src="../images/user/b&w.jpg" alt="Black and White" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
             </div>
             <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
-              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Mosaic Tiles</h3>
-              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Artistic designs for unique decorative accents</p>
+              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Black and White</h3>
+              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Classic monochrome tiles for timeless elegance.</p>
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
-              <img src="../images/user/tile4.jpg" alt="Natural Stone Tiles" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
+              <img src="../images/user/modern.jpg" alt="Modern" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
             </div>
             <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
-              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Natural Stone</h3>
-              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Elegant natural stone for luxurious spaces</p>
+              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Modern</h3>
+              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Trendy and innovative tiles for contemporary spaces.</p>
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
-              <img src="../images/user/tile5.jpg" alt="Premium Tiles" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
+              <img src="../images/user/pool.jpg" alt="Pool" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
             </div>
             <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
-              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Premium Tiles</h3>
-              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">High-end premium tiles for luxury spaces</p>
+              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Pool</h3>
+              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Water-resistant tiles ideal for pools and wet areas.</p>
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
@@ -542,52 +643,25 @@ echo $branchOverlay;
     </section>
 
     <!-- Products Section -->
-    <section class="bg-light py-12 md:py-16 px-4 md:px-[5vw] text-textdark">
+  <section id="premium-tiles" class="bg-light py-12 md:py-16 px-4 md:px-[5vw] text-textdark">
       <div class="flex gap-6 md:gap-8 max-w-full md:max-w-[1500px] mx-auto flex-col md:flex-row">
         <div class="w-full md:flex-[0_0_280px] bg-white p-6 md:p-8 rounded-2xl shadow-lg h-fit relative z-10 md:mb-0 mb-6">
           <h3 class="text-lg md:text-[1.25rem] font-bold text-primary mb-6">Categories</h3>
           <div class="border-b border-gray-200 pb-5 mb-5">
-            <div class="flex flex-col gap-3">
-              <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="checkbox" name="category" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                Ceramic Tiles
-              </label>
-              <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="checkbox" name="category" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                Porcelain Tiles
-              </label>
-              <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="checkbox" name="category" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                Mosaic Tiles
-              </label>
-              <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="checkbox" name="category" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                Natural Stone
-              </label>
-              <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="checkbox" name="category" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                Outdoor Tiles
-              </label>
+            <div id="tileCategoriesList" class="flex flex-col gap-3">
+              <!-- Categories will be loaded here dynamically -->
             </div>
           </div>
-          <h3 class="text-lg md:text-[1.25rem] font-bold text-primary mb-6">Price Range</h3>
+          <h3 class="text-lg md:text-[1.25rem] font-bold text-primary mb-6">Popular & Best Seller</h3>
           <div class="border-b border-gray-200 pb-5 mb-5">
             <div class="flex flex-col gap-3">
               <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="radio" name="price-range" class="mr-2 w-4 h-4 rounded-full border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                Under ₱500
+                <input type="checkbox" name="popular" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
+                Popular
               </label>
               <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="radio" name="price-range" class="mr-2 w-4 h-4 rounded-full border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                ₱500 - ₱1000
-              </label>
-              <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="radio" name="price-range" class="mr-2 w-4 h-4 rounded-full border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                ₱1000 - ₱2000
-              </label>
-              <label class="flex items-center text-sm text-textlight cursor-pointer hover:text-primary">
-                <input type="radio" name="price-range" class="mr-2 w-4 h-4 rounded-full border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
-                Over ₱2000
+                <input type="checkbox" name="bestseller" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />
+                Best Seller
               </label>
             </div>
           </div>
@@ -600,103 +674,82 @@ echo $branchOverlay;
               <p class="text-sm md:text-base text-textlight m-0 mt-2">Browse our extensive collection of premium tiles for every room in your home or business.</p>
             </div>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            <div class="bg-white rounded-2xl overflow-hidden shadow-product transition-all duration-300 relative group">
-              <span class="absolute top-4 left-4 bg-secondary text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Bestseller</span>
-              <div class="h-[200px] md:h-[250px] overflow-hidden relative">
-                <img src="../images/user/tile1.jpg" alt="Premium Ceramic Tile" class="w-full h-full object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div class="p-4 md:p-5 text-center">
-                <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Premium Ceramic Tile</h3>
-                <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱1,250</div>
-                <div class="flex justify-center gap-2">
-                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white rounded-2xl overflow-hidden shadow-product transition-all duration-300 relative group">
-              <div class="h-[200px] md:h-[250px] overflow-hidden relative">
-                <img src="../images/user/tile2.jpg" alt="Porcelain Tile" class="w-full h-full object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div class="p-4 md:p-5 text-center">
-                <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Porcelain Tile</h3>
-                <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱950</div>
-                <div class="flex justify-center gap-2">
-                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white rounded-2xl overflow-hidden shadow-product transition-all duration-300 relative group">
-              <span class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">New</span>
-              <div class="h-[200px] md:h-[250px] overflow-hidden relative">
-                <img src="../images/user/tile3.jpg" alt="Mosaic Tile" class="w-full h-full object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div class="p-4 md:p-5 text-center">
-                <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Mosaic Tile</h3>
-                <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱1,750</div>
-                <div class="flex justify-center gap-2">
-                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white rounded-2xl overflow-hidden shadow-product transition-all duration-300 relative group">
-              <div class="h-[200px] md:h-[250px] overflow-hidden relative">
-                <img src="../images/user/tile4.jpg" alt="Natural Stone Tile" class="w-full h-full object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div class="p-4 md:p-5 text-center">
-                <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Natural Stone Tile</h3>
-                <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱850</div>
-                <div class="flex justify-center gap-2">
-                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white rounded-2xl overflow-hidden shadow-product transition-all duration-300 relative group">
-              <span class="absolute top-4 left-4 bg-[#d9534f] text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Sale</span>
-              <div class="h-[200px] md:h-[250px] overflow-hidden relative">
-                <img src="../images/user/tile5.jpg" alt="Classic Tile" class="w-full h-full object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div class="p-4 md:p-5 text-center">
-                <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">Classic Tile</h3>
-                <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱2,100</div>
-                <div class="flex justify-center gap-2">
-                  <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
-                </div>
-              </div>
-            </div>
+          <div id="premiumTilesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            <!-- Products will be loaded here dynamically -->
           </div>
+    <script>
+    // Dynamically load all tile categories for the modal and sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('processes/get_all_tile_categories.php')
+        .then(r => r.json())
+        .then(categories => {
+          // Sidebar categories
+          const catList = document.getElementById('tileCategoriesList');
+          if (catList) {
+            catList.innerHTML = '';
+            categories.forEach(cat => {
+              const label = document.createElement('label');
+              label.className = 'flex items-center text-sm text-textlight cursor-pointer hover:text-primary';
+              label.innerHTML = `<input type="checkbox" name="category" value="${cat.category_id}" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />${cat.category_name}`;
+              catList.appendChild(label);
+            });
+          }
+        });
+    });
+
+    // Dynamically load all products for the selected branch in Premium Tiles section
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('processes/get_premium_tiles.php')
+        .then(r => r.json())
+        .then(products => {
+          const grid = document.getElementById('premiumTilesGrid');
+          if (grid) {
+            grid.innerHTML = '';
+            if (products.length === 0) {
+              grid.innerHTML = '<div class="col-span-full text-center text-textlight py-8">No products found for this branch.</div>';
+              return;
+            }
+            products.forEach(product => {
+              const div = document.createElement('div');
+              div.className = 'bg-white rounded-2xl overflow-hidden shadow-product transition-all duration-300 relative group';
+              let badge = '';
+              if (product.is_best_seller == 1) badge = '<span class="absolute top-4 left-4 bg-secondary text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Bestseller</span>';
+              else if (product.is_popular == 1) badge = '<span class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Popular</span>';
+              else if (product.is_new == 1) badge = '<span class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">New</span>';
+              else if (product.is_sale == 1) badge = '<span class="absolute top-4 left-4 bg-[#d9534f] text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Sale</span>';
+              div.innerHTML = `
+                ${badge}
+                <div class="h-[200px] md:h-[250px] overflow-hidden relative">
+                  <img src="${product.product_image || '../images/user/tile1.jpg'}" alt="${product.product_name}" class="w-full h-full object-cover bg-gray-100 transition-transform duration-300 group-hover:scale-105" />
+                </div>
+                <div class="p-4 md:p-5 text-center">
+                  <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">${product.product_name}</h3>
+                  <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱${parseInt(product.product_price).toLocaleString()}</div>
+                  <div class="flex justify-center gap-2">
+                    <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  </div>
+                </div>
+              `;
+              grid.appendChild(div);
+            });
+          }
+        });
+    });
+    </script>
         </div>
       </div>
     </section>
 
     <script>
-      const featuredItems = [
-        {
-          img: '../images/user/tile1.jpg',
-          title: 'Premium Ceramic Tile',
-          price: '₱1,250',
-        },
-        {
-          img: '../images/user/tile2.jpg',
-          title: 'Porcelain Tile',
-          price: '₱950',
-        },
-        {
-          img: '../images/user/tile3.jpg',
-          title: 'Mosaic Tile',
-          price: '₱1,750',
-        },
-        {
-          img: '../images/user/tile4.jpg',
-          title: 'Natural Stone Tile',
-          price: '₱850',
-        },
-        {
-          img: '../images/user/tile5.jpg',
-          title: 'Classic Tile',
-          price: '₱2,100',
-        },
-      ];
+      // Only use recommended products from the database
+      const featuredItems = (window.recommendedProducts && window.recommendedProducts.length > 0)
+        ? window.recommendedProducts.map(item => ({
+            img: item.product_image || '../images/user/tile1.jpg',
+            title: item.product_name,
+            price: '₱' + parseInt(item.product_price).toLocaleString(),
+            category: item.category_name || '',
+          }))
+        : [];
 
       // Calculate items per page based on screen width
       const itemsPerPage = () => {
@@ -726,7 +779,7 @@ echo $branchOverlay;
           // Card content
           div.innerHTML = `
             <div class="relative bg-white rounded-3xl shadow-2xl p-4 md:p-6 w-full flex flex-col items-center border border-gray-100 transition-all duration-300 group hover:shadow-2xl hover:-translate-y-2 hover:scale-105 overflow-hidden">
-              <span class="absolute top-3 left-3 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">Featured</span>
+              <span class="absolute top-3 left-3 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">${item.category || 'Featured'}</span>
               <div class="w-[120px] h-[120px] md:w-[160px] md:h-[160px] flex items-center justify-center bg-gradient-to-br from-accent/30 to-light rounded-xl mb-4 md:mb-6 shadow-inner overflow-hidden">
                 <img src="${item.img}" alt="${item.title}" class="w-[90%] h-[90%] object-contain rounded-xl transition-transform duration-300 group-hover:scale-105 bg-gray-100 drop-shadow-lg" />
               </div>
@@ -879,5 +932,225 @@ echo $branchOverlay;
       });
     </script>
 
+    <!-- Product Modal for 360° View -->
+    <div id="productModalOverlay" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:rgba(30,30,30,0.75);align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+      <div id="productModalBox" style="background:linear-gradient(120deg,#fff 60%,#e8a56a 100%);border-radius:22px;max-width:99vw;width:600px;height:470px;box-shadow:0 16px 56px 0 rgba(0,0,0,0.32);padding:0;position:relative;overflow:hidden;animation:modalPopIn .25s cubic-bezier(.6,1.5,.6,1) 1;display:flex;flex-direction:column;">
+        <!-- Tile Name at the top (styled header) -->
+        <div id="productModalNameHeader" style="background:#7d310a;padding:22px 0 18px 0;text-align:center;border-radius:22px 22px 0 0;box-shadow:0 2px 16px #e8a56a33;min-height:38px;">
+          <span id="productModalNameHeaderText" style="color:#fff;font-size:1.55rem;font-weight:900;letter-spacing:0.01em;display:block;text-shadow:0 2px 12px #0003;"></span>
+        </div>
+        <div style="display:flex;flex-direction:row;gap:0;padding:0 0 0 0;align-items:stretch;background:linear-gradient(120deg,#fff 70%,#e8a56a22 100%);flex:1;min-height:0;">
+          <!-- 3D view left -->
+          <div style="flex:0 0 220px;display:flex;align-items:center;justify-content:center;padding:28px 0 18px 28px;">
+            <div id="productModal3D" style="width:180px;height:180px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 60% 40%, #fff 60%, #f7f3ef 100%);border-radius:22px;box-shadow:0 8px 32px 0 #cf875655,0 1.5px 0 #fff;"></div>
+          </div>
+          <!-- Description right -->
+          <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;padding:28px 28px 18px 18px;">
+            <div id="productModalCategories" style="display:flex;flex-wrap:wrap;gap:8px 10px;margin-bottom:10px;"></div>
+            <div id="productModalDesc" style="font-size:clamp(1.01rem,2vw,1.15rem);color:#222;font-weight:600;line-height:1.6;text-align:left;letter-spacing:0.01em;max-width:100%;text-shadow:0 1px 0 #fff,0 2px 8px #e8a56a11;background:rgba(255,255,255,0.7);padding:16px 14px 16px 14px;border-radius:16px;box-shadow:0 2px 12px #e8a56a22;overflow:auto;max-height:120px;word-break:break-word;min-width:180px;"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;justify-content:center;align-items:center;padding:16px 0 18px 0;background:linear-gradient(90deg,#fff 80%,#e8a56a22 100%);border-radius:0 0 22px 22px;">
+          <button id="closeProductModal" style="min-width:110px;padding:10px 0;font-size:1.08rem;font-weight:700;background:#cf8756;color:#fff;border:none;border-radius:12px;box-shadow:0 2px 8px #cf875633;cursor:pointer;transition:background .2s;">Close</button>
+          <button id="addToCartProductModal" style="min-width:140px;padding:10px 0;font-size:1.08rem;font-weight:700;background:#7d310a;color:#fff;border:none;border-radius:12px;box-shadow:0 2px 8px #cf875633;cursor:pointer;transition:background .2s;"><i class="fa fa-shopping-cart" style="margin-right:7px;"></i>Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
+    <script>
+    // Helper: open/close modal
+    let currentProductForModal = null;
+    function openProductModal(product) {
+      currentProductForModal = product;
+      // Set tile name in the header
+      const nameHeader = document.getElementById('productModalNameHeaderText');
+      if (nameHeader) {
+        nameHeader.textContent = product.name || product.product_name || '';
+      }
+      // Set all categories as badges above description
+      const catDiv = document.getElementById('productModalCategories');
+      let cats = [];
+      if (product.categories) {
+        cats = Array.isArray(product.categories) ? product.categories : (typeof product.categories === 'string' ? product.categories.split(',') : []);
+      } else if (product.category_name) {
+        cats = [product.category_name];
+      }
+      catDiv.innerHTML = '';
+      if (cats.length > 0) {
+        cats.forEach(cat => {
+          const el = document.createElement('span');
+          el.textContent = cat.trim();
+          el.style.cssText = 'display:inline-block;background:#e8a56a;color:#fff;font-size:0.98rem;font-weight:600;padding:4px 16px;border-radius:12px;box-shadow:0 1px 4px #cf875622;letter-spacing:0.01em;';
+          catDiv.appendChild(el);
+        });
+      } else {
+        catDiv.innerHTML = '<span style="color:#cf8756;font-size:0.98rem;font-weight:600;">No Category</span>';
+      }
+      // Set description
+      let desc = product.description || product.product_description || '';
+      desc = desc ? `<span style='display:block;margin-bottom:0.5em;'>${desc}</span>` : '';
+      document.getElementById('productModalDesc').innerHTML = desc;
+      document.getElementById('productModalOverlay').style.display = 'flex';
+      // Disable scroll on body
+      document.body.style.overflow = 'hidden';
+      renderProduct3D(product.image_path || product.product_image);
+    }
+    function closeProductModal() {
+      document.getElementById('productModalOverlay').style.display = 'none';
+      const viewer = document.getElementById('productModal3D');
+      viewer.innerHTML = '';
+      currentProductForModal = null;
+      // Re-enable scroll on body
+      document.body.style.overflow = '';
+    }
+    document.getElementById('closeProductModal').onclick = closeProductModal;
+    // Remove click-to-close on overlay
+
+    // Add to Cart button logic
+    document.getElementById('addToCartProductModal').onclick = function() {
+      if (!currentProductForModal) return;
+      Swal.fire({
+        title: 'Added to Cart!',
+        html: `<strong>${currentProductForModal.name || currentProductForModal.product_name || ''}</strong>`,
+        icon: 'success',
+        confirmButtonColor: '#7d310a',
+        confirmButtonText: 'Continue Shopping'
+      });
+      closeProductModal();
+    };
+
+    // 3D viewer using Three.js: show image as texture on a centered square (cube) with a contrasting background
+    function renderProduct3D(imageUrl) {
+      const container = document.getElementById('productModal3D');
+      container.innerHTML = '';
+      const width = container.clientWidth, height = container.clientHeight;
+      const renderer = new THREE.WebGLRenderer({antialias:true,alpha:true});
+      renderer.setClearColor(0xf7f3ef, 1);
+      renderer.setSize(width, height);
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+      const scene = new THREE.Scene();
+      // Add a soft shadow plane for realism
+      const shadowGeo = new THREE.PlaneGeometry(2.8, 0.9);
+      const shadowMat = new THREE.ShadowMaterial({opacity:0.28});
+      const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+      shadow.position.y = -0.45;
+      shadow.receiveShadow = true;
+      scene.add(shadow);
+      // Camera
+      const camera = new THREE.PerspectiveCamera(30, width/height, 0.1, 1000);
+      camera.position.set(0, 0.12, 2.7);
+      // Lighting
+      const ambient = new THREE.AmbientLight(0xffffff, 1.08);
+      scene.add(ambient);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+      dirLight.position.set(2, 3, 4);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 2048;
+      dirLight.shadow.mapSize.height = 2048;
+      dirLight.shadow.blurSamples = 16;
+      scene.add(dirLight);
+      // Cube geometry for square tile (smaller)
+      const geometry = new THREE.BoxGeometry(1.05, 1.05, 0.07); // Smaller tile
+      const loader = new THREE.TextureLoader();
+      loader.load(imageUrl, function(texture) {
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        // Only show image on front face, rest are subtle off-white
+        const materials = [
+          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13}), // right
+          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13}), // left
+          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13}), // top
+          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13}), // bottom
+          new THREE.MeshStandardMaterial({map:texture, roughness:0.16, metalness:0.18}),    // front (main image)
+          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13})  // back
+        ];
+        const cube = new THREE.Mesh(geometry, materials);
+        cube.castShadow = true;
+        cube.receiveShadow = false;
+        // Center the tile in the 3D view
+        cube.position.y = 0.18;
+        scene.add(cube);
+        // Animation
+        let isDragging = false, prevX = 0, prevY = 0, rotationY = Math.PI/8, rotationX = -Math.PI/16;
+        renderer.domElement.addEventListener('mousedown', function(e) {
+          isDragging = true; prevX = e.clientX; prevY = e.clientY;
+        });
+        window.addEventListener('mouseup', function() { isDragging = false; });
+        window.addEventListener('mousemove', function(e) {
+          if (isDragging) {
+            const dx = e.clientX - prevX;
+            const dy = e.clientY - prevY;
+            rotationY += dx * 0.012;
+            rotationX += dy * 0.012;
+            rotationX = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, rotationX));
+            prevX = e.clientX;
+            prevY = e.clientY;
+          }
+        });
+        // Touch support
+        renderer.domElement.addEventListener('touchstart', function(e) {
+          if (e.touches.length === 1) {
+            isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+          }
+        });
+        window.addEventListener('touchend', function() { isDragging = false; });
+        window.addEventListener('touchmove', function(e) {
+          if (isDragging && e.touches.length === 1) {
+            const dx = e.touches[0].clientX - prevX;
+            const dy = e.touches[0].clientY - prevY;
+            rotationY += dx * 0.012;
+            rotationX += dy * 0.012;
+            rotationX = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, rotationX));
+            prevX = e.touches[0].clientX;
+            prevY = e.touches[0].clientY;
+          }
+        });
+        function animate() {
+          requestAnimationFrame(animate);
+          cube.rotation.y = rotationY;
+          cube.rotation.x = rotationX;
+          renderer.render(scene, camera);
+        }
+        animate();
+      }, undefined, function() {
+        // On error, fallback to plain image
+        container.innerHTML = '<img src="'+imageUrl+'" alt="Tile" style="width:100%;height:100%;object-fit:contain;border-radius:16px;background:#f7f3ef;">';
+      });
+    }
+    // Modal pop-in animation
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes modalPopIn{0%{transform:scale(0.85) translateY(40px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}`;
+    document.head.appendChild(style);
+
+    // Make product tiles clickable (for both recommended and selection tiles)
+    document.addEventListener('DOMContentLoaded', function() {
+      // For recommended carousel
+      document.querySelectorAll('.featured-item').forEach(function(card, idx) {
+        card.style.cursor = 'pointer';
+        card.onclick = function() {
+          const prod = window.recommendedProducts && window.recommendedProducts[idx] ? window.recommendedProducts[idx] : null;
+          if (prod) openProductModal(prod);
+        };
+      });
+      // For tile selection section (static tiles)
+      document.querySelectorAll('.tile-selection .bg-white').forEach(function(card) {
+        card.style.cursor = 'pointer';
+        card.onclick = function() {
+          const name = card.querySelector('h3') ? card.querySelector('h3').textContent : '';
+          fetch('processes/get_product_details.php?sku='+encodeURIComponent(name))
+            .then(r=>r.json()).then(data=>{
+              if (data && !data.error) openProductModal(data);
+              else openProductModal({name:name, sku:'', description:'No details found.', image_path:card.querySelector('img').src});
+            });
+        };
+      });
+    });
+    </script>
   </body>
 </html>

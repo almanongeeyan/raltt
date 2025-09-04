@@ -120,18 +120,10 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                                 <option value="other">Others</option>
                             </select>
                             <select id="tileTypeDropdown" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none hidden">
-                                <option value="">All Tile Types</option>
-                                <option value="Wall">Wall</option>
-                                <option value="Floor">Floor</option>
-                                <option value="Outdoor">Outdoor</option>
-                                <option value="Countertop">Countertop</option>
+                                <option value="">All Tile Categories</option>
                             </select>
                             <select id="otherSpecDropdown" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none hidden">
                                 <option value="">All Product Specs</option>
-                                <option value="PVC Doors">PVC Doors</option>
-                                <option value="Sinks">Sinks</option>
-                                <option value="Tile Vinyl">Tile Vinyl</option>
-                                <option value="Bowls">Bowls</option>
                             </select>
                             <select id="stockStatusDropdown" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none">
                                 <option value="all">Stock Status</option>
@@ -158,33 +150,227 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                         <button id="btnForTiles" type="button" class="flex-1 px-4 py-2 rounded-lg font-semibold border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 focus:bg-blue-100 focus:outline-none">For Tiles</button>
                         <button id="btnForOthers" type="button" class="flex-1 px-4 py-2 rounded-lg font-semibold border border-gray-400 text-gray-700 bg-white hover:bg-gray-100 focus:bg-gray-200 focus:outline-none">For Others</button>
                     </div>
+                    <?php
+                    // Fetch tile categories for dropdown
+                    require_once '../connection/connection.php';
+                    $cat_stmt = $db_connection->query("SELECT category_id, category_name FROM tile_categories ORDER BY category_name ASC");
+                    $tile_categories = $cat_stmt->fetchAll(PDO::FETCH_ASSOC);
+                    ?>
                     <form id="formForTiles" class="flex-1 flex flex-col gap-4 px-6 py-6 overflow-y-auto" action="processes/store_product.php" method="POST" enctype="multipart/form-data">
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Tile Image</label>
-                            <input type="file" name="product_image" accept="image/*" class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                            <input type="file" name="product_image" accept="image/*" required class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                         </div>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Tile Name</label>
                             <input type="text" name="product_name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter tile name" required />
                         </div>
                         <div>
-                            <label class="block text-gray-700 font-medium mb-1">Tile Description</label>
-                            <textarea name="product_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter tile description" required></textarea>
+                            <label class="block text-gray-700 font-medium mb-1 flex items-center">Tile Description
+                                <button type="button" id="generateDescriptionBtn" class="ml-2 px-3 py-1 rounded bg-gradient-to-r from-blue-500 to-blue-700 text-white text-xs font-semibold hover:from-blue-600 hover:to-blue-800 flex items-center gap-2 relative" title="Generate description">
+                                    <span class="generate-btn-text">Generate</span>
+                                    <svg id="generateSpinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                                </button>
+                        <span class="ml-2 text-[10px] text-black">(If failed, just press it again.)</span>
+                            </label>
+                            <textarea id="tileDescription" name="product_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter tile description" required disabled></textarea>
+                            <span id="generateFailNote" class="hidden text-red-600 text-xs mt-1">Error generating description. Please try again.</span>
                         </div>
+<script>
+// --- Description Generate Button Logic ---
+document.addEventListener('DOMContentLoaded', function() {
+    const descTextarea = document.getElementById('tileDescription');
+    const generateBtn = document.getElementById('generateDescriptionBtn');
+    const nameInput = document.querySelector('input[name="product_name"]');
+    const priceInput = document.querySelector('input[name="product_price"]');
+    const designInput = document.querySelector('input[name="tile_design"]');
+    const stockInput = document.querySelector('input[name="stock_count"]');
+    const catSelects = () => Array.from(document.querySelectorAll('#tileCategoryFields select'));
+
+    function allFilled() {
+        if (!nameInput.value.trim() || !priceInput.value.trim() || !designInput.value.trim() || !stockInput.value.trim()) return false;
+        // At least one category selected and all selects have value
+        const selects = catSelects();
+        if (!selects.length || selects.some(s => !s.value)) return false;
+        return true;
+    }
+
+
+
+    function updateDescState() {
+        const shouldEnable = allFilled() || descTextarea.value.trim();
+        descTextarea.disabled = !shouldEnable;
+        generateBtn.disabled = !allFilled();
+        if (!shouldEnable) {
+            descTextarea.classList.add('bg-gray-100', 'text-gray-400', 'cursor-not-allowed', 'border-dashed');
+            generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            descTextarea.classList.remove('bg-gray-100', 'text-gray-400', 'cursor-not-allowed', 'border-dashed');
+            generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    [nameInput, priceInput, designInput, stockInput].forEach(inp => inp.addEventListener('input', updateDescState));
+    document.getElementById('tileCategoryFields').addEventListener('change', updateDescState);
+    document.getElementById('tileCategoryFields').addEventListener('click', function(e) {
+        if (e.target.closest('.add-category-btn') || e.target.closest('.remove-category-btn')) {
+            setTimeout(updateDescState, 100); // Wait for DOM update
+        }
+    });
+
+
+    // Loading overlay
+    let loadingOverlay = document.getElementById('descLoadingOverlay');
+    if (!loadingOverlay) {
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'descLoadingOverlay';
+        loadingOverlay.style.position = 'fixed';
+        loadingOverlay.style.top = 0;
+        loadingOverlay.style.left = 0;
+        loadingOverlay.style.width = '100vw';
+        loadingOverlay.style.height = '100vh';
+        loadingOverlay.style.background = 'rgba(0,0,0,0.2)';
+        loadingOverlay.style.display = 'none';
+        loadingOverlay.style.zIndex = 9999;
+        loadingOverlay.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"><svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg><div class="mt-4 text-blue-700 font-semibold text-center">Generating description...</div></div>';
+        document.body.appendChild(loadingOverlay);
+    }
+
+    generateBtn.addEventListener('click', function() {
+        if (!allFilled()) return;
+        const name = nameInput.value.trim();
+        const price = priceInput.value.trim();
+        const design = designInput.value.trim();
+        const stock = stockInput.value.trim();
+        const categories = catSelects().map(s => s.options[s.selectedIndex].text).filter(Boolean);
+        descTextarea.value = '';
+        // Show spinner and overlay
+        document.getElementById('generateSpinner').classList.remove('hidden');
+        generateBtn.disabled = true;
+        loadingOverlay.style.display = 'block';
+        fetch('processes/generate_description.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, price, design, stock, categories })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const failNote = document.getElementById('generateFailNote');
+            if (data.description) {
+                descTextarea.value = data.description;
+                failNote.classList.add('hidden');
+            } else {
+                descTextarea.value = 'Failed to generate description.';
+                failNote.classList.remove('hidden');
+            }
+        })
+        .catch(() => {
+            descTextarea.value = 'Error generating description.';
+            document.getElementById('generateFailNote').classList.remove('hidden');
+        })
+        .finally(() => {
+            document.getElementById('generateSpinner').classList.add('hidden');
+            generateBtn.disabled = false;
+            loadingOverlay.style.display = 'none';
+        });
+    });
+
+    updateDescState();
+});
+</script>
+                        <div id="tileCategoryFields">
+                            <label class="block text-gray-700 font-medium mb-1">Tile Categories</label>
+                            <div class="flex gap-2 mb-2 tile-category-row">
+                                <select name="category_ids[]" class="tile-category-select w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" required>
+                                    <option value="">Select category</option>
+                                    <?php foreach ($tile_categories as $cat): ?>
+                                        <option value="<?= htmlspecialchars($cat['category_id']) ?>"><?= htmlspecialchars($cat['category_name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="button" class="add-category-btn bg-blue-500 text-white px-3 py-1 rounded" title="Add another category"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+<script>
+// Dynamic add tile category select fields, prevent duplicate selection
+// Limit for tile category dropdowns
+const MAX_TILE_CATEGORIES = 6;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const tileCategoryFields = document.getElementById('tileCategoryFields');
+
+    function canAddMoreTileCategories() {
+        const selects = tileCategoryFields.querySelectorAll('select');
+        return selects.length < MAX_TILE_CATEGORIES;
+    }
+
+    function updateCategoryOptions() {
+        // Get all selected values
+        const selects = tileCategoryFields.querySelectorAll('select');
+        const selected = Array.from(selects).map(s => s.value).filter(v => v);
+        selects.forEach(select => {
+            const current = select.value;
+            Array.from(select.options).forEach(opt => {
+                if (!opt.value) return; // skip placeholder
+                // Hide option if selected elsewhere and not current
+                if (selected.includes(opt.value) && opt.value !== current) {
+                    opt.style.display = 'none';
+                } else {
+                    opt.style.display = '';
+                }
+            });
+        });
+    }
+
+    tileCategoryFields.addEventListener('change', function(e) {
+        if (e.target.matches('select')) {
+            updateCategoryOptions();
+        }
+    });
+
+    tileCategoryFields.addEventListener('click', function(e) {
+        if (e.target.closest('.add-category-btn')) {
+            if (!canAddMoreTileCategories()) return;
+            const row = e.target.closest('.tile-category-row');
+            // Clone the row
+            const newRow = row.cloneNode(true);
+            // Reset the select value
+            newRow.querySelector('select').value = '';
+            // Change plus to minus for remove
+            const btn = newRow.querySelector('.add-category-btn');
+            btn.innerHTML = '<i class="fas fa-minus"></i>';
+            btn.classList.remove('bg-blue-500');
+            btn.classList.add('bg-red-500', 'remove-category-btn');
+            btn.classList.remove('add-category-btn');
+            btn.title = 'Remove this category';
+            // Insert after current row
+            tileCategoryFields.appendChild(newRow);
+            updateCategoryOptions();
+            // Hide plus button if max reached
+            if (!canAddMoreTileCategories()) {
+                const plusBtns = tileCategoryFields.querySelectorAll('.add-category-btn');
+                plusBtns.forEach(btn => btn.style.display = 'none');
+            }
+        } else if (e.target.closest('.remove-category-btn')) {
+            const row = e.target.closest('.tile-category-row');
+            row.remove();
+            updateCategoryOptions();
+            // Show plus button if below max
+            if (canAddMoreTileCategories()) {
+                const plusBtns = tileCategoryFields.querySelectorAll('.add-category-btn');
+                plusBtns.forEach(btn => btn.style.display = '');
+            }
+        }
+    });
+
+    // Initial call
+    updateCategoryOptions();
+});
+</script>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Tile Price</label>
                             <input type="number" name="product_price" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter price" required />
                         </div>
-                        <div>
-                            <label class="block text-gray-700 font-medium mb-1">Tile Type</label>
-                            <select name="tile_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" required>
-                                <option value="">Select type</option>
-                                <option value="Wall">Wall</option>
-                                <option value="Floor">Floor</option>
-                                <option value="Outdoor">Outdoor</option>
-                                <option value="Countertop">Countertop</option>
-                            </select>
-                        </div>
+                        <!-- Tile Type removed as per request -->
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Tile Design</label>
                             <input type="text" name="tile_design" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="e.g. Floral Blue" required />
@@ -208,7 +394,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                     <form id="formForOthers" class="flex-1 flex-col gap-4 px-6 py-6 overflow-y-auto hidden" action="processes/store_product.php" method="POST" enctype="multipart/form-data">
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Product Image</label>
-                            <input type="file" name="product_image" accept="image/*" class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                            <input type="file" name="product_image" accept="image/*" required class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                         </div>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Product Specification</label>
@@ -227,9 +413,114 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                         
                         
                         <div>
-                            <label class="block text-gray-700 font-medium mb-1">Product Description</label>
-                            <textarea name="product_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter product description" required></textarea>
+                            <label class="block text-gray-700 font-medium mb-1 flex items-center">Product Description
+                                <button type="button" id="generateOtherDescriptionBtn" class="ml-2 px-3 py-1 rounded bg-gradient-to-r from-blue-500 to-blue-700 text-white text-xs font-semibold hover:from-blue-600 hover:to-blue-800 flex items-center gap-2 relative" title="Generate description">
+                                    <span class="generate-btn-text">Generate</span>
+                                    <svg id="generateOtherSpinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                                </button>
+                                <span class="ml-2 text-[10px] text-black">(If failed, just press it again.)</span>
+                            </label>
+                            <textarea id="otherProductDescription" name="product_description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter product description" required disabled></textarea>
+                            <span id="generateOtherFailNote" class="hidden text-red-600 text-xs mt-1">Error generating description. Please try again.</span>
                         </div>
+<script>
+// --- Other Product Description Generate Button Logic ---
+document.addEventListener('DOMContentLoaded', function() {
+    const descTextarea = document.getElementById('otherProductDescription');
+    const generateBtn = document.getElementById('generateOtherDescriptionBtn');
+    const nameInput = document.querySelector('#formForOthers input[name="product_name"]');
+    const priceInput = document.querySelector('#formForOthers input[name="product_price"]');
+    const specSelect = document.querySelector('#formForOthers select[name="product_spec"]');
+
+    function allFilled() {
+        return nameInput.value.trim() && priceInput.value.trim() && specSelect.value.trim();
+    }
+
+    function updateDescState() {
+        // Enable textarea if all fields are filled or if it already has a value (for editing after generation)
+        const shouldEnable = allFilled() || descTextarea.value.trim();
+        descTextarea.disabled = !shouldEnable;
+        generateBtn.disabled = !allFilled();
+        if (!shouldEnable) {
+            descTextarea.classList.add('bg-gray-100', 'text-gray-400', 'cursor-not-allowed', 'border-dashed');
+            generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            descTextarea.classList.remove('bg-gray-100', 'text-gray-400', 'cursor-not-allowed', 'border-dashed');
+            generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    [nameInput, priceInput, specSelect].forEach(inp => inp.addEventListener('input', updateDescState));
+    specSelect.addEventListener('change', updateDescState);
+
+    // Loading overlay for other products
+    let loadingOverlay = document.getElementById('descOtherLoadingOverlay');
+    if (!loadingOverlay) {
+        loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'descOtherLoadingOverlay';
+        loadingOverlay.style.position = 'fixed';
+        loadingOverlay.style.top = 0;
+        loadingOverlay.style.left = 0;
+        loadingOverlay.style.width = '100vw';
+        loadingOverlay.style.height = '100vh';
+        loadingOverlay.style.background = 'rgba(0,0,0,0.2)';
+        loadingOverlay.style.display = 'none';
+        loadingOverlay.style.zIndex = 9999;
+        loadingOverlay.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"><svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg><div class="mt-4 text-blue-700 font-semibold text-center">Generating description...</div></div>';
+        document.body.appendChild(loadingOverlay);
+    }
+
+
+    generateBtn.addEventListener('click', function() {
+        if (!allFilled()) return;
+        const name = nameInput.value.trim();
+        const price = priceInput.value.trim();
+        const spec = specSelect.value.trim();
+        descTextarea.value = '';
+        // Show spinner and overlay
+        document.getElementById('generateOtherSpinner').classList.remove('hidden');
+        generateBtn.disabled = true;
+        loadingOverlay.style.display = 'block';
+        fetch('processes/generate_otherproduct_description.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, price, spec })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const failNote = document.getElementById('generateOtherFailNote');
+            if (data.description) {
+                descTextarea.value = data.description;
+                descTextarea.disabled = false;
+                descTextarea.classList.remove('bg-gray-100', 'text-gray-400', 'cursor-not-allowed', 'border-dashed');
+                failNote.classList.add('hidden');
+            } else {
+                let debugMsg = '';
+                if (data && data.debug) {
+                    debugMsg = '\n[DEBUG: ' + JSON.stringify(data.debug) + ']';
+                } else if (data && data.details) {
+                    debugMsg = '\n[DETAILS: ' + JSON.stringify(data.details) + ']';
+                }
+                descTextarea.value = 'Failed to generate description.' + debugMsg;
+                descTextarea.disabled = false;
+                failNote.classList.remove('hidden');
+            }
+        })
+        .catch((err) => {
+            descTextarea.value = 'Error generating description.' + (err ? ('\n' + err) : '');
+            descTextarea.disabled = false;
+            document.getElementById('generateOtherFailNote').classList.remove('hidden');
+        })
+        .finally(() => {
+            document.getElementById('generateOtherSpinner').classList.add('hidden');
+            generateBtn.disabled = false;
+            loadingOverlay.style.display = 'none';
+        });
+    });
+
+    updateDescState();
+});
+</script>
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">Product Price</label>
                             <input type="number" name="product_price" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" placeholder="Enter price" required />
@@ -263,15 +554,6 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                     <nav class="inline-flex rounded-md shadow-sm">
                         <a href="#" class="py-2 px-3 ml-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
                             <i class="fas fa-chevron-left"></i>
-                        </a>
-                        <a href="#" class="py-2 px-4 leading-tight text-blue-600 bg-blue-50 border border-gray-300 hover:bg-blue-100 hover:text-blue-700">1</a>
-                        <a href="#" class="py-2 px-4 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">2</a>
-                        <a href="#" class="py-2 px-4 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">3</a>
-                        <a href="#" class="py-2 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </nav>
-                </div>
             </div>
         </main>
     </div>
@@ -299,6 +581,15 @@ function handleProductForm(formId, productType) {
                     showConfirmButton: false
                 });
                 form.reset();
+                // Reset tile category dropdowns to only one
+                const tileCategoryFields = document.getElementById('tileCategoryFields');
+                if (tileCategoryFields) {
+                    const rows = tileCategoryFields.querySelectorAll('.tile-category-row');
+                    rows.forEach((row, idx) => { if (idx > 0) row.remove(); });
+                    // Also reset the first select
+                    const firstSelect = tileCategoryFields.querySelector('select');
+                    if (firstSelect) firstSelect.value = '';
+                }
                 document.getElementById('addProductSidebar').classList.add('translate-x-full');
                 loadProducts(); // Refresh product grid
             } else {
@@ -366,6 +657,30 @@ openBtn.addEventListener('click', openSidebar);
 cancelBtn.addEventListener('click', closeSidebar);
 
 // --- Dynamic Product Grid & Filters ---
+// Populate tileTypeDropdown and otherSpecDropdown dynamically
+async function populateFilterDropdowns(products) {
+    // Tile categories
+    const tileTypeDropdown = document.getElementById('tileTypeDropdown');
+    const allTileCats = new Set();
+    products.forEach(p => {
+        if (p.product_type === 'tile' && Array.isArray(p.tile_categories)) {
+            p.tile_categories.forEach(cat => allTileCats.add(cat));
+        }
+    });
+    tileTypeDropdown.innerHTML = '<option value="">All Tile Categories</option>' +
+        Array.from(allTileCats).map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+    // Product specs
+    const otherSpecDropdown = document.getElementById('otherSpecDropdown');
+    const allSpecs = new Set();
+    products.forEach(p => {
+        if (p.product_type === 'other' && p.product_spec) {
+            allSpecs.add(p.product_spec);
+        }
+    });
+    otherSpecDropdown.innerHTML = '<option value="">All Product Specs</option>' +
+        Array.from(allSpecs).map(spec => `<option value="${spec}">${spec}</option>`).join('');
+}
 function getStockStatus(stock) {
     if (stock >= 300) return {label: 'Overstock', class: 'inventory-high', icon: 'fa-bolt'};
     if (stock >= 100) return {label: 'In Stock', class: 'inventory-high', icon: 'fa-check-circle'};
@@ -381,12 +696,12 @@ function renderProductCard(product) {
     if (product.product_image && product.product_image.startsWith('data:image')) {
         imgSrc = product.product_image;
     }
-    // Show tile_type for tile, product_spec for other, else blank
+    // Unified subtitle: always use styled labels, wrap in flex for better alignment
     let subtitle = '';
-    if (product.product_type === 'tile' && product.tile_type) {
-        subtitle = product.tile_type;
+    if (product.product_type === 'tile' && Array.isArray(product.tile_categories) && product.tile_categories.length) {
+        subtitle = `<div class='flex flex-wrap justify-center gap-1'>` + product.tile_categories.map(cat => `<span class='bg-blue-100 text-blue-700 rounded px-2 py-0.5 text-xs font-semibold mb-1'>${cat}</span>`).join('') + `</div>`;
     } else if (product.product_type === 'other' && product.product_spec) {
-        subtitle = product.product_spec;
+        subtitle = `<div class='flex flex-wrap justify-center gap-1'><span class='bg-blue-100 text-blue-700 rounded px-2 py-0.5 text-xs font-semibold mb-1'>${product.product_spec}</span></div>`;
     }
     const isArchived = product.is_archived && product.is_archived != '0';
     return `
@@ -419,6 +734,7 @@ function renderProductCard(product) {
 
 let allProducts = [];
 
+
 function filterProducts() {
     const search = document.getElementById('searchInput').value.trim().toLowerCase();
     const category = document.getElementById('categoryDropdown').value;
@@ -435,18 +751,23 @@ function filterProducts() {
         if (search) {
             const searchMatch = [
                 product.product_name,
-                product.tile_design,
-                product.tile_type,
                 product.product_spec
             ].filter(Boolean).some(val => val.toLowerCase().includes(search));
-            if (!searchMatch) return false;
+            // Also search in tile categories
+            if (!searchMatch && product.product_type === 'tile' && Array.isArray(product.tile_categories)) {
+                if (!product.tile_categories.some(cat => cat.toLowerCase().includes(search))) return false;
+            } else if (!searchMatch) {
+                return false;
+            }
         }
 
         // Category (exact match)
         if (category !== 'all' && product.product_type !== category) return false;
 
-        // Tile type (exact match, only if visible)
-        if (category === 'tile' && tileType && product.tile_type !== tileType) return false;
+        // Tile category filter (from DB)
+        if (category === 'tile' && tileType) {
+            if (!Array.isArray(product.tile_categories) || !product.tile_categories.includes(tileType)) return false;
+        }
 
         // Other spec (exact match, only if visible)
         if (category === 'other' && otherSpec && product.product_spec !== otherSpec) return false;
@@ -486,6 +807,7 @@ function loadProducts() {
         .then(res => res.json())
         .then(products => {
             allProducts = products;
+            populateFilterDropdowns(products);
             filterProducts();
         })
         .catch(() => {
@@ -499,10 +821,52 @@ loadProducts();
 // --- Edit & Delete Button Logic ---
 // Modal for editing (simple version)
 let editModal = null;
-function showEditModal(product) {
+
+async function showEditModal(product) {
     if (editModal) editModal.remove();
+    // Fetch all tile categories and product's categories
+    const [allCats, prodCats] = await Promise.all([
+        fetch('processes/get_tile_categories.php').then(r=>r.json()),
+        fetch('processes/get_product_categories.php?product_id=' + product.product_id).then(r=>r.json())
+    ]);
     editModal = document.createElement('div');
     editModal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40';
+    // Build tile category fields
+    let catFields = '';
+    if (product.product_type === 'tile') {
+        catFields += `<div id="editTileCategoryFields">`;
+        prodCats.forEach((catId, idx) => {
+            catFields += `<div class="flex gap-2 mb-2 tile-category-row">
+                <select name="category_ids[]" class="tile-category-select w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" required>
+                    <option value="">Select category</option>
+                    ${allCats.map(cat => `<option value="${cat.category_id}"${cat.category_id==catId?' selected':''}>${cat.category_name}</option>`).join('')}
+                </select>
+                <button type="button" class="${idx===0?'add-category-btn bg-blue-500':'remove-category-btn bg-red-500'} text-white px-3 py-1 rounded" title="${idx===0?'Add another category':'Remove this category'}"><i class="fas fa-${idx===0?'plus':'minus'}"></i></button>
+            </div>`;
+        });
+        if (prodCats.length === 0) {
+            catFields += `<div class="flex gap-2 mb-2 tile-category-row">
+                <select name="category_ids[]" class="tile-category-select w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" required>
+                    <option value="">Select category</option>
+                    ${allCats.map(cat => `<option value="${cat.category_id}">${cat.category_name}</option>`).join('')}
+                </select>
+                <button type="button" class="add-category-btn bg-blue-500 text-white px-3 py-1 rounded" title="Add another category"><i class="fas fa-plus"></i></button>
+            </div>`;
+        }
+        catFields += `</div>`;
+    } else if (product.product_type === 'other') {
+        // Editable product_spec dropdown for 'other' products
+        catFields += `<div>
+            <label class='block text-gray-700 font-semibold mb-2'>Product Specification</label>
+            <select name='product_spec' class='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none' required>
+                <option value=''>Select specification</option>
+                <option value='PVC Doors' ${product.product_spec==='PVC Doors'?'selected':''}>PVC Doors</option>
+                <option value='Sinks' ${product.product_spec==='Sinks'?'selected':''}>Sinks</option>
+                <option value='Tile Vinyl' ${product.product_spec==='Tile Vinyl'?'selected':''}>Tile Vinyl</option>
+                <option value='Bowls' ${product.product_spec==='Bowls'?'selected':''}>Bowls</option>
+            </select>
+        </div>`;
+    }
     editModal.innerHTML = `
         <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg relative border border-blue-200">
             <button class="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-3xl font-bold transition" onclick="this.closest('.fixed').remove()">&times;</button>
@@ -527,6 +891,7 @@ function showEditModal(product) {
                         <input class="w-full px-4 py-2 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none transition" name="stock_count" type="number" min="0" value="${product.stock_count || ''}" required>
                     </div>
                 </div>
+                ${catFields}
                 <div class="flex gap-3 justify-end mt-6">
                     <button type="button" class="closeEditModal px-5 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 font-medium transition" onclick="this.closest('.fixed').remove()">Cancel</button>
                     <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow transition">Save Changes</button>
@@ -534,12 +899,75 @@ function showEditModal(product) {
             </form>
         </div>
     `;
-    // ...existing code...
     document.body.appendChild(editModal);
+    // Add dynamic category logic
+    if (product.product_type === 'tile') {
+        const catFieldsDiv = editModal.querySelector('#editTileCategoryFields');
+        const MAX_TILE_CATEGORIES = 6;
+        function canAddMoreEditTileCategories() {
+            const selects = catFieldsDiv.querySelectorAll('select');
+            return selects.length < MAX_TILE_CATEGORIES;
+        }
+        catFieldsDiv.addEventListener('click', function(e) {
+            if (e.target.closest('.add-category-btn')) {
+                if (!canAddMoreEditTileCategories()) return;
+                const row = e.target.closest('.tile-category-row');
+                const newRow = row.cloneNode(true);
+                newRow.querySelector('select').value = '';
+                const btn = newRow.querySelector('.add-category-btn');
+                btn.innerHTML = '<i class="fas fa-minus"></i>';
+                btn.classList.remove('bg-blue-500');
+                btn.classList.add('bg-red-500', 'remove-category-btn');
+                btn.classList.remove('add-category-btn');
+                btn.title = 'Remove this category';
+                catFieldsDiv.appendChild(newRow);
+                updateEditCategoryOptions();
+                // Hide plus button if max reached
+                if (!canAddMoreEditTileCategories()) {
+                    const plusBtns = catFieldsDiv.querySelectorAll('.add-category-btn');
+                    plusBtns.forEach(btn => btn.style.display = 'none');
+                }
+            } else if (e.target.closest('.remove-category-btn')) {
+                const row = e.target.closest('.tile-category-row');
+                row.remove();
+                updateEditCategoryOptions();
+                // Show plus button if below max
+                if (canAddMoreEditTileCategories()) {
+                    const plusBtns = catFieldsDiv.querySelectorAll('.add-category-btn');
+                    plusBtns.forEach(btn => btn.style.display = '');
+                }
+            }
+        });
+        catFieldsDiv.addEventListener('change', function(e) {
+            if (e.target.matches('select')) updateEditCategoryOptions();
+        });
+        function updateEditCategoryOptions() {
+            const selects = catFieldsDiv.querySelectorAll('select');
+            const selected = Array.from(selects).map(s => s.value).filter(v => v);
+            selects.forEach(select => {
+                const current = select.value;
+                Array.from(select.options).forEach(opt => {
+                    if (!opt.value) return;
+                    if (selected.includes(opt.value) && opt.value !== current) {
+                        opt.style.display = 'none';
+                    } else {
+                        opt.style.display = '';
+                    }
+                });
+            });
+        }
+        updateEditCategoryOptions();
+    }
     document.getElementById('editProductForm').onsubmit = function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-    fetch('processes/edit_product.php', {
+        // Add category_ids[] for tile
+        if (product.product_type === 'tile') {
+            const catIds = Array.from(editModal.querySelectorAll('#editTileCategoryFields select')).map(s => s.value).filter(v => v);
+            formData.delete('category_ids[]');
+            catIds.forEach(id => formData.append('category_ids[]', id));
+        }
+        fetch('processes/edit_product.php', {
             method: 'POST',
             body: formData
         })

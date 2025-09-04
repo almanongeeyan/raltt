@@ -23,15 +23,29 @@ if (!$show_archived) {
 $stmt = $db_connection->prepare($sql);
 $stmt->bindValue(':branch_id', $branch_id, PDO::PARAM_INT);
 $stmt->execute();
+
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Convert product_image (BLOB) to base64 for frontend display
+// Fetch all categories for all products in one query
+$ids = array_column($products, 'product_id');
+$catMap = [];
+if ($ids) {
+        $in = implode(',', array_fill(0, count($ids), '?'));
+        $catStmt = $db_connection->prepare("SELECT pc.product_id, tc.category_name FROM product_categories pc JOIN tile_categories tc ON pc.category_id = tc.category_id WHERE pc.product_id IN ($in)");
+        $catStmt->execute($ids);
+        foreach ($catStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $catMap[$row['product_id']][] = $row['category_name'];
+        }
+}
+
+// Convert product_image (BLOB) to base64 for frontend display and add categories
 foreach ($products as &$product) {
         if (!empty($product['product_image'])) {
                 $product['product_image'] = 'data:image/jpeg;base64,' . base64_encode($product['product_image']);
         } else {
                 $product['product_image'] = null;
         }
+        $product['tile_categories'] = $catMap[$product['product_id']] ?? [];
 }
 unset($product);
 

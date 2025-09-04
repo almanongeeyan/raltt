@@ -54,13 +54,19 @@ if (strlen($password) < 8) {
     $response['errors']['password'] = 'Password must be at least 8 characters';
 }
 
-// Check if phone already exists
+// Check if phone or email already exists in users table
 try {
-    $checkPhone = $db_connection->prepare("SELECT id FROM manual_accounts WHERE phone_number = ?");
+    $checkPhone = $db_connection->prepare("SELECT id FROM users WHERE phone_number = ?");
     $checkPhone->execute([$phone]);
     if ($checkPhone->rowCount() > 0) {
         $response['errors']['phone'] = 'This phone number is already registered';
     }
+    // Optionally check for duplicate email if you collect it
+    // $checkEmail = $db_connection->prepare("SELECT id FROM users WHERE email = ?");
+    // $checkEmail->execute([$email]);
+    // if ($checkEmail->rowCount() > 0) {
+    //     $response['errors']['email'] = 'This email is already registered';
+    // }
 } catch (PDOException $e) {
     error_log("[".date('Y-m-d H:i:s')."] Phone check error: " . $e->getMessage() . PHP_EOL, 3, "database_errors.log");
     $response['message'] = 'Database error during phone verification';
@@ -80,55 +86,54 @@ if (!empty($response['errors'])) {
 // Hash the password
 $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
-// Generate a unique user ID (you can modify this as needed)
-$user_id = 'user_' . bin2hex(random_bytes(8));
-
-
-// Insert into database with new columns and defaults
+// Insert into users table
 try {
     $stmt = $db_connection->prepare("
-        INSERT INTO manual_accounts (
-            user_id,
+        INSERT INTO users (
+            google_id,
+            password_hash,
             full_name,
+            email,
             phone_number,
             house_address,
             full_address,
-            password_hash,
             referral_code,
             referral_coins,
-            referral_count,
+            has_used_referral_code,
             account_status
         ) VALUES (
-            :user_id,
+            :google_id,
+            :password_hash,
             :full_name,
+            :email,
             :phone_number,
             :house_address,
             :full_address,
-            :password_hash,
             :referral_code,
             :referral_coins,
-            :referral_count,
+            :has_used_referral_code,
             :account_status
         )
     ");
 
     $stmt->execute([
-        ':user_id' => $user_id,
+        ':google_id' => null,
+        ':password_hash' => $passwordHash,
         ':full_name' => $fullname,
+        ':email' => '', // No email collected in manual registration
         ':phone_number' => $phone,
         ':house_address' => $house_address,
         ':full_address' => $address,
-        ':password_hash' => $passwordHash,
         ':referral_code' => $referral_code,
         ':referral_coins' => 0,
-        ':referral_count' => 1,
+        ':has_used_referral_code' => 0,
         ':account_status' => 'active'
     ]);
 
     // Success response
     $response['status'] = 'success';
     $response['message'] = 'Registration successful!';
-    $response['user_id'] = $user_id;
+    $response['user_id'] = $db_connection->lastInsertId();
     http_response_code(201);
 
 } catch (PDOException $e) {

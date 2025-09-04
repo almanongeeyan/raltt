@@ -16,7 +16,7 @@ use Twilio\Rest\Client;
 
 // Current credentials from your files
 $current_sid = "ACb859b1d0b98e99dd9948bcc0901b71e4";
-$current_token = "29f2a1c745f31079c1289a8d912c127e";
+$current_token = "89f0376667216d156594c2453b957191";
 $current_verify_service = "VA6d14e3699a4add30e49a090f0457c18e";
 
 echo "<h3>📋 Current Credentials</h3>";

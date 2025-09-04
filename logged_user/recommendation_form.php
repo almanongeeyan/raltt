@@ -1,9 +1,23 @@
+
 <?php
 // recommendation_form.php
+$sessionAlready = session_status() === PHP_SESSION_ACTIVE;
+if (!$sessionAlready) session_start();
+require_once __DIR__ . '/../connection/connection.php';
+$showRecommendationModal = true;
+if (isset($_SESSION['user_id'])) {
+  $user_id = $_SESSION['user_id'];
+  $stmt = $conn->prepare('SELECT COUNT(*) FROM user_recommendations WHERE user_id = ?');
+  $stmt->execute([$user_id]);
+  if ($stmt->fetchColumn() > 0) {
+    $showRecommendationModal = false;
+  }
+}
 ?>
+<?php if ($showRecommendationModal): ?>
 
-<div id="recommendationModalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-  <div id="recommendationModalBox" class="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-sm md:max-w-md max-h-[80vh] overflow-hidden transform scale-90 opacity-0 transition-all duration-300 border-2 border-accent">
+<div id="recommendationModalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center hidden">
+  <div id="recommendationModalBox" class="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-sm md:max-w-lg max-h-[80vh] overflow-hidden transform scale-90 opacity-0 transition-all duration-300 border-2 border-accent">
     <!-- Header -->
     <div class="bg-primary text-white p-5 flex items-center justify-center relative">
       <h3 class="text-xl md:text-2xl font-extrabold tracking-wide text-center w-full drop-shadow-lg">Personalize Your Tile Experience</h3>
@@ -22,10 +36,13 @@
       </div>
     </div>
     <!-- Footer -->
-    <div class="bg-gray-100 p-5 flex justify-center">
-      <button id="submitRecommendations" disabled class="bg-gray-400 text-white px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed">
+    <div class="bg-gray-100 p-5 flex flex-col items-center justify-center">
+      <button id="submitRecommendations" disabled class="bg-gray-400 text-white px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:scale-105 transform disabled:opacity-50 disabled:cursor-not-allowed mb-2">
         Submit Preferences
       </button>
+      <div id="recommendationSuccessMsg" style="display:none;" class="mt-2 text-center px-4 py-2 rounded-lg bg-green-100 border border-green-300 text-green-800 font-semibold shadow">
+        <!-- Success message will appear here -->
+      </div>
     </div>
   </div>
 </div>
@@ -33,12 +50,12 @@
 <script>
 // Category data
 const tileCategories = [
-  { id: 'ceramic', name: 'Ceramic Tiles', icon: 'fa-shapes' },
-  { id: 'porcelain', name: 'Porcelain Tiles', icon: 'fa-gem' },
-  { id: 'mosaic', name: 'Mosaic Tiles', icon: 'fa-puzzle-piece' },
-  { id: 'natural_stone', name: 'Natural Stone', icon: 'fa-mountain' },
-  { id: 'outdoor', name: 'Outdoor Tiles', icon: 'fa-tree' },
-  { id: 'premium', name: 'Premium Tiles', icon: 'fa-crown' }
+  { id: 'black_white', name: 'Black and White', icon: 'fa-palette' },
+  { id: 'floral', name: 'Floral', icon: 'fa-seedling' },
+  { id: 'indoor', name: 'Indoor', icon: 'fa-home' },
+  { id: 'minimalist', name: 'Minimalist', icon: 'fa-border-all' },
+  { id: 'modern', name: 'Modern', icon: 'fa-cube' },
+  { id: 'pool', name: 'Pool', icon: 'fa-swimming-pool' }
 ];
 
 // Initialize the recommendation modal
@@ -79,9 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <i class="fas ${category.icon} text-2xl md:text-3xl text-secondary group-hover:text-primary transition-colors duration-300"></i>
         </div>
         <span class="text-sm md:text-base font-bold text-center text-textdark mb-1">${category.name}</span>
-        <div class="checkmark absolute top-2 right-2 w-6 h-6 rounded-full bg-secondary flex items-center justify-center transition-all duration-300 opacity-0 shadow-md">
-          <i class="fas fa-check text-white text-xs"></i>
-        </div>
+  <div class="selection-badge absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 shadow-md text-xs font-bold"></div>
       `;
       categoryElement.addEventListener('click', () => toggleCategory(category.id));
       categoryContainer.appendChild(categoryElement);
@@ -97,13 +112,14 @@ document.addEventListener('DOMContentLoaded', function() {
       // Deselect
       selectedCategories = selectedCategories.filter(id => id !== categoryId);
       categoryElement.classList.remove('border-secondary', 'ring-4', 'ring-secondary', 'bg-accent/10');
-      categoryElement.querySelector('.checkmark').classList.remove('opacity-100');
+      categoryElement.querySelector('.selection-badge').classList.remove('opacity-100');
+      categoryElement.querySelector('.selection-badge').textContent = '';
+      categoryElement.querySelector('.selection-badge').style.background = '';
       categoryElement.querySelector('i:first-child').classList.remove('text-primary');
     } else if (selectedCategories.length < maxSelections) {
       // Select (if under limit)
       selectedCategories.push(categoryId);
       categoryElement.classList.add('border-secondary', 'ring-4', 'ring-secondary', 'bg-accent/10');
-      categoryElement.querySelector('.checkmark').classList.add('opacity-100');
       categoryElement.querySelector('i:first-child').classList.add('text-primary');
       // Add animation on selection
       categoryElement.style.transform = 'scale(1.08)';
@@ -111,9 +127,35 @@ document.addEventListener('DOMContentLoaded', function() {
         categoryElement.style.transform = 'scale(1)';
       }, 200);
     }
+    updateSelectionBadges();
     // Update progress and clickable state
     updateSelectionProgress();
     updateOptionClickability();
+  }
+
+  // Update selection badges (1st, 2nd, 3rd)
+  function updateSelectionBadges() {
+    document.querySelectorAll('.category-option').forEach(opt => {
+      const badge = opt.querySelector('.selection-badge');
+      const idx = selectedCategories.indexOf(opt.dataset.id);
+      if (idx !== -1) {
+        badge.classList.add('opacity-100');
+        let label = '';
+        let bg = '';
+        if (idx === 0) { label = '1st'; bg = 'linear-gradient(135deg,#FFD700,#FFEF8A)'; } // gold
+        else if (idx === 1) { label = '2nd'; bg = 'linear-gradient(135deg,#C0C0C0,#E0E0E0)'; } // silver
+        else if (idx === 2) { label = '3rd'; bg = 'linear-gradient(135deg,#cd7f32,#e3b778)'; } // bronze
+        badge.textContent = label;
+        badge.style.background = bg;
+        badge.style.color = '#fff';
+        badge.style.border = '2px solid #fff';
+        badge.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
+      } else {
+        badge.classList.remove('opacity-100');
+        badge.textContent = '';
+        badge.style.background = '';
+      }
+    });
   }
 
   // Make unselected options unclickable if 3 are selected
@@ -133,11 +175,17 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Update selection progress
+  function ordinal(n) {
+    if (n === 1) return '1st';
+    if (n === 2) return '2nd';
+    if (n === 3) return '3rd';
+    return `${n}th`;
+  }
   function updateSelectionProgress() {
     const progress = Math.min(selectedCategories.length, maxSelections);
     const percentage = (progress / maxSelections) * 100;
     progressBar.style.width = `${percentage}%`;
-    selectionCount.textContent = `${progress}/3`;
+    selectionCount.textContent = progress > 0 ? `${ordinal(progress)}/3` : '0/3';
     // Enable/disable submit button
     submitBtn.disabled = progress !== maxSelections;
     submitBtn.classList.toggle('bg-gray-400', progress !== maxSelections);
@@ -176,21 +224,33 @@ document.addEventListener('DOMContentLoaded', function() {
   // Submit recommendations
   function submitRecommendations() {
     if (selectedCategories.length === maxSelections) {
-      // Close modal immediately
-      closeRecommendationModal();
       // Send data to server via AJAX
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', 'save_recommendations.php', true);
+      xhr.open('POST', 'processes/save_recommendations.php', true);
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          // Show success message (modal already closed)
-          Swal.fire({
-            title: 'Preferences Saved!',
-            text: 'Thank you for helping us personalize your experience.',
-            icon: 'success',
-            confirmButtonColor: '#7d310a'
-          });
+        if (xhr.readyState === 4) {
+          const msgDiv = document.getElementById('recommendationSuccessMsg');
+          if (xhr.status === 200) {
+            msgDiv.innerHTML = '<span style="font-size:1.2em;"><b>Preferences Saved!</b></span><br>Thank you for helping us personalize your experience.';
+            msgDiv.style.display = 'block';
+            setTimeout(() => {
+              msgDiv.style.display = 'none';
+              // Also close the modal after 4 seconds
+              if (modalOverlay && modalBox) {
+                modalBox.classList.remove('scale-100', 'opacity-100');
+                modalBox.classList.add('scale-90', 'opacity-0');
+                setTimeout(() => {
+                  modalOverlay.style.display = 'none';
+                  document.body.style.overflow = '';
+                }, 250);
+              }
+            }, 4000);
+
+          } else {
+            msgDiv.innerHTML = '<span style="color:#b91c1c; font-weight:bold;">An error occurred. Please try again.</span>';
+            msgDiv.style.display = 'block';
+          }
         }
       };
       xhr.send('categories=' + JSON.stringify(selectedCategories));
@@ -205,6 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Populate categories and check if modal should be shown
   populateCategories();
   updateOptionClickability();
+  updateSelectionBadges();
   
   // Check if we should show the modal (poll every second until shown or page changes)
   const checkInterval = setInterval(checkShowRecommendationModal, 1000);
@@ -213,5 +274,6 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(() => {
     clearInterval(checkInterval);
   }, 30000);
-});
+  });
+  <?php endif; ?>
 </script>

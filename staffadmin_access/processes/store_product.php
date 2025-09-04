@@ -9,9 +9,9 @@ function storeProduct($data, $file = null) {
     $isTile = ($data['product_type'] === 'tile');
 
     $sql = "INSERT INTO products (
-        product_type, product_name, product_price, product_description, product_image, product_spec, tile_type, tile_design, sku, is_popular, is_hot, is_best_seller, is_archived
+        product_type, product_name, product_price, product_description, product_image, product_spec, sku, is_popular, is_best_seller, is_archived
     ) VALUES (
-        :product_type, :product_name, :product_price, :product_description, :product_image, :product_spec, :tile_type, :tile_design, :sku, :is_popular, :is_hot, :is_best_seller, :is_archived
+        :product_type, :product_name, :product_price, :product_description, :product_image, :product_spec, :sku, :is_popular, :is_best_seller, :is_archived
     )";
 
     // Handle image upload (optional)
@@ -27,11 +27,8 @@ function storeProduct($data, $file = null) {
     $stmt->bindValue(':product_description', $data['product_description']);
     $stmt->bindValue(':product_image', $imageData, PDO::PARAM_LOB);
     $stmt->bindValue(':product_spec', $isTile ? null : ($data['product_spec'] ?? null));
-    $stmt->bindValue(':tile_type', $isTile ? ($data['tile_type'] ?? null) : null);
-    $stmt->bindValue(':tile_design', $isTile ? ($data['tile_design'] ?? null) : null);
     $stmt->bindValue(':sku', $data['sku'] ?? null);
     $stmt->bindValue(':is_popular', $data['is_popular'] ?? 0, PDO::PARAM_INT);
-    $stmt->bindValue(':is_hot', $data['is_hot'] ?? 0, PDO::PARAM_INT);
     $stmt->bindValue(':is_best_seller', $data['is_best_seller'] ?? 0, PDO::PARAM_INT);
     $stmt->bindValue(':is_archived', isset($data['is_archived']) ? (int)$data['is_archived'] : 0, PDO::PARAM_INT);
     $stmt->execute();
@@ -48,6 +45,13 @@ function storeProduct($data, $file = null) {
         $stmt2->bindValue(':stock_count', $stock_count, PDO::PARAM_INT);
         $stmt2->execute();
     }
+    // Insert into product_categories for all selected categories (many-to-many)
+    if ($isTile && !empty($data['category_ids']) && is_array($data['category_ids'])) {
+        $catStmt = $db_connection->prepare('INSERT IGNORE INTO product_categories (product_id, category_id) VALUES (?, ?)');
+        foreach ($data['category_ids'] as $catId) {
+            $catStmt->execute([$productId, $catId]);
+        }
+    }
     return $productId;
 }
 
@@ -56,6 +60,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     try {
         $data = $_POST;
+        // If category_ids is not an array (e.g. only one selected), make it an array
+        if (isset($data['category_ids']) && !is_array($data['category_ids'])) {
+            $data['category_ids'] = [$data['category_ids']];
+        }
         $file = isset($_FILES['product_image']) ? $_FILES['product_image'] : null;
         $productId = storeProduct($data, $file);
         echo json_encode(['status' => 'success', 'product_id' => $productId]);

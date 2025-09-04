@@ -85,7 +85,7 @@ if (empty($phone) || empty($password)) {
 }
 
 // Validate phone number format
-if (!preg_match('/^\+639[0-9]{9}$/', $phone)) {
+if (!preg_match('/^\\+639[0-9]{9}$/', $phone)) {
     $response['message'] = 'Invalid phone number format';
     http_response_code(400);
     echo json_encode($response);
@@ -93,8 +93,8 @@ if (!preg_match('/^\+639[0-9]{9}$/', $phone)) {
 }
 
 try {
-    // Check if user exists
-    $stmt = $db_connection->prepare("SELECT * FROM manual_accounts WHERE phone_number = ?");
+    // Check if user exists in users table
+    $stmt = $db_connection->prepare("SELECT * FROM users WHERE phone_number = ? AND password_hash IS NOT NULL");
     $stmt->execute([$phone]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -123,15 +123,15 @@ try {
 
     // Login successful - set session variables
     $_SESSION['logged_in'] = true;
-    $_SESSION['user_id'] = $user['user_id'];
+    $_SESSION['user_id'] = $user['id'];
     $_SESSION['phone_number'] = $user['phone_number'];
     $_SESSION['full_name'] = $user['full_name'];
     $_SESSION['account_type'] = 'manual';
-    $_SESSION['referral_count'] = isset($user['referral_count']) ? $user['referral_count'] : null;
+    // You can add more session variables as needed
 
     // Update last login time
-    $updateStmt = $db_connection->prepare("UPDATE manual_accounts SET last_login = NOW() WHERE user_id = ?");
-    $updateStmt->execute([$user['user_id']]);
+    $updateStmt = $db_connection->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+    $updateStmt->execute([$user['id']]);
 
     // Success response
     $response['status'] = 'success';
