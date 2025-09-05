@@ -354,12 +354,45 @@ include 'includes/header.php';
 
 <body>
     <section class="about-raltt-section">
+<<<<<<< HEAD
+    <div class="about-raltt-grid">        <div class="grid-top-left">
+            <span class="highlight">RALTT:</span> Bring Your<br>
+            Visions to Life:<br>
+            Design Stunning Spaces,<br>
+            with our <span class="highlight2">2D Tile Visualizer</span>
+        </div>
+        <div class="grid-top-right">
+            <img src="images/tile1.png" alt="Tiles Stack">
+        </div>
+        <div class="grid-bottom-left">
+            <img src="images/tile2.png" alt="Tile Samples">
+        </div>
+        <div class="grid-bottom-right">
+            <p>
+                We will bring something new and refreshing to your usage 
+                <br> of visualizer and tile e-commerce. RALTT is here 
+                <br>to maximize your tile design imagination while 
+                <br>shopping on our tile e-commerce shop. <span class="highlight2">Check out now!</span>
+            </p>
+        </div>
+    </div>
+</section>
+
+
+    <div class="branch-columns">
+        <section class="branches-section">
+
+            <div class="branches-top">
+                <hr class="branches-top-line" />
+                <div class="branches-title">Our Branches</div>
+=======
         <div class="about-raltt-grid">
             <div class="grid-top-left">
                 <span class="highlight">RALTT:</span> Bring Your<br>
                 Visions to Life:<br>
                 Design Stunning Spaces,<br>
                 with our <span class="highlight">2D Tile Visualizer</span>
+>>>>>>> 5199400f9fb7573d69e8e557a0eda3e09c1f6ca4
             </div>
 
             <div class="grid-top-right">
