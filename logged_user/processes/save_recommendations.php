@@ -21,24 +21,25 @@ if (!is_array($categories) || count($categories) !== 3) {
     exit;
 }
 
-// Map JS keys to DB category_id
+
+// Map JS keys to DB design_id (from tile_designs)
 $keyToId = [
-    'black_white' => 4,
-    'floral' => 2,
-    'indoor' => 3,
     'minimalist' => 1,
-    'modern' => 5,
-    'pool' => 6
+    'floral' => 2,
+    'black_white' => 3,
+    'modern' => 4,
+    'rustic' => 5,
+    'geometric' => 6
 ];
 
 try {
     $pdo = $conn; // from connection.php
     $pdo->beginTransaction();
-    // Remove previous recommendations for this user
-    $stmt = $pdo->prepare('DELETE FROM user_recommendations WHERE user_id = ?');
+    // Remove previous design preferences for this user
+    $stmt = $pdo->prepare('DELETE FROM user_design_preferences WHERE user_id = ?');
     $stmt->execute([$user_id]);
-    // Insert new recommendations
-    $stmt = $pdo->prepare('INSERT INTO user_recommendations (user_id, category_id, rank) VALUES (?, ?, ?)');
+    // Insert new design preferences
+    $stmt = $pdo->prepare('INSERT INTO user_design_preferences (user_id, design_id, rank) VALUES (?, ?, ?)');
     foreach ($categories as $i => $key) {
         if (!isset($keyToId[$key])) continue;
         $stmt->execute([$user_id, $keyToId[$key], $i+1]);

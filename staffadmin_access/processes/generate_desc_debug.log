@@ -234,3 +234,91 @@ INPUT: {"name":"Hello","price":"120","design":"Blueish Minimalist","stock":"120"
 CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "120" --price "120" --design "Cute" --stock "123" --categories WyJNb2Rlcm4iXQ==
 INPUT: {"name":"120","price":"120","design":"Cute","stock":"123","categories":["Modern"]}
 
+2025-09-05 14:40:51
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "120" --designs WyJtaW5pbWFsaXN0IiwiZmxvcmFsIl0= --classification "glass tiles" --finish "rough" --size "60x60"
+INPUT: {"name":"Sample","price":"120","designs":["minimalist","floral"],"classification":"glass tiles","finish":"rough","size":"60x60"}
+
+2025-09-05 14:45:53
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "122" --designs WyJtaW5pbWFsaXN0IiwiYmxhY2sgYW5kIHdoaXRlIl0= --classification "porcelain" --finish "rough" --size "60x60"
+INPUT: {"name":"Sample","price":"122","designs":["minimalist","black and white"],"classification":"porcelain","finish":"rough","size":"60x60"}
+
+2025-09-05 14:46:04
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "122" --designs WyJtaW5pbWFsaXN0IiwiYmxhY2sgYW5kIHdoaXRlIl0= --classification "porcelain" --finish "rough" --size "60x60"
+INPUT: {"name":"Sample","price":"122","designs":["minimalist","black and white"],"classification":"porcelain","finish":"rough","size":"60x60"}
+
+2025-09-05 14:46:08
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "122" --designs WyJtaW5pbWFsaXN0IiwiYmxhY2sgYW5kIHdoaXRlIl0= --classification "porcelain" --finish "rough" --size "60x60"
+INPUT: {"name":"Sample","price":"122","designs":["minimalist","black and white"],"classification":"porcelain","finish":"rough","size":"60x60"}
+
+2025-09-05 14:46:16
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "122" --designs WyJtaW5pbWFsaXN0IiwiYmxhY2sgYW5kIHdoaXRlIl0= --classification "porcelain" --finish "rough" --size "60x60"
+INPUT: {"name":"Sample","price":"122","designs":["minimalist","black and white"],"classification":"porcelain","finish":"rough","size":"60x60"}
+
+2025-09-05 14:46:18
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "122" --designs WyJtaW5pbWFsaXN0IiwiYmxhY2sgYW5kIHdoaXRlIl0= --classification "porcelain" --finish "rough" --size "60x60"
+INPUT: {"name":"Sample","price":"122","designs":["minimalist","black and white"],"classification":"porcelain","finish":"rough","size":"60x60"}
+
+2025-09-05 16:57:13
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "SAMPLE" --price "123" --designs WyJnZW9tZXRyaWMiLCJmbG9yYWwiXQ== --classification "marble" --finish "rough" --size "30x60"
+INPUT: {"name":"SAMPLE","price":"123","designs":["geometric","floral"],"classification":"marble","finish":"rough","size":"30x60"}
+
+2025-09-06 01:56:23
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "SAMPLE" --price "123" --designs WyJsaW5lcyJd --classification "stone" --finish "rough" --size "40x40"
+INPUT: {"name":"SAMPLE","price":"123","designs":["lines"],"classification":"stone","finish":"rough","size":"40x40"}
+
+2025-09-06 01:56:52
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "123" --designs WyJsaW5lcyJd --classification "stone" --finish "rough" --size "30x30"
+INPUT: {"name":"Sample","price":"123","designs":["lines"],"classification":"stone","finish":"rough","size":"30x30"}
+
+2025-09-06 04:06:22
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "GYAAAN" --price "123" --designs WyJmbG9yYWwiLCJibGFjayBhbmQgd2hpdGUiXQ== --classification "stone" --finish "glossy" --size "30x60"
+INPUT: {"name":"GYAAAN","price":"123","designs":["floral","black and white"],"classification":"stone","finish":"glossy","size":"30x60"}
+
+2025-09-06 04:10:24
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sample" --price "120" --designs WyJtaW5pbWFsaXN0IiwiZmxvcmFsIl0= --classification "stone" --finish "matte" --size "60x60"
+INPUT: {"name":"Sample","price":"120","designs":["minimalist","floral"],"classification":"stone","finish":"matte","size":"60x60"}
+
+2025-09-06 04:17:44
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hey" --price "120" --designs WyJibGFjayBhbmQgd2hpdGUiLCJtb2Rlcm4iLCJydXN0aWMiXQ== --classification "stone" --finish "glossy" --size "30x60"
+INPUT: {"name":"Hey","price":"120","designs":["black and white","modern","rustic"],"classification":"stone","finish":"glossy","size":"30x60"}
+
+2025-09-06 04:17:46
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hey" --price "120" --designs WyJibGFjayBhbmQgd2hpdGUiLCJtb2Rlcm4iLCJydXN0aWMiXQ== --classification "stone" --finish "glossy" --size "30x60"
+INPUT: {"name":"Hey","price":"120","designs":["black and white","modern","rustic"],"classification":"stone","finish":"glossy","size":"30x60"}
+
+2025-09-06 04:17:47
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hey" --price "120" --designs WyJibGFjayBhbmQgd2hpdGUiLCJtb2Rlcm4iLCJydXN0aWMiXQ== --classification "stone" --finish "glossy" --size "30x60"
+INPUT: {"name":"Hey","price":"120","designs":["black and white","modern","rustic"],"classification":"stone","finish":"glossy","size":"30x60"}
+
+2025-09-06 04:17:48
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hey" --price "120" --designs WyJibGFjayBhbmQgd2hpdGUiLCJtb2Rlcm4iLCJydXN0aWMiXQ== --classification "stone" --finish "glossy" --size "30x60"
+INPUT: {"name":"Hey","price":"120","designs":["black and white","modern","rustic"],"classification":"stone","finish":"glossy","size":"30x60"}
+
+2025-09-06 04:17:48
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hey" --price "120" --designs WyJibGFjayBhbmQgd2hpdGUiLCJtb2Rlcm4iLCJydXN0aWMiXQ== --classification "stone" --finish "glossy" --size "30x60"
+INPUT: {"name":"Hey","price":"120","designs":["black and white","modern","rustic"],"classification":"stone","finish":"glossy","size":"30x60"}
+
+2025-09-06 04:17:49
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hey" --price "120" --designs WyJibGFjayBhbmQgd2hpdGUiLCJtb2Rlcm4iLCJydXN0aWMiXQ== --classification "stone" --finish "glossy" --size "30x60"
+INPUT: {"name":"Hey","price":"120","designs":["black and white","modern","rustic"],"classification":"stone","finish":"glossy","size":"30x60"}
+
+2025-09-06 05:24:18
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Sarah" --price "123" --designs WyJmbG9yYWwiLCJibGFjayBhbmQgd2hpdGUiLCJtb2Rlcm4iXQ== --classification "slate" --finish "textured" --size "60x60"
+INPUT: {"name":"Sarah","price":"123","designs":["floral","black and white","modern"],"classification":"slate","finish":"textured","size":"60x60"}
+
+2025-09-06 05:25:06
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Cho" --price "123" --designs WyJmbG9yYWwiLCJibGFjayBhbmQgd2hpdGUiLCJnZW9tZXRyaWMiXQ== --classification "porcelain" --finish "glossy" --size "40x40"
+INPUT: {"name":"Cho","price":"123","designs":["floral","black and white","geometric"],"classification":"porcelain","finish":"glossy","size":"40x40"}
+
+2025-09-06 08:14:32
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Green" --price "12.01" --designs WyJtaW5pbWFsaXN0IiwiZmxvcmFsIl0= --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Green","price":"12.01","designs":["minimalist","floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-06 08:44:09
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "123" --price "190" --designs WyJtaW5pbWFsaXN0IiwiZmxvcmFsIiwiYmxhY2sgYW5kIHdoaXRlIl0= --classification "porcelain" --finish "glossy" --size "30x60"
+INPUT: {"name":"123","price":"190","designs":["minimalist","floral","black and white"],"classification":"porcelain","finish":"glossy","size":"30x60"}
+
+2025-09-06 08:55:15
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "123" --price "180" --designs WyJmbG9yYWwiLCJibGFjayBhbmQgd2hpdGUiXQ== --classification "porcelain" --finish "textured" --size "60x60"
+INPUT: {"name":"123","price":"180","designs":["floral","black and white"],"classification":"porcelain","finish":"textured","size":"60x60"}
+

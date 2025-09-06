@@ -7,7 +7,8 @@ require_once __DIR__ . '/../connection/connection.php';
 $showRecommendationModal = true;
 if (isset($_SESSION['user_id'])) {
   $user_id = $_SESSION['user_id'];
-  $stmt = $conn->prepare('SELECT COUNT(*) FROM user_recommendations WHERE user_id = ?');
+  // Check if user already has design preferences
+  $stmt = $conn->prepare('SELECT COUNT(*) FROM user_design_preferences WHERE user_id = ?');
   $stmt->execute([$user_id]);
   if ($stmt->fetchColumn() > 0) {
     $showRecommendationModal = false;
@@ -48,14 +49,14 @@ if (isset($_SESSION['user_id'])) {
 </div>
 
 <script>
-// Category data
-const tileCategories = [
-  { id: 'black_white', name: 'Black and White', icon: 'fa-palette' },
-  { id: 'floral', name: 'Floral', icon: 'fa-seedling' },
-  { id: 'indoor', name: 'Indoor', icon: 'fa-home' },
+// Design data (updated)
+const tileDesigns = [
   { id: 'minimalist', name: 'Minimalist', icon: 'fa-border-all' },
+  { id: 'floral', name: 'Floral', icon: 'fa-seedling' },
+  { id: 'black_white', name: 'Black and White', icon: 'fa-palette' },
   { id: 'modern', name: 'Modern', icon: 'fa-cube' },
-  { id: 'pool', name: 'Pool', icon: 'fa-swimming-pool' }
+  { id: 'rustic', name: 'Rustic', icon: 'fa-mountain' },
+  { id: 'geometric', name: 'Geometric', icon: 'fa-shapes' }
 ];
 
 // Initialize the recommendation modal
@@ -87,18 +88,18 @@ document.addEventListener('DOMContentLoaded', function() {
   // Populate category options
   function populateCategories() {
     categoryContainer.innerHTML = '';
-    tileCategories.forEach(category => {
+    tileDesigns.forEach(design => {
       const categoryElement = document.createElement('div');
       categoryElement.className = 'category-option relative flex flex-col items-center justify-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-md bg-white group';
-      categoryElement.dataset.id = category.id;
+      categoryElement.dataset.id = design.id;
       categoryElement.innerHTML = `
         <div class="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-gray-100 shadow mb-2 group-hover:scale-110 transition-transform duration-300">
-          <i class="fas ${category.icon} text-2xl md:text-3xl text-secondary group-hover:text-primary transition-colors duration-300"></i>
+          <i class="fas ${design.icon} text-2xl md:text-3xl text-secondary group-hover:text-primary transition-colors duration-300"></i>
         </div>
-        <span class="text-sm md:text-base font-bold text-center text-textdark mb-1">${category.name}</span>
-  <div class="selection-badge absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 shadow-md text-xs font-bold"></div>
+        <span class="text-sm md:text-base font-bold text-center text-textdark mb-1">${design.name}</span>
+        <div class="selection-badge absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 shadow-md text-xs font-bold"></div>
       `;
-      categoryElement.addEventListener('click', () => toggleCategory(category.id));
+      categoryElement.addEventListener('click', () => toggleCategory(design.id));
       categoryContainer.appendChild(categoryElement);
     });
   }

@@ -12,25 +12,25 @@ require_once '../../connection/connection.php';
 $user_id = $_SESSION['user_id'];
 $branch_id = (int)$_SESSION['branch_id'];
 
-// Get top 3 recommended categories for user (ordered by rank)
-$catStmt = $conn->prepare('SELECT category_id FROM user_recommendations WHERE user_id = ? ORDER BY rank ASC');
-$catStmt->execute([$user_id]);
-$userCats = $catStmt->fetchAll(PDO::FETCH_COLUMN);
+// Get top 3 recommended designs for user (ordered by rank)
+$designStmt = $conn->prepare('SELECT design_id FROM user_design_preferences WHERE user_id = ? ORDER BY rank ASC');
+$designStmt->execute([$user_id]);
+$userDesigns = $designStmt->fetchAll(PDO::FETCH_COLUMN);
 $recommendedProducts = [];
 $debug = [
     'user_id' => $user_id,
     'branch_id' => $branch_id,
-    'categories' => $userCats,
+    'designs' => $userDesigns,
     'products_found' => 0,
     'products' => [],
 ];
-if ($userCats) {
-    $catWeights = [0=>4, 1=>2, 2=>1];
+if ($userDesigns) {
+    $designWeights = [0=>4, 1=>2, 2=>1];
     $usedProductIds = [];
-    foreach ($userCats as $i => $catId) {
-        $limit = $catWeights[$i] ?? 1;
-        $prodStmt = $conn->prepare('SELECT p.product_id, p.product_name, p.product_price, p.product_description, p.product_image, tc.category_name FROM products p JOIN product_categories pc ON p.product_id = pc.product_id JOIN tile_categories tc ON pc.category_id = tc.category_id JOIN product_branches pb ON p.product_id = pb.product_id WHERE pc.category_id = ? AND pb.branch_id = ? AND p.is_archived = 0 LIMIT ?');
-        $prodStmt->bindValue(1, $catId, PDO::PARAM_INT);
+    foreach ($userDesigns as $i => $designId) {
+        $limit = $designWeights[$i] ?? 1;
+        $prodStmt = $conn->prepare('SELECT p.product_id, p.product_name, p.product_price, p.product_description, p.product_image, td.design_name FROM products p JOIN product_designs pd ON p.product_id = pd.product_id JOIN tile_designs td ON pd.design_id = td.design_id JOIN product_branches pb ON p.product_id = pb.product_id WHERE pd.design_id = ? AND pb.branch_id = ? AND p.is_archived = 0 LIMIT ?');
+        $prodStmt->bindValue(1, $designId, PDO::PARAM_INT);
         $prodStmt->bindValue(2, $branch_id, PDO::PARAM_INT);
         $prodStmt->bindValue(3, $limit, PDO::PARAM_INT);
         $prodStmt->execute();

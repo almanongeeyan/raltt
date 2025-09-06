@@ -25,14 +25,14 @@ if (!isset($_SESSION['logged_in'])) {
 include 'referral_form.php';
 include 'recommendation_form.php'; // Include recommendation modal markup
 
-// Determine if recommendation modal should be shown (user has no record in user_recommendations)
+// Determine if recommendation modal should be shown (user has no record in user_design_preferences)
 $showRecommendationModal = false;
 if (isset($_SESSION['user_id'])) {
   try {
     require_once '../connection/connection.php';
     $pdo = $conn ?? null;
     if ($pdo) {
-      $stmt = $pdo->prepare('SELECT COUNT(*) as cnt FROM user_recommendations WHERE user_id = ?');
+      $stmt = $pdo->prepare('SELECT COUNT(*) as cnt FROM user_design_preferences WHERE user_id = ?');
       $stmt->execute([$_SESSION['user_id']]);
       $row = $stmt->fetch(PDO::FETCH_ASSOC);
       if ($row && isset($row['cnt']) && (int)$row['cnt'] === 0) {
@@ -495,18 +495,18 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       require_once '../connection/connection.php';
       $user_id = $_SESSION['user_id'];
       $branch_id = (int)$_SESSION['branch_id'];
-      // Get top 3 recommended categories for user (ordered by rank)
-      $catStmt = $conn->prepare('SELECT category_id FROM user_recommendations WHERE user_id = ? ORDER BY rank ASC');
-      $catStmt->execute([$user_id]);
-      $userCats = $catStmt->fetchAll(PDO::FETCH_COLUMN);
-      if ($userCats) {
-        // For each category, get up to N products (more for 1st, less for 2nd/3rd), only for this branch
-        $catWeights = [0=>4, 1=>2, 2=>1]; // 1st:4, 2nd:2, 3rd:1
+      // Get top 3 recommended designs for user (ordered by rank)
+      $designStmt = $conn->prepare('SELECT design_id FROM user_design_preferences WHERE user_id = ? ORDER BY rank ASC');
+      $designStmt->execute([$user_id]);
+      $userDesigns = $designStmt->fetchAll(PDO::FETCH_COLUMN);
+      if ($userDesigns) {
+        // For each design, get up to N products (more for 1st, less for 2nd/3rd), only for this branch
+        $designWeights = [0=>4, 1=>2, 2=>1]; // 1st:4, 2nd:2, 3rd:1
         $usedProductIds = [];
-        foreach ($userCats as $i => $catId) {
-          $limit = $catWeights[$i] ?? 1;
-          $prodStmt = $conn->prepare('SELECT p.product_id, p.product_name, p.product_price, p.product_description, p.product_image, tc.category_name FROM products p JOIN product_categories pc ON p.product_id = pc.product_id JOIN tile_categories tc ON pc.category_id = tc.category_id JOIN product_branches pb ON p.product_id = pb.product_id WHERE pc.category_id = ? AND pb.branch_id = ? AND p.is_archived = 0 LIMIT ?');
-          $prodStmt->bindValue(1, $catId, PDO::PARAM_INT);
+        foreach ($userDesigns as $i => $designId) {
+          $limit = $designWeights[$i] ?? 1;
+          $prodStmt = $conn->prepare('SELECT p.product_id, p.product_name, p.product_price, p.product_description, p.product_image, td.design_name FROM products p JOIN product_designs pd ON p.product_id = pd.product_id JOIN tile_designs td ON pd.design_id = td.design_id JOIN product_branches pb ON p.product_id = pb.product_id WHERE pd.design_id = ? AND pb.branch_id = ? AND p.is_archived = 0 LIMIT ?');
+          $prodStmt->bindValue(1, $designId, PDO::PARAM_INT);
           $prodStmt->bindValue(2, $branch_id, PDO::PARAM_INT);
           $prodStmt->bindValue(3, $limit, PDO::PARAM_INT);
           $prodStmt->execute();
@@ -643,8 +643,8 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     </section>
 
     <!-- Products Section -->
-  <section id="premium-tiles" class="bg-light py-12 md:py-16 px-4 md:px-[5vw] text-textdark">
-      <div class="flex gap-6 md:gap-8 max-w-full md:max-w-[1500px] mx-auto flex-col md:flex-row">
+  <section id="premium-tiles" class="bg-light py-12 md:py-16 px-4 md:px-[5vw] text-textdark relative overflow-hidden">
+  <div class="flex gap-6 md:gap-8 max-w-full md:max-w-[1500px] mx-auto flex-col md:flex-row relative z-10">
         <div class="w-full md:flex-[0_0_280px] bg-white p-6 md:p-8 rounded-2xl shadow-lg h-fit relative z-10 md:mb-0 mb-6">
           <h3 class="text-lg md:text-[1.25rem] font-bold text-primary mb-6">Categories</h3>
           <div class="border-b border-gray-200 pb-5 mb-5">
@@ -678,19 +678,20 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             <!-- Products will be loaded here dynamically -->
           </div>
     <script>
-    // Dynamically load all tile categories for the modal and sidebar
+
+    // Dynamically load all tile designs for the modal and sidebar (filter)
     document.addEventListener('DOMContentLoaded', function() {
       fetch('processes/get_all_tile_categories.php')
         .then(r => r.json())
-        .then(categories => {
-          // Sidebar categories
+        .then(designs => {
+          // Sidebar designs
           const catList = document.getElementById('tileCategoriesList');
           if (catList) {
             catList.innerHTML = '';
-            categories.forEach(cat => {
+            designs.forEach(design => {
               const label = document.createElement('label');
               label.className = 'flex items-center text-sm text-textlight cursor-pointer hover:text-primary';
-              label.innerHTML = `<input type="checkbox" name="category" value="${cat.category_id}" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />${cat.category_name}`;
+              label.innerHTML = `<input type="checkbox" name="design" value="${design.design_id}" class="mr-2 w-4 h-4 rounded border-2 border-gray-300 bg-gray-50 checked:bg-primary checked:border-primary transition-all" />${design.design_name}`;
               catList.appendChild(label);
             });
           }
@@ -712,11 +713,10 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             products.forEach(product => {
               const div = document.createElement('div');
               div.className = 'bg-white rounded-2xl overflow-hidden shadow-product transition-all duration-300 relative group';
+              div.setAttribute('data-product-id', product.product_id);
               let badge = '';
               if (product.is_best_seller == 1) badge = '<span class="absolute top-4 left-4 bg-secondary text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Bestseller</span>';
               else if (product.is_popular == 1) badge = '<span class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Popular</span>';
-              else if (product.is_new == 1) badge = '<span class="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">New</span>';
-              else if (product.is_sale == 1) badge = '<span class="absolute top-4 left-4 bg-[#d9534f] text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Sale</span>';
               div.innerHTML = `
                 ${badge}
                 <div class="h-[200px] md:h-[250px] overflow-hidden relative">
@@ -725,9 +725,11 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                 <div class="p-4 md:p-5 text-center">
                   <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">${product.product_name}</h3>
                   <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱${parseInt(product.product_price).toLocaleString()}</div>
-                  <div class="flex justify-center gap-2">
-                    <button class="w-full py-3 bg-primary text-white rounded-lg text-base font-bold mt-5 transition-all hover:bg-secondary hover:-translate-y-1 shadow"><i class="fa fa-shopping-cart"></i> Add to Cart</button>
+                  <div class="flex flex-col justify-center gap-2 w-full mt-2">
+                    <button class="add-to-cart-btn w-full py-3 bg-primary text-white rounded-lg text-base font-bold transition-all hover:bg-secondary hover:-translate-y-1 shadow flex items-center justify-center gap-2"><i class="fa fa-shopping-cart text-base"></i> Add to Cart</button>
+                    <button class="view-3d-btn w-full py-3 bg-[#2B3241] text-[#EF7232] rounded-lg text-base font-bold transition-all hover:bg-[#EF7232] hover:text-[#2B3241] hover:-translate-y-1 shadow flex items-center justify-center gap-2"><i class="fa fa-cube text-base"></i> 3D View</button>
                   </div>
+                  <!-- No tile design badges -->
                 </div>
               `;
               grid.appendChild(div);
@@ -738,6 +740,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     </script>
         </div>
       </div>
+      <div class="pointer-events-none absolute left-0 right-0 bottom-0 h-[120px] w-full z-0" style="background: linear-gradient(to bottom, #ffece2 0%, #f8f5f2 100%);"></div>
     </section>
 
     <script>
@@ -748,6 +751,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             title: item.product_name,
             price: '₱' + parseInt(item.product_price).toLocaleString(),
             category: item.category_name || '',
+            product: item
           }))
         : [];
 
@@ -780,14 +784,15 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           div.innerHTML = `
             <div class="relative bg-white rounded-3xl shadow-2xl p-4 md:p-6 w-full flex flex-col items-center border border-gray-100 transition-all duration-300 group hover:shadow-2xl hover:-translate-y-2 hover:scale-105 overflow-hidden">
               <span class="absolute top-3 left-3 bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">${item.category || 'Featured'}</span>
-              <div class="w-[120px] h-[120px] md:w-[160px] md:h-[160px] flex items-center justify-center bg-gradient-to-br from-accent/30 to-light rounded-xl mb-4 md:mb-6 shadow-inner overflow-hidden">
+              <div class="w-[100px] h-[100px] md:w-[120px] md:h-[120px] flex items-center justify-center bg-gradient-to-br from-accent/30 to-light rounded-xl mb-3 md:mb-4 shadow-inner overflow-hidden">
                 <img src="${item.img}" alt="${item.title}" class="w-[90%] h-[90%] object-contain rounded-xl transition-transform duration-300 group-hover:scale-105 bg-gray-100 drop-shadow-lg" />
               </div>
-              <div class="text-base md:text-[1.1rem] font-extrabold text-primary mb-1 text-center tracking-wide">${item.title}</div>
-              <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4 text-center">${item.price}</div>
-              <button class="inline-flex items-center gap-2 px-4 py-2 md:px-6 md:py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-xs md:text-sm shadow-lg hover:from-secondary hover:to-primary hover:scale-105 transition-all">
-                <i class="fa fa-shopping-cart"></i> Add to Cart
-              </button>
+              <div class="text-base md:text-[1.05rem] font-extrabold text-primary mb-1 text-center tracking-wide">${item.title}</div>
+              <div class="text-md md:text-[1.1rem] font-extrabold text-secondary mb-3 text-center">${item.price}</div>
+              <div class="flex flex-col justify-center gap-2 w-full mt-1">
+                <button class="add-to-cart-btn w-full py-3 bg-primary text-white rounded-lg text-base font-bold transition-all hover:bg-secondary hover:-translate-y-1 shadow flex items-center justify-center gap-2" data-idx="${index}"><i class="fa fa-shopping-cart text-base"></i> Add to Cart</button>
+                <button class="view-3d-btn w-full py-3 bg-[#2B3241] text-[#EF7232] rounded-lg text-base font-bold transition-all hover:bg-[#EF7232] hover:text-[#2B3241] hover:-translate-y-1 shadow flex items-center justify-center gap-2" data-idx="${index}"><i class="fa fa-cube text-base"></i> 3D View</button>
+              </div>
             </div>
           `;
           container.appendChild(div);
@@ -903,27 +908,85 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               });
           });
           
-          // Add event listeners for "Add to Cart" buttons
-          const addToCartButtons = document.querySelectorAll('button:has(.fa-shopping-cart)');
-          addToCartButtons.forEach(button => {
-              button.addEventListener('click', function(e) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  
-                  // Get product details
-                  const productCard = this.closest('.bg-white');
-                  const productName = productCard.querySelector('h3').textContent;
-                  const productPrice = productCard.querySelector('.text-secondary').textContent;
-                  
-                  // Show success message
-                  Swal.fire({
-                      title: 'Added to Cart!',
-                      html: `<strong>${productName}</strong><br>${productPrice}`,
-                      icon: 'success',
-                      confirmButtonColor: '#7d310a',
-                      confirmButtonText: 'Continue Shopping'
+          // Add event listeners for Add to Cart and 3D View buttons in both premium grid and carousel
+          document.body.addEventListener('click', function(e) {
+            // 3D View button
+            if (e.target.closest('.view-3d-btn')) {
+              e.preventDefault();
+              const btn = e.target.closest('.view-3d-btn');
+              let prod = null;
+              let fetchUrl = null;
+              if (btn.hasAttribute('data-idx')) {
+                // Carousel
+                const idx = parseInt(btn.getAttribute('data-idx'));
+                prod = window.recommendedProducts && window.recommendedProducts[idx] ? window.recommendedProducts[idx] : null;
+                if (prod && prod.product_id) {
+                  fetchUrl = 'processes/get_product_details.php?id=' + encodeURIComponent(prod.product_id);
+                } else if (prod && prod.sku) {
+                  fetchUrl = 'processes/get_product_details.php?sku=' + encodeURIComponent(prod.sku);
+                } else if (prod && prod.product_name) {
+                  fetchUrl = 'processes/get_product_details.php?sku=' + encodeURIComponent(prod.product_name);
+                }
+              } else {
+                // Premium grid
+                const card = btn.closest('.bg-white');
+                if (card) {
+                  // Try to get product_id from a data attribute if available
+                  let productId = card.getAttribute('data-product-id');
+                  let sku = card.getAttribute('data-sku');
+                  if (!productId && card.querySelector('[data-product-id]')) productId = card.querySelector('[data-product-id]').getAttribute('data-product-id');
+                  if (!sku && card.querySelector('[data-sku]')) sku = card.querySelector('[data-sku]').getAttribute('data-sku');
+                  if (productId) {
+                    fetchUrl = 'processes/get_product_details.php?id=' + encodeURIComponent(productId);
+                  } else if (sku) {
+                    fetchUrl = 'processes/get_product_details.php?sku=' + encodeURIComponent(sku);
+                  } else {
+                    const name = card.querySelector('h3') ? card.querySelector('h3').textContent : '';
+                    fetchUrl = 'processes/get_product_details.php?sku=' + encodeURIComponent(name);
+                  }
+                }
+              }
+              if (fetchUrl) {
+                fetch(fetchUrl)
+                  .then(r => r.json())
+                  .then(data => {
+                    if (data && !data.error) openProductModal(data);
+                    else openProductModal(prod || {name: '', description: 'No details found.'});
                   });
-              });
+              } else if (prod) {
+                openProductModal(prod);
+              }
+              return;
+            }
+            // Add to Cart button
+            if (e.target.closest('.add-to-cart-btn')) {
+              e.preventDefault();
+              const btn = e.target.closest('.add-to-cart-btn');
+              let prod = null;
+              if (btn.hasAttribute('data-idx')) {
+                // Carousel
+                const idx = parseInt(btn.getAttribute('data-idx'));
+                prod = window.recommendedProducts && window.recommendedProducts[idx] ? window.recommendedProducts[idx] : null;
+              } else {
+                // Premium grid
+                const card = btn.closest('.bg-white');
+                if (card) {
+                  const name = card.querySelector('h3') ? card.querySelector('h3').textContent : '';
+                  const price = card.querySelector('.text-secondary') ? card.querySelector('.text-secondary').textContent : '';
+                  prod = { product_name: name, product_price: price };
+                }
+              }
+              if (prod) {
+                Swal.fire({
+                  title: 'Added to Cart!',
+                  html: `<strong>${prod.product_name}</strong><br>${prod.product_price ? prod.product_price : ''}`,
+                  icon: 'success',
+                  confirmButtonColor: '#7d310a',
+                  confirmButtonText: 'Continue Shopping'
+                });
+              }
+              return;
+            }
           });
           
           // Apply filters button
@@ -933,26 +996,43 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     </script>
 
     <!-- Product Modal for 360° View -->
+
+
+    <style>
+      @media (max-width: 900px) {
+        #productModalBox { width: 98vw !important; min-width: 0 !important; }
+        #productModal3D { width: 160px !important; height: 160px !important; }
+      }
+      @media (max-width: 700px) {
+        #productModalBox { flex-direction: column !important; height: 98vh !important; min-width: 0 !important; }
+        #productModalBox > div[style*='display:flex;flex-direction:row'] { flex-direction: column !important; }
+        #productModal3D { width: 120px !important; height: 120px !important; margin: 0 auto !important; }
+        #productModalCategories, #productModalDesc { padding-left: 0 !important; padding-right: 0 !important; }
+      }
+    </style>
     <div id="productModalOverlay" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:rgba(30,30,30,0.75);align-items:center;justify-content:center;backdrop-filter:blur(2px);">
-      <div id="productModalBox" style="background:linear-gradient(120deg,#fff 60%,#e8a56a 100%);border-radius:22px;max-width:99vw;width:600px;height:470px;box-shadow:0 16px 56px 0 rgba(0,0,0,0.32);padding:0;position:relative;overflow:hidden;animation:modalPopIn .25s cubic-bezier(.6,1.5,.6,1) 1;display:flex;flex-direction:column;">
+      <div id="productModalBox" style="background:linear-gradient(120deg,#fff 60%,#e8a56a 100%);border-radius:28px;max-width:99vw;width:900px;min-width:340px;height:600px;box-shadow:0 16px 56px 0 rgba(0,0,0,0.32);padding:0;position:relative;overflow:hidden;animation:modalPopIn .25s cubic-bezier(.6,1.5,.6,1) 1;display:flex;flex-direction:column;">
         <!-- Tile Name at the top (styled header) -->
-        <div id="productModalNameHeader" style="background:#7d310a;padding:22px 0 18px 0;text-align:center;border-radius:22px 22px 0 0;box-shadow:0 2px 16px #e8a56a33;min-height:38px;">
-          <span id="productModalNameHeaderText" style="color:#fff;font-size:1.55rem;font-weight:900;letter-spacing:0.01em;display:block;text-shadow:0 2px 12px #0003;"></span>
+        <div id="productModalNameHeader" style="background:#7d310a;padding:16px 0 10px 0;text-align:center;border-radius:28px 28px 0 0;box-shadow:0 2px 16px #e8a56a33;min-height:28px;">
+          <span id="productModalNameHeaderText" style="color:#fff;font-size:1.35rem;font-weight:800;letter-spacing:0.01em;display:block;text-shadow:0 2px 12px #0003;text-transform:capitalize;"></span>
         </div>
         <div style="display:flex;flex-direction:row;gap:0;padding:0 0 0 0;align-items:stretch;background:linear-gradient(120deg,#fff 70%,#e8a56a22 100%);flex:1;min-height:0;">
           <!-- 3D view left -->
-          <div style="flex:0 0 220px;display:flex;align-items:center;justify-content:center;padding:28px 0 18px 28px;">
-            <div id="productModal3D" style="width:180px;height:180px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 60% 40%, #fff 60%, #f7f3ef 100%);border-radius:22px;box-shadow:0 8px 32px 0 #cf875655,0 1.5px 0 #fff;"></div>
+          <div style="flex:0 0 320px;display:flex;align-items:center;justify-content:center;padding:38px 0 28px 38px;">
+            <div id="productModal3D" style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 60% 40%, #fff 60%, #f7f3ef 100%);border-radius:28px;box-shadow:0 8px 32px 0 #cf875655,0 1.5px 0 #fff;"></div>
           </div>
-          <!-- Description right -->
-          <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;padding:28px 28px 18px 18px;">
-            <div id="productModalCategories" style="display:flex;flex-wrap:wrap;gap:8px 10px;margin-bottom:10px;"></div>
-            <div id="productModalDesc" style="font-size:clamp(1.01rem,2vw,1.15rem);color:#222;font-weight:600;line-height:1.6;text-align:left;letter-spacing:0.01em;max-width:100%;text-shadow:0 1px 0 #fff,0 2px 8px #e8a56a11;background:rgba(255,255,255,0.7);padding:16px 14px 16px 14px;border-radius:16px;box-shadow:0 2px 12px #e8a56a22;overflow:auto;max-height:120px;word-break:break-word;min-width:180px;"></div>
+          <!-- Description and attributes right -->
+          <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;min-width:0;padding:38px 38px 28px 28px;">
+            <div id="productModalCategories" style="width:100%;margin-bottom:18px;">
+              <!-- Tile attributes will be rendered here -->
+            </div>
+            <div id="productModalDesc" style="font-size:clamp(1.08rem,2vw,1.22rem);color:#222;font-weight:600;line-height:1.7;text-align:left;letter-spacing:0.01em;max-width:100%;text-shadow:0 1px 0 #fff,0 2px 8px #e8a56a11;background:rgba(255,255,255,0.8);padding:18px 18px 18px 18px;border-radius:18px;box-shadow:0 2px 12px #e8a56a22;overflow:auto;max-height:140px;word-break:break-word;min-width:180px;margin-bottom:10px;"></div>
+            <div style="flex:1;"></div>
           </div>
         </div>
-        <div style="display:flex;gap:16px;justify-content:center;align-items:center;padding:16px 0 18px 0;background:linear-gradient(90deg,#fff 80%,#e8a56a22 100%);border-radius:0 0 22px 22px;">
-          <button id="closeProductModal" style="min-width:110px;padding:10px 0;font-size:1.08rem;font-weight:700;background:#cf8756;color:#fff;border:none;border-radius:12px;box-shadow:0 2px 8px #cf875633;cursor:pointer;transition:background .2s;">Close</button>
-          <button id="addToCartProductModal" style="min-width:140px;padding:10px 0;font-size:1.08rem;font-weight:700;background:#7d310a;color:#fff;border:none;border-radius:12px;box-shadow:0 2px 8px #cf875633;cursor:pointer;transition:background .2s;"><i class="fa fa-shopping-cart" style="margin-right:7px;"></i>Add to Cart</button>
+        <div style="display:flex;gap:24px;justify-content:center;align-items:center;padding:22px 0 24px 0;background:linear-gradient(90deg,#fff 80%,#e8a56a22 100%);border-radius:0 0 28px 28px;">
+          <button id="closeProductModal" style="min-width:120px;padding:12px 0;font-size:1.13rem;font-weight:700;background:#cf8756;color:#fff;border:none;border-radius:14px;box-shadow:0 2px 8px #cf875633;cursor:pointer;transition:background .2s;">Close</button>
+          <button id="addToCartProductModal" style="min-width:160px;padding:12px 0;font-size:1.13rem;font-weight:700;background:#7d310a;color:#fff;border:none;border-radius:14px;box-shadow:0 2px 8px #cf875633;cursor:pointer;transition:background .2s;"><i class="fa fa-shopping-cart" style="margin-right:9px;"></i>Add to Cart</button>
         </div>
       </div>
     </div>
@@ -969,28 +1049,26 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       if (nameHeader) {
         nameHeader.textContent = product.name || product.product_name || '';
       }
-      // Set all categories as badges above description
+      // Set all tile attributes in a modern card layout
       const catDiv = document.getElementById('productModalCategories');
-      let cats = [];
-      if (product.categories) {
-        cats = Array.isArray(product.categories) ? product.categories : (typeof product.categories === 'string' ? product.categories.split(',') : []);
-      } else if (product.category_name) {
-        cats = [product.category_name];
+      let html = '';
+      // Helper to render a row of badges
+      function renderBadges(label, arr, color) {
+        if (!arr || arr.length === 0) return '';
+        // Capitalize each word in label
+        const capLabel = label.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+        return `<div style="margin-bottom:8px;"><span style="font-weight:700;color:#7d310a;font-size:1.01em;">${capLabel}:</span> ` +
+          arr.map(val => `<span style="display:inline-block;background:${color};color:#fff;font-size:0.98rem;font-weight:600;padding:4px 14px;border-radius:12px;box-shadow:0 1px 4px #cf875622;margin-right:6px;margin-bottom:3px;letter-spacing:0.01em;">${val}</span>`).join('') + '</div>';
       }
-      catDiv.innerHTML = '';
-      if (cats.length > 0) {
-        cats.forEach(cat => {
-          const el = document.createElement('span');
-          el.textContent = cat.trim();
-          el.style.cssText = 'display:inline-block;background:#e8a56a;color:#fff;font-size:0.98rem;font-weight:600;padding:4px 16px;border-radius:12px;box-shadow:0 1px 4px #cf875622;letter-spacing:0.01em;';
-          catDiv.appendChild(el);
-        });
-      } else {
-        catDiv.innerHTML = '<span style="color:#cf8756;font-size:0.98rem;font-weight:600;">No Category</span>';
-      }
+  html += renderBadges('Tile Design', product.designs, '#cf8756');
+  html += renderBadges('Tile Size', product.sizes, '#7d310a');
+  html += renderBadges('Tile Finishes', product.finishes, '#e8a56a');
+  html += renderBadges('Tile Classification', product.classifications, '#2B3241');
+  html += renderBadges('Best For', product.best_for, '#4CAF50');
+      catDiv.innerHTML = html;
       // Set description
       let desc = product.description || product.product_description || '';
-      desc = desc ? `<span style='display:block;margin-bottom:0.5em;'>${desc}</span>` : '';
+      desc = desc ? `<span style='display:block;font-size:0.98em;color:#7d310a;font-weight:600;margin-bottom:0.2em;'>Product Description</span><span style='display:block;margin-bottom:0.5em;'>${desc}</span>` : '';
       document.getElementById('productModalDesc').innerHTML = desc;
       document.getElementById('productModalOverlay').style.display = 'flex';
       // Disable scroll on body
@@ -1130,14 +1208,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
 
     // Make product tiles clickable (for both recommended and selection tiles)
     document.addEventListener('DOMContentLoaded', function() {
-      // For recommended carousel
-      document.querySelectorAll('.featured-item').forEach(function(card, idx) {
-        card.style.cursor = 'pointer';
-        card.onclick = function() {
-          const prod = window.recommendedProducts && window.recommendedProducts[idx] ? window.recommendedProducts[idx] : null;
-          if (prod) openProductModal(prod);
-        };
-      });
       // For tile selection section (static tiles)
       document.querySelectorAll('.tile-selection .bg-white').forEach(function(card) {
         card.style.cursor = 'pointer';
