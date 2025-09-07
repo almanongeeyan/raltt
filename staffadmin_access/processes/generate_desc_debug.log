@@ -322,3 +322,7 @@ INPUT: {"name":"123","price":"190","designs":["minimalist","floral","black and w
 CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "123" --price "180" --designs WyJmbG9yYWwiLCJibGFjayBhbmQgd2hpdGUiXQ== --classification "porcelain" --finish "textured" --size "60x60"
 INPUT: {"name":"123","price":"180","designs":["floral","black and white"],"classification":"porcelain","finish":"textured","size":"60x60"}
 
+2025-09-06 14:18:13
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hey" --price "122" --designs WyJtaW5pbWFsaXN0IiwiYmxhY2sgYW5kIHdoaXRlIiwibGluZXMiXQ== --classification "cement" --finish "glossy" --size "30x60"
+INPUT: {"name":"Hey","price":"122","designs":["minimalist","black and white","lines"],"classification":"cement","finish":"glossy","size":"30x60"}
+

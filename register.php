@@ -65,6 +65,7 @@
             font-size: 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 10;
         }
 
         .back-btn:hover {
@@ -87,6 +88,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
+            z-index: 5;
         }
 
         .signup-container::-webkit-scrollbar {
@@ -344,6 +347,56 @@
         .strength-medium { background-color: var(--warning-color); width: 66%; }
         .strength-strong { background-color: var(--success-color); width: 100%; }
 
+        /* Map container */
+        .map-container {
+            display: none;
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 150px;
+            border: 1px solid var(--input-border-color);
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .location-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .location-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-confirm-location {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-confirm-location:hover {
+            background-color: #45a049;
+        }
+
+        .btn-cancel-location {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .btn-cancel-location:hover {
+            background-color: #d32f2f;
+        }
+
         /* Compact adjustments for short viewports */
         @media (max-height: 800px) {
             html { font-size: 14px; }
@@ -417,9 +470,18 @@
                 <label for="address">Pin Point Location</label>
                 <div class="input-group">
                     <input type="text" id="address" name="address" placeholder="Tap 'Locate Me' to get your full location" readonly required>
-                    <button type="button" class="locate-btn">Locate Me</button>
+                    <button type="button" class="locate-btn" id="locate-btn">Locate Me</button>
                 </div>
                 <div id="location-info"></div>
+                
+                <!-- Map container -->
+                <div class="map-container" id="map-container">
+                    <div id="map"></div>
+                    <div class="location-actions">
+                        <button type="button" class="btn-confirm-location" id="confirm-location">Confirm Location</button>
+                        <button type="button" class="btn-cancel-location" id="cancel-location">Cancel</button>
+                    </div>
+                </div>
             </div>
             
             <div class="form-group">
@@ -452,6 +514,10 @@
         </form>
     </div>
 
+    <!-- Load Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Back button function
@@ -473,6 +539,70 @@
                     icon.classList.add("fa-eye-slash");
                 }
             };
+
+            // Initialize map variables
+            let map = null;
+            let marker = null;
+            let userLocation = null;
+
+            // Initialize the map
+            function initMap(lat, lng) {
+                const mapContainer = document.getElementById('map-container');
+                mapContainer.style.display = 'block';
+                
+                // Remove existing map if any
+                if (map) {
+                    map.remove();
+                }
+                
+                // Create new map
+                map = L.map('map').setView([lat, lng], 15);
+                
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Add marker for user's location
+                marker = L.marker([lat, lng], {draggable: true}).addTo(map)
+                    .bindPopup('Your location<br>Drag to adjust').openPopup();
+                
+                // Update address when marker is dragged
+                marker.on('dragend', function(event) {
+                    const position = marker.getLatLng();
+                    updateAddressFromCoordinates(position.lat, position.lng);
+                });
+            }
+
+            // Update address from coordinates using OpenStreetMap Nominatim
+            async function updateAddressFromCoordinates(lat, lng) {
+                const locationInfo = document.getElementById('location-info');
+                locationInfo.style.color = 'blue';
+                locationInfo.textContent = 'Looking up address...';
+                
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.display_name) {
+                        document.getElementById('address').value = data.display_name;
+                        locationInfo.style.color = 'green';
+                        locationInfo.textContent = 'Address updated from map position';
+                        userLocation = { lat, lng, address: data.display_name };
+                    } else {
+                        throw new Error('No address found for these coordinates');
+                    }
+                } catch (error) {
+                    console.error('Geocoding error:', error);
+                    locationInfo.style.color = 'red';
+                    locationInfo.textContent = 'Could not retrieve address. Please try again.';
+                }
+            }
 
             // Password strength checker
             function checkPasswordStrength(password) {
@@ -560,29 +690,41 @@
 
             // Geolocation functions
             async function fetchAddress(latitude, longitude) {
-                const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
+                const locationInfo = document.getElementById('location-info');
+                locationInfo.style.color = 'blue';
+                locationInfo.textContent = 'Looking up address...';
                 try {
-                    const response = await fetch(url);
+                    const response = await fetch(`connection/geocode_proxy.php?lat=${latitude}&lon=${longitude}`);
                     if (!response.ok) {
+                        if (response.status === 429) {
+                            throw new Error('Address lookup is temporarily unavailable (rate limit). Please try again in a minute.');
+                        }
                         throw new Error('Network response was not ok.');
                     }
                     const data = await response.json();
-                    
                     if (data.display_name) {
+                        document.getElementById('address').value = data.display_name;
+                        locationInfo.style.color = 'green';
+                        locationInfo.textContent = 'Address set successfully!';
+                        userLocation = { lat: latitude, lng: longitude, address: data.display_name };
+                        // Initialize map with user's location
+                        initMap(latitude, longitude);
                         return data.display_name;
                     } else {
                         throw new Error('No address found for these coordinates.');
                     }
                 } catch (error) {
                     console.error('Geocoding API error:', error);
-                    throw new Error('Failed to retrieve a detailed address.');
+                    locationInfo.style.color = 'red';
+                    locationInfo.textContent = error.message || 'Failed to retrieve address. Please try again.';
+                    throw error;
                 }
             }
             
             async function getAndSetLocation() {
                 const addressInput = document.getElementById('address');
                 const locationInfo = document.getElementById('location-info');
-                const locateBtn = document.querySelector('.locate-btn');
+                const locateBtn = document.getElementById('locate-btn');
 
                 locateBtn.disabled = true;
                 locateBtn.textContent = 'Locating...';
@@ -594,20 +736,13 @@
                     navigator.geolocation.getCurrentPosition(
                         async (position) => {
                             const { latitude, longitude } = position.coords;
-                            locationInfo.textContent = 'Location found. Looking up address...';
-
+                            
                             try {
-                                const fullAddress = await fetchAddress(latitude, longitude);
-                                addressInput.value = fullAddress;
-                                locationInfo.style.color = 'green';
-                                locationInfo.textContent = 'Address set successfully!';
-                                
+                                await fetchAddress(latitude, longitude);
                                 locateBtn.textContent = 'Location Set';
                                 locateBtn.style.backgroundColor = '#4CAF50'; 
                                 locateBtn.style.cursor = 'not-allowed';
-
                                 checkFormCompletion();
-
                             } catch (error) {
                                 locationInfo.style.color = 'red';
                                 locationInfo.textContent = error.message;
@@ -615,6 +750,7 @@
                                 
                                 locateBtn.disabled = false;
                                 locateBtn.textContent = 'Locate Me';
+                                locateBtn.style.backgroundColor = '';
                             }
                         },
                         (error) => {
@@ -639,10 +775,11 @@
                             
                             locateBtn.disabled = false;
                             locateBtn.textContent = 'Locate Me';
+                            locateBtn.style.backgroundColor = '';
                         },
                         {
                             enableHighAccuracy: true,
-                            timeout: 5000,
+                            timeout: 10000,
                             maximumAge: 0
                         }
                     );
@@ -655,7 +792,35 @@
                 }
             }
             
-            document.querySelector('.locate-btn').addEventListener('click', getAndSetLocation);
+            document.getElementById('locate-btn').addEventListener('click', getAndSetLocation);
+            
+            // Confirm location button
+            document.getElementById('confirm-location').addEventListener('click', function() {
+                if (marker) {
+                    const position = marker.getLatLng();
+                    updateAddressFromCoordinates(position.lat, position.lng);
+                    
+                    // Hide the map
+                    document.getElementById('map-container').style.display = 'none';
+                    
+                    // Update UI
+                    const locationInfo = document.getElementById('location-info');
+                    locationInfo.style.color = 'green';
+                    locationInfo.textContent = 'Location confirmed!';
+                    
+                    const locateBtn = document.getElementById('locate-btn');
+                    locateBtn.textContent = 'Location Set';
+                    locateBtn.style.backgroundColor = '#4CAF50'; 
+                    locateBtn.style.cursor = 'not-allowed';
+                    
+                    checkFormCompletion();
+                }
+            });
+            
+            // Cancel location button
+            document.getElementById('cancel-location').addEventListener('click', function() {
+                document.getElementById('map-container').style.display = 'none';
+            });
 
             // Form validation and submission
             const signupForm = document.getElementById('signupForm');
@@ -888,6 +1053,12 @@
                 try {
                     // Create FormData object from the form
                     const formData = new FormData(signupForm);
+                    
+                    // Add location data if available
+                    if (userLocation) {
+                        formData.append('latitude', userLocation.lat);
+                        formData.append('longitude', userLocation.lng);
+                    }
                     
                     // Make actual AJAX request to your PHP endpoint
                     const response = await fetch('connection/registered_account_process.php', {

@@ -195,7 +195,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                             </select>
                             <div class="flex items-center ml-4">
                                 <input type="checkbox" id="showArchivedCheckbox" class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out border-gray-300 focus:ring-blue-400">
-                                <label for="showArchivedCheckbox" class="ml-2 text-gray-700 select-none cursor-pointer text-sm font-medium">Show archived</label>
+                                <label for="showArchivedCheckbox" class="ml-2 text-gray-700 select-none cursor-pointer text-sm font-medium">Show Archive Only</label>
                             </div>
                         </div>
                         <div class="flex gap-2">
@@ -210,7 +210,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                 <div id="addProductSidebar" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col" style="max-width: 540px;">
                     <div class="flex justify-between items-center p-4 border-b">
                         <h2 class="text-xl font-bold text-blue-700 flex items-center gap-2"><i class="fas fa-plus-circle"></i> Add Product</h2>
-                        <button id="cancelAddProductSidebar" class="text-gray-400 hover:text-blue-600 text-3xl font-bold transition">&times;</button>
+
                     </div>
                     <div class="flex-1 overflow-y-auto p-6">
                         <div class="flex gap-2 mb-6">
@@ -854,8 +854,12 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
         const showArchived = document.getElementById('showArchivedCheckbox').checked;
         
         let filtered = allProducts.filter(product => {
-            // Filter by archived status FIRST
-            if (!showArchived && product.is_archived && product.is_archived != '0') return false;
+            // If checked, show only archived. If not checked, show all (archived and non-archived)
+            if (showArchived) {
+                return product.is_archived && product.is_archived != '0';
+            }
+            // If not checked, show all products (no filter on archive status)
+            return true;
             
             // Then apply other filters
             // Filter by search term
@@ -1056,10 +1060,51 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
     function showEditTileModal(product) {
         const modalContainer = document.getElementById('editModalContainer');
         
+        // Parse the product data to ensure we have arrays for multi-select fields
+    // Debug: log the product object to verify all related data is present
+    console.log('Edit Modal Product Data:', product);
+    // Normalize all tile fields to arrays for safe access
+    // Always use arrays for all tile fields, fallback to []
+    const bestFor = Array.isArray(product.best_for) ? product.best_for : [];
+    const tileDesigns = Array.isArray(product.tile_designs) ? product.tile_designs : [];
+    const tileClassifications = Array.isArray(product.tile_classifications) ? product.tile_classifications : [];
+    const tileFinishes = Array.isArray(product.tile_finishes) ? product.tile_finishes : [];
+    const tileSizes = Array.isArray(product.tile_sizes) ? product.tile_sizes : [];
+        
+        // Prepare checked attributes for best_for checkboxes (from DB relationships)
+        const bestForOptions = ['indoor', 'outdoor', 'swimming pool', 'bathroom', 'kitchen countertop', 'wall', 'corridor'];
+        const bestForCheckboxes = bestForOptions.map(option => {
+            const isChecked = bestFor.some(val => val && val.toLowerCase() === option.toLowerCase());
+            return `
+                <div class="multi-select-item">
+                    <input type="checkbox" id="best_for_${option.replace(/\s+/g, '_')}" name="best_for[]" value="${option}" ${isChecked ? 'checked' : ''}>
+                    <label for="best_for_${option.replace(/\s+/g, '_')}" class="ml-2">${option.charAt(0).toUpperCase() + option.slice(1)}</label>
+                </div>
+            `;
+        }).join('');
+
+        // Prepare checked attributes for tile_design checkboxes (from DB relationships)
+        const tileDesignOptions = ['minimalist', 'floral', 'black and white', 'modern', 'rustic', 'geometric', 'lines'];
+        const tileDesignCheckboxes = tileDesignOptions.map(design => {
+            const isChecked = tileDesigns.some(val => val && val.toLowerCase() === design.toLowerCase());
+            return `
+                <div class="multi-select-item">
+                    <input type="checkbox" id="design_${design.replace(/\s+/g, '_')}" name="tile_design[]" value="${design}" ${isChecked ? 'checked' : ''}>
+                    <label for="design_${design.replace(/\s+/g, '_')}" class="ml-2">${design.charAt(0).toUpperCase() + design.slice(1)}</label>
+                </div>
+            `;
+        }).join('');
+
+        // Get selected values for dropdowns (from DB relationships)
+    // Use case-insensitive match for dropdowns
+    const classification = tileClassifications.length > 0 ? tileClassifications.find(val => val) : '';
+    const finish = tileFinishes.length > 0 ? tileFinishes.find(val => val) : '';
+        const size = tileSizes.length > 0 ? tileSizes[0] : '';
+        
         modalContainer.innerHTML = `
             <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
                 <div class="bg-white rounded-2xl shadow-2xl p-6 edit-modal-container relative border border-blue-200">
-                    <button class="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-3xl font-bold transition close-edit-modal">&times;</button>
+
                     <h2 class="text-2xl font-extrabold mb-6 text-blue-700 flex items-center gap-2"><i class='fas fa-pen-to-square'></i> Edit Tile Product</h2>
                     <form id="editTileForm" class="edit-modal-grid gap-4">
                         <input type="hidden" name="product_id" value="${product.product_id}">
@@ -1078,47 +1123,20 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                                 <label class="block text-gray-700 font-semibold mb-2">Tile Classification</label>
                                 <select name="tile_classification" class="w-full px-4 py-2 border-2 border-blue-200 rounded-lg" required>
                                     <option value="">Select classification</option>
-                                    <option value="ceramic" ${product.tile_classifications && product.tile_classifications.includes('ceramic') ? 'selected' : ''}>Ceramic</option>
-                                    <option value="porcelain" ${product.tile_classifications && product.tile_classifications.includes('porcelain') ? 'selected' : ''}>Porcelain</option>
-                                    <option value="granite" ${product.tile_classifications && product.tile_classifications.includes('granite') ? 'selected' : ''}>Granite</option>
-                                    <option value="cement" ${product.tile_classifications && product.tile_classifications.includes('cement') ? 'selected' : ''}>Cement</option>
-                                    <option value="glass tiles" ${product.tile_classifications && product.tile_classifications.includes('glass tiles') ? 'selected' : ''}>Glass Tiles</option>
-                                    <option value="marble" ${product.tile_classifications && product.tile_classifications.includes('marble') ? 'selected' : ''}>Marble</option>
-                                    <option value="stone" ${product.tile_classifications && product.tile_classifications.includes('stone') ? 'selected' : ''}>Stone</option>
-                                    <option value="slate" ${product.tile_classifications && product.tile_classifications.includes('slate') ? 'selected' : ''}>Slate</option>
+                                    <option value="ceramic" ${(classification && classification.toLowerCase() === 'ceramic') ? 'selected' : ''}>Ceramic</option>
+                                    <option value="porcelain" ${(classification && classification.toLowerCase() === 'porcelain') ? 'selected' : ''}>Porcelain</option>
+                                    <option value="granite" ${(classification && classification.toLowerCase() === 'granite') ? 'selected' : ''}>Granite</option>
+                                    <option value="cement" ${(classification && classification.toLowerCase() === 'cement') ? 'selected' : ''}>Cement</option>
+                                    <option value="glass tiles" ${(classification && classification.toLowerCase() === 'glass tiles') ? 'selected' : ''}>Glass Tiles</option>
+                                    <option value="marble" ${(classification && classification.toLowerCase() === 'marble') ? 'selected' : ''}>Marble</option>
+                                    <option value="stone" ${(classification && classification.toLowerCase() === 'stone') ? 'selected' : ''}>Stone</option>
+                                    <option value="slate" ${(classification && classification.toLowerCase() === 'slate') ? 'selected' : ''}>Slate</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-semibold mb-2">Best For</label>
                                 <div class="multi-select-container">
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="best_for_indoor" name="best_for[]" value="indoor" ${product.best_for && product.best_for.includes('indoor') ? 'checked' : ''}>
-                                        <label for="best_for_indoor" class="ml-2">Indoor</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="best_for_outdoor" name="best_for[]" value="outdoor" ${product.best_for && product.best_for.includes('outdoor') ? 'checked' : ''}>
-                                        <label for="best_for_outdoor" class="ml-2">Outdoor</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="best_for_swimming_pool" name="best_for[]" value="swimming pool" ${product.best_for && product.best_for.includes('swimming pool') ? 'checked' : ''}>
-                                        <label for="best_for_swimming_pool" class="ml-2">Swimming Pool</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="best_for_bathroom" name="best_for[]" value="bathroom" ${product.best_for && product.best_for.includes('bathroom') ? 'checked' : ''}>
-                                        <label for="best_for_bathroom" class="ml-2">Bathroom</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="best_for_kitchen_countertop" name="best_for[]" value="kitchen countertop" ${product.best_for && product.best_for.includes('kitchen countertop') ? 'checked' : ''}>
-                                        <label for="best_for_kitchen_countertop" class="ml-2">Kitchen Countertop</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="best_for_wall" name="best_for[]" value="wall" ${product.best_for && product.best_for.includes('wall') ? 'checked' : ''}>
-                                        <label for="best_for_wall" class="ml-2">Wall</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="best_for_corridor" name="best_for[]" value="corridor" ${product.best_for && product.best_for.includes('corridor') ? 'checked' : ''}>
-                                        <label for="best_for_corridor" class="ml-2">Corridor</label>
-                                    </div>
+                                    ${bestForCheckboxes}
                                 </div>
                             </div>
                         </div>
@@ -1127,53 +1145,26 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                             <div>
                                 <label class="block text-gray-700 font-semibold mb-2">Tile Design</label>
                                 <div class="multi-select-container">
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="design_minimalist" name="tile_design[]" value="minimalist" ${product.tile_designs && product.tile_designs.includes('minimalist') ? 'checked' : ''}>
-                                        <label for="design_minimalist" class="ml-2">Minimalist</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="design_floral" name="tile_design[]" value="floral" ${product.tile_designs && product.tile_designs.includes('floral') ? 'checked' : ''}>
-                                        <label for="design_floral" class="ml-2">Floral</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="design_black_and_white" name="tile_design[]" value="black and white" ${product.tile_designs && product.tile_designs.includes('black and white') ? 'checked' : ''}>
-                                        <label for="design_black_and_white" class="ml-2">Black and White</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="design_modern" name="tile_design[]" value="modern" ${product.tile_designs && product.tile_designs.includes('modern') ? 'checked' : ''}>
-                                        <label for="design_modern" class="ml-2">Modern</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="design_rustic" name="tile_design[]" value="rustic" ${product.tile_designs && product.tile_designs.includes('rustic') ? 'checked' : ''}>
-                                        <label for="design_rustic" class="ml-2">Rustic</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="design_geometric" name="tile_design[]" value="geometric" ${product.tile_designs && product.tile_designs.includes('geometric') ? 'checked' : ''}>
-                                        <label for="design_geometric" class="ml-2">Geometric</label>
-                                    </div>
-                                    <div class="multi-select-item">
-                                        <input type="checkbox" id="design_lines" name="tile_design[]" value="lines" ${product.tile_designs && product.tile_designs.includes('lines') ? 'checked' : ''}>
-                                        <label for="design_lines" class="ml-2">Lines</label>
-                                    </div>
+                                    ${tileDesignCheckboxes}
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-semibold mb-2">Tile Finish</label>
                                 <select name="tile_finish" class="w-full px-4 py-2 border-2 border-blue-200 rounded-lg" required>
                                     <option value="">Select finish</option>
-                                    <option value="rough" ${product.tile_finishes && product.tile_finishes.includes('rough') ? 'selected' : ''}>Rough</option>
-                                    <option value="matte" ${product.tile_finishes && product.tile_finishes.includes('matte') ? 'selected' : ''}>Matte</option>
-                                    <option value="glossy" ${product.tile_finishes && product.tile_finishes.includes('glossy') ? 'selected' : ''}>Glossy</option>
+                                    <option value="glossy" ${(finish && finish.toLowerCase() === 'glossy') ? 'selected' : ''}>Glossy</option>
+                                    <option value="matte" {(finish && (finish.toLowerCase() === 'matte' || finish.toLowerCase() === 'rough')) ? 'selected' : ''}>Matte</option>
+                                    <option value="textured" {(finish && finish.toLowerCase() === 'textured') ? 'selected' : ''}>Textured</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-gray-700 font-semibold mb-2">Tile Size</label>
                                 <select name="tile_size" class="w-full px-4 py-2 border-2 border-blue-200 rounded-lg" required>
                                     <option value="">Select size</option>
-                                    <option value="60x60" ${product.tile_sizes && product.tile_sizes.includes('60x60') ? 'selected' : ''}>60x60</option>
-                                    <option value="30x60" ${product.tile_sizes && product.tile_sizes.includes('30x60') ? 'selected' : ''}>30x60</option>
-                                    <option value="40x40" ${product.tile_sizes && product.tile_sizes.includes('40x40') ? 'selected' : ''}>40x40</option>
-                                    <option value="30x30" ${product.tile_sizes && product.tile_sizes.includes('30x30') ? 'selected' : ''}>30x30</option>
+                                    <option value="60x60" ${size === '60x60' ? 'selected' : ''}>60x60</option>
+                                    <option value="30x60" ${size === '30x60' ? 'selected' : ''}>30x60</option>
+                                    <option value="40x40" ${size === '40x40' ? 'selected' : ''}>40x40</option>
+                                    <option value="20x20" ${size === '20x20' ? 'selected' : ''}>20x20</option>
                                 </select>
                             </div>
                             <div>
@@ -1187,7 +1178,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                         </div>
                         
                         <div class="md:col-span-2 flex gap-3 justify-end mt-6">
-                            <button type="button" class="close-edit-modal px-5 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 font-medium transition">Cancel</button>
+                            <button type="button" id="editModalCancelBtn" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 font-medium transition">Cancel</button>
                             <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow transition">Save Changes</button>
                         </div>
                     </form>
@@ -1195,11 +1186,12 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
             </div>
         `;
         
-        // Add event listeners
-        const modal = modalContainer.querySelector('.fixed');
-        modal.querySelector('.close-edit-modal').addEventListener('click', () => modal.remove());
+    // Add event listeners
+    const modal = modalContainer.querySelector('.fixed');
+    // Cancel button closes modal
+    modal.querySelector('#editModalCancelBtn').addEventListener('click', () => modal.remove());
         
-        modal.querySelector('form').addEventListener('submit', function(e) {
+    modal.querySelector('form').addEventListener('submit', function(e) {
             e.preventDefault();
             // Validate required fields
             const requiredInputs = modal.querySelectorAll('[required]');

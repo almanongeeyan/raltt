@@ -54,7 +54,7 @@ if (isset($_SESSION['user_id'])) {
       $stmt = $pdo->prepare('SELECT has_used_referral_code FROM users WHERE id = ? LIMIT 1');
       $stmt->execute([$_SESSION['user_id']]);
       $row = $stmt->fetch(PDO::FETCH_ASSOC);
-      if ($row && isset($row['has_used_referral_code']) && $row['has_used_referral_code'] === 'FALSE') {
+      if ($row && isset($row['has_used_referral_code']) && ($row['has_used_referral_code'] === 'FALSE' || $row['has_used_referral_code'] == 0)) {
         $showReferralModal = true;
       }
     }
@@ -155,7 +155,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             const distEl = document.getElementById('branch-distance');
             if (distEl) distEl.innerHTML = '(' + dist.toFixed(2) + ' km)';
           }
-        });
+        }, function() {/* Do nothing if geolocation fails */});
       }
     });
 
@@ -226,7 +226,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             navigator.geolocation.getCurrentPosition(function(pos) {
               openBranchChangeModal(pos.coords.latitude, pos.coords.longitude);
             }, function() {
-              openBranchChangeModal();
+              openBranchChangeModal(); // fallback, but no error/interrupt
             }, {timeout:5000});
           } else {
             openBranchChangeModal();
@@ -239,7 +239,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(pos) {
           showNearestBranch(pos.coords.latitude, pos.coords.longitude);
-        }, function(err) {}, {timeout:5000});
+        }, function(err) {/* Do nothing if geolocation fails */}, {timeout:5000});
       }
     }
     // Pass PHP referral_count to JS and auto-open modal if 1
@@ -561,10 +561,11 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           <span class="block text-base md:text-[1.1rem] font-medium tracking-wider text-textlight mb-2">Explore Our Collection</span>
           <h2 class="text-2xl md:text-[2.5rem] font-black leading-tight text-white m-0" style="text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;">Our Tile Selection</h2>
           <div class="text-sm md:text-[1.1rem] text-textlight max-w-full md:max-w-[700px] mx-auto mt-5 leading-relaxed">
-            From classic ceramics to luxurious natural stone, find the perfect tiles to match your style and needs.
+            Discover our curated range of tile styles to suit every taste and space.
           </div>
         </div>
-        <div class="flex flex-nowrap justify-start md:justify-center gap-4 md:gap-5 py-5 w-full overflow-x-auto scrollbar-hide px-2 md:px-0">
+        <div class="flex flex-nowrap justify-start md:justify-center gap-4 md:gap-5 py-5 w-full overflow-x-auto scrollbar-hide px-2 md:px-0 tile-selection">
+          <!-- Minimalist -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/minimalist.png" alt="Minimalist" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -572,21 +573,10 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
               <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Minimalist</h3>
               <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Sleek, simple, and modern tile designs for a clean look.</p>
-              <button id="minimalistExploreBtn" class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
-    <script>
-    // Redirect Minimalist Explore Now button to minimalist_products.php
-    document.addEventListener('DOMContentLoaded', function() {
-      const minimalistBtn = document.getElementById('minimalistExploreBtn');
-      if (minimalistBtn) {
-        minimalistBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          window.location.href = 'minimalist_products.php';
-        });
-      }
-    });
-    </script>
+              <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
+          <!-- Floral -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/floral.jpg" alt="Floral" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -597,16 +587,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
-          <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
-            <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
-              <img src="../images/user/indoor.jpg" alt="Indoor" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
-            </div>
-            <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
-              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Indoor</h3>
-              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Tiles perfect for living rooms, kitchens, and bedrooms.</p>
-              <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
-            </div>
-          </div>
+          <!-- Black and White -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/b&w.jpg" alt="Black and White" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -617,6 +598,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
+          <!-- Modern -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/modern.jpg" alt="Modern" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -627,13 +609,25 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
+          <!-- Rustic -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
-              <img src="../images/user/pool.jpg" alt="Pool" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
+              <img src="../images/user/rustic.jpg" alt="Rustic" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
             </div>
             <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
-              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Pool</h3>
-              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Water-resistant tiles ideal for pools and wet areas.</p>
+              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Rustic</h3>
+              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Warm, earthy tones and textures for a cozy, natural feel.</p>
+              <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
+            </div>
+          </div>
+          <!-- Geometric -->
+          <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
+            <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
+              <img src="../images/user/geometric.jpg" alt="Geometric" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
+            </div>
+            <div class="p-3 md:p-4 text-center bg-white flex-1 flex flex-col justify-between">
+              <h3 class="text-sm md:text-[1.1rem] font-bold text-gray-800 mb-2">Geometric</h3>
+              <p class="text-xs text-gray-600 mb-3 md:mb-4 flex-1">Bold shapes and patterns for a striking statement.</p>
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>

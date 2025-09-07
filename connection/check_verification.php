@@ -32,7 +32,7 @@ use Twilio\Exceptions\TwilioException;
 
 // Your Twilio credentials (updated 2025-08-29, synchronized)
 $sid = "ACb859b1d0b98e99dd9948bcc0901b71e4";
-$token = "89f0376667216d156594c2453b957191";
+$token = "5256bdbcc34a2d3ba682fdf40aca48b1";
 $verify_service_sid = "VA6d14e3699a4add30e49a090f0457c18e";
 
 // Check if required parameters are submitted
