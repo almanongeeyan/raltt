@@ -733,7 +733,7 @@ function openBranchChangeModal(userLat, userLng) {
                     <a href="#"><i class="fa fa-circle-o"></i> Bowls</a>
                 </div>
             </div>
-            <a href="/feature-2d-visualizer.php">2D Visualizer</a>
+            <a href="/feature-2d-visualizer.php">3D Visualizer</a>
             <a href="user_my_cart.php">My Cart</a>
         </nav>
         <div class="user-area">

@@ -275,7 +275,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                                     <option value="">Select finish</option>
                                     <option value="glossy">Glossy</option>
                                     <option value="matte">Matte</option>
-                                    <option value="textured">Textured</option>
+                                    <option value="rough">Rough</option>
                                 </select>
                             </div>
                             <div class="mb-4">
@@ -285,7 +285,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                                     <option value="60x60">60x60</option>
                                     <option value="30x60">30x60</option>
                                     <option value="40x40">40x40</option>
-                                    <option value="20x20">20x20</option>
+                                    <option value="30x30">30x30</option>
                                 </select>
                             </div>
                             <div class="mb-4">
@@ -356,11 +356,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
 
                 <!-- Pagination -->
                 <div class="flex justify-center mt-10">
-                    <nav class="inline-flex rounded-md shadow-sm">
-                        <a href="#" class="py-2 px-3 ml-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
-                    </nav>
+                    <nav id="paginationNav" class="inline-flex rounded-md shadow-sm"></nav>
                 </div>
             </div>
         </main>
@@ -925,19 +921,70 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
             products.filter(p => p.is_archived && p.is_archived != '0').length;
     }
     
-    // Render products to the grid
+    // Pagination variables
+    let currentPage = 1;
+    const productsPerPage = 16;
+
+    // Render products to the grid with pagination
     function renderProducts(products) {
         const grid = document.getElementById('productGrid');
-        
+        const pagination = document.getElementById('paginationNav');
+
         if (!products.length) {
             grid.innerHTML = '<div class="col-span-4 text-center text-gray-400 py-10">No products found.</div>';
+            if (pagination) pagination.innerHTML = '';
             return;
         }
-        
-        grid.innerHTML = products.map(product => renderProductCard(product)).join('');
-        
-        // Add event listeners to action buttons
+
+        // Calculate pagination
+        const totalPages = Math.ceil(products.length / productsPerPage);
+        if (currentPage > totalPages) currentPage = 1;
+        const startIdx = (currentPage - 1) * productsPerPage;
+        const endIdx = startIdx + productsPerPage;
+        const pageProducts = products.slice(startIdx, endIdx);
+
+        grid.innerHTML = pageProducts.map(product => renderProductCard(product)).join('');
         addProductActionListeners();
+
+        // Render pagination controls
+        if (pagination) {
+            pagination.innerHTML = renderPaginationControls(currentPage, totalPages);
+            addPaginationListeners(totalPages, products);
+        }
+    }
+
+    // Render pagination controls HTML
+    function renderPaginationControls(current, total) {
+        if (total <= 1) return '';
+        let html = '';
+        html += `<a href=\"#\" class=\"py-2 px-3 ml-0 leading-tight text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700\" data-page=\"prev\"><i class=\"fas fa-chevron-left\"></i></a>`;
+        for (let i = 1; i <= total; i++) {
+            html += `<a href=\"#\" class=\"py-2 px-3 leading-tight border border-gray-300 ${i === current ? 'bg-blue-500 text-white font-bold' : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700'}\" data-page=\"${i}\">${i}</a>`;
+        }
+        html += `<a href=\"#\" class=\"py-2 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700\" data-page=\"next\"><i class=\"fas fa-chevron-right\"></i></a>`;
+        return html;
+    }
+
+    // Add event listeners to pagination controls
+    function addPaginationListeners(totalPages, products) {
+        const pagination = document.getElementById('paginationNav');
+        if (!pagination) return;
+        pagination.querySelectorAll('a[data-page]').forEach(a => {
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                if (page === 'prev') {
+                    if (currentPage > 1) currentPage--;
+                } else if (page === 'next') {
+                    if (currentPage < totalPages) currentPage++;
+                } else {
+                    currentPage = parseInt(page);
+                }
+                renderProducts(products);
+                // Scroll to top of grid after page change
+                document.getElementById('productGrid').scrollIntoView({behavior: 'smooth'});
+            });
+        });
     }
     
     // Render a single product card
@@ -1153,8 +1200,8 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                                 <select name="tile_finish" class="w-full px-4 py-2 border-2 border-blue-200 rounded-lg" required>
                                     <option value="">Select finish</option>
                                     <option value="glossy" ${(finish && finish.toLowerCase() === 'glossy') ? 'selected' : ''}>Glossy</option>
-                                    <option value="matte" {(finish && (finish.toLowerCase() === 'matte' || finish.toLowerCase() === 'rough')) ? 'selected' : ''}>Matte</option>
-                                    <option value="textured" {(finish && finish.toLowerCase() === 'textured') ? 'selected' : ''}>Textured</option>
+                                    <option value="matte" {(finish && finish.toLowerCase() === 'matte') ? 'selected' : ''}>Matte</option>
+                                    <option value="rough" {(finish && finish.toLowerCase() === 'rough') ? 'selected' : ''}>Rough</option>
                                 </select>
                             </div>
                             <div>
@@ -1164,7 +1211,7 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                                     <option value="60x60" ${size === '60x60' ? 'selected' : ''}>60x60</option>
                                     <option value="30x60" ${size === '30x60' ? 'selected' : ''}>30x60</option>
                                     <option value="40x40" ${size === '40x40' ? 'selected' : ''}>40x40</option>
-                                    <option value="20x20" ${size === '20x20' ? 'selected' : ''}>20x20</option>
+                                    <option value="30x30" ${size === '30x30' ? 'selected' : ''}>30x30</option>
                                 </select>
                             </div>
                             <div>

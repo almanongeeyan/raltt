@@ -326,3 +326,207 @@ INPUT: {"name":"123","price":"180","designs":["floral","black and white"],"class
 CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Hey" --price "122" --designs WyJtaW5pbWFsaXN0IiwiYmxhY2sgYW5kIHdoaXRlIiwibGluZXMiXQ== --classification "cement" --finish "glossy" --size "30x60"
 INPUT: {"name":"Hey","price":"122","designs":["minimalist","black and white","lines"],"classification":"cement","finish":"glossy","size":"30x60"}
 
+2025-09-07 09:53:11
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Cloudy Gray" --price "180" --designs WyJtaW5pbWFsaXN0Il0= --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Cloudy Gray","price":"180","designs":["minimalist"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 09:54:00
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Calacatta Quartz" --price "179.99" --designs WyJtaW5pbWFsaXN0Il0= --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Calacatta Quartz","price":"179.99","designs":["minimalist"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 09:54:56
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Titanium Vein" --price "180" --designs WyJtaW5pbWFsaXN0Il0= --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Titanium Vein","price":"180","designs":["minimalist"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 09:56:32
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Lightning Marble" --price "180" --designs WyJtaW5pbWFsaXN0Il0= --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Lightning Marble","price":"180","designs":["minimalist"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 09:57:34
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name " Ivory Dot" --price "180" --designs WyJtaW5pbWFsaXN0Il0= --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"\"Ivory Dot","price":"180","designs":["minimalist"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:00:15
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Geometric Herringbone" --price "180" --designs WyJtaW5pbWFsaXN0IiwibW9kZXJuIl0= --classification "marble" --finish "glossy" --size "40x40"
+INPUT: {"name":"Geometric Herringbone","price":"180","designs":["minimalist","modern"],"classification":"marble","finish":"glossy","size":"40x40"}
+
+2025-09-07 10:01:22
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Golden Fragment" --price "180" --designs WyJtaW5pbWFsaXN0IiwibW9kZXJuIl0= --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Golden Fragment","price":"180","designs":["minimalist","modern"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:03:09
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Urban Triangles" --price "180" --designs WyJtaW5pbWFsaXN0Il0= --classification "marble" --finish "glossy" --size "40x40"
+INPUT: {"name":"Urban Triangles","price":"180","designs":["minimalist"],"classification":"marble","finish":"glossy","size":"40x40"}
+
+2025-09-07 10:06:07
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Grayscale Swirl" --price "180" --designs WyJtaW5pbWFsaXN0Il0= --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Grayscale Swirl","price":"180","designs":["minimalist"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:08:07
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Majestic Quatrefoil" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Majestic Quatrefoil","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:09:10
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Monochrome Vine" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "textured" --size "60x60"
+INPUT: {"name":"Monochrome Vine","price":"180","designs":["floral"],"classification":"porcelain","finish":"textured","size":"60x60"}
+
+2025-09-07 10:14:13
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Valencia Blossom" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Valencia Blossom","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:14:46
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Rustic Foliage" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Rustic Foliage","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:17:20
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Blush Bloom" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Blush Bloom","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:25:29
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Emerald Medallion" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Emerald Medallion","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:26:17
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Victorian Medallion" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Victorian Medallion","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:26:50
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Bohemian Flourish" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Bohemian Flourish","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:27:29
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Mediterranean Revival" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Mediterranean Revival","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:28:57
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Portuguese Rosette" --price "180" --designs WyJmbG9yYWwiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Portuguese Rosette","price":"180","designs":["floral"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:35:41
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Monochrome Diamond" --price "180" --designs WyJibGFjayBhbmQgd2hpdGUiLCJnZW9tZXRyaWMiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Monochrome Diamond","price":"180","designs":["black and white","geometric"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:39:31
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Lunar Swirl" --price "180" --designs WyJibGFjayBhbmQgd2hpdGUiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Lunar Swirl","price":"180","designs":["black and white"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:45:46
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Eclipse Wave" --price "180" --designs WyJibGFjayBhbmQgd2hpdGUiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Eclipse Wave","price":"180","designs":["black and white"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:46:51
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Zigzag Cube" --price "180" --designs WyJibGFjayBhbmQgd2hpdGUiLCJnZW9tZXRyaWMiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Zigzag Cube","price":"180","designs":["black and white","geometric"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:54:42
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Noir Quatrefoil" --price "180" --designs WyJibGFjayBhbmQgd2hpdGUiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Noir Quatrefoil","price":"180","designs":["black and white"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:55:12
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Circle Link" --price "180" --designs WyJibGFjayBhbmQgd2hpdGUiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Circle Link","price":"180","designs":["black and white"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:55:54
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Midnight Flower" --price "180" --designs WyJmbG9yYWwiLCJibGFjayBhbmQgd2hpdGUiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Midnight Flower","price":"180","designs":["floral","black and white"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:56:29
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Midnight Bloom" --price "180" --designs WyJibGFjayBhbmQgd2hpdGUiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Midnight Bloom","price":"180","designs":["black and white"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 10:57:20
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Orchid Trellis" --price "180" --designs WyJibGFjayBhbmQgd2hpdGUiLCJnZW9tZXRyaWMiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Orchid Trellis","price":"180","designs":["black and white","geometric"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 11:05:57
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Diagonal Weave" --price "180" --designs WyJtb2Rlcm4iXQ== --classification "ceramic" --finish "glossy" --size "60x60"
+INPUT: {"name":"Diagonal Weave","price":"180","designs":["modern"],"classification":"ceramic","finish":"glossy","size":"60x60"}
+
+2025-09-07 11:11:19
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Deco Labyrinth" --price "180" --designs WyJtb2Rlcm4iXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Deco Labyrinth","price":"180","designs":["modern"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 11:11:52
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Basketweave Mosaic" --price "180" --designs WyJtb2Rlcm4iXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Basketweave Mosaic","price":"180","designs":["modern"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 11:13:03
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Madique Checkers" --price "180" --designs WyJtb2Rlcm4iXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Madique Checkers","price":"180","designs":["modern"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 11:13:43
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Isometric Cube" --price "180" --designs WyJtb2Rlcm4iXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Isometric Cube","price":"180","designs":["modern"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 11:14:21
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Lattice Trellis" --price "180" --designs WyJtb2Rlcm4iXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Lattice Trellis","price":"180","designs":["modern"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 11:18:38
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Terracotta Octagon" --price "180" --designs WyJydXN0aWMiXQ== --classification "granite" --finish "matte" --size "60x60"
+INPUT: {"name":"Terracotta Octagon","price":"180","designs":["rustic"],"classification":"granite","finish":"matte","size":"60x60"}
+
+2025-09-07 11:54:20
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Mission Square & Star" --price "180" --designs WyJydXN0aWMiXQ== --classification "granite" --finish "matte" --size "60x60"
+INPUT: {"name":"Mission Square & Star","price":"180","designs":["rustic"],"classification":"granite","finish":"matte","size":"60x60"}
+
+2025-09-07 11:57:19
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Fossil Stone Octagon" --price "180" --designs WyJtaW5pbWFsaXN0Il0= --classification "granite" --finish "matte" --size "60x60"
+INPUT: {"name":"Fossil Stone Octagon","price":"180","designs":["minimalist"],"classification":"granite","finish":"matte","size":"60x60"}
+
+2025-09-07 12:03:01
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Brocade Grid" --price "180" --designs WyJydXN0aWMiXQ== --classification "granite" --finish "matte" --size "60x60"
+INPUT: {"name":"Brocade Grid","price":"180","designs":["rustic"],"classification":"granite","finish":"matte","size":"60x60"}
+
+2025-09-07 12:07:03
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Marrakesh Starburst" --price "180" --designs WyJydXN0aWMiXQ== --classification "granite" --finish "matte" --size "60x60"
+INPUT: {"name":"Marrakesh Starburst","price":"180","designs":["rustic"],"classification":"granite","finish":"matte","size":"60x60"}
+
+2025-09-07 12:07:44
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Quatrefoil Star" --price "180" --designs WyJydXN0aWMiXQ== --classification "granite" --finish "matte" --size "60x60"
+INPUT: {"name":"Quatrefoil Star","price":"180","designs":["rustic"],"classification":"granite","finish":"matte","size":"60x60"}
+
+2025-09-07 12:08:54
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Desert Mandala" --price "180" --designs WyJmbG9yYWwiLCJydXN0aWMiXQ== --classification "porcelain" --finish "matte" --size "60x60"
+INPUT: {"name":"Desert Mandala","price":"180","designs":["floral","rustic"],"classification":"porcelain","finish":"matte","size":"60x60"}
+
+2025-09-07 12:28:31
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Deco Labyrinth" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Deco Labyrinth","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 12:54:00
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Deco Labyrinth" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Deco Labyrinth","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 12:54:58
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Basketweave Mosaic" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Basketweave Mosaic","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 12:56:59
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Madique Checkers" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Madique Checkers","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 12:57:39
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Isometric Cube" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "porcelain" --finish "glossy" --size "60x60"
+INPUT: {"name":"Isometric Cube","price":"180","designs":["geometric"],"classification":"porcelain","finish":"glossy","size":"60x60"}
+
+2025-09-07 13:13:26
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Half-Moon Terrazzo" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Half-Moon Terrazzo","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 13:14:09
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Zig Zag Labyrinth" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Zig Zag Labyrinth","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 13:15:13
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Chevron Wave" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Chevron Wave","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 13:16:21
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Parquet Herringbone" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Parquet Herringbone","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+
+2025-09-07 13:17:33
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_tile_description.py --name "Madique Parquet" --price "180" --designs WyJnZW9tZXRyaWMiXQ== --classification "marble" --finish "glossy" --size "60x60"
+INPUT: {"name":"Madique Parquet","price":"180","designs":["geometric"],"classification":"marble","finish":"glossy","size":"60x60"}
+

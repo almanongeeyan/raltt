@@ -895,11 +895,11 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           // Add event listeners for category filter buttons
           const categoryButtons = document.querySelectorAll('.tile-selection .bg-white button');
           categoryButtons.forEach(button => {
-              button.addEventListener('click', function() {
-                  // Redirect to products page with category filter
-                  window.location.href = 'products.php?category=' + 
-                      encodeURIComponent(this.closest('.bg-white').querySelector('h3').textContent);
-              });
+        button.addEventListener('click', function() {
+          // Redirect to the correct design-based product page
+          const design = this.closest('.bg-white').querySelector('h3').textContent.trim().toLowerCase().replace(/ /g, '_');
+          window.location.href = design + '_products.php';
+        });
           });
           
           // Add event listeners for Add to Cart and 3D View buttons in both premium grid and carousel
