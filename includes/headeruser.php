@@ -7,6 +7,19 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
     header('Location: ../connection/tresspass.php');
     exit();
 }
+
+// Generate Chatbase hash
+    $chatbaseSecret = '60sp90gtn7uvp2l2xlpe8u05kt4z4lt4';
+    $chatbaseUserId = $_SESSION['user_id'] ?? session_id();
+    $chatbaseHash = hash_hmac('sha256', $chatbaseUserId, $chatbaseSecret);
+    ?>
+    
+    <meta name="chatbase-user-id" content="<?php echo htmlspecialchars($chatbaseUserId); ?>">
+    <meta name="chatbase-hash" content="<?php echo htmlspecialchars($chatbaseHash); ?>">
+
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -356,6 +369,10 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
             display: none;
         }
 
+        .raltt-header .mobile-menu.open {
+            display: flex;
+        }
+
         @media (max-width: 900px) {
             .raltt-header {
                 padding: 0 4vw;
@@ -568,7 +585,7 @@ foreach ($branches as $b) {
     if ($b['id'] === $user_branch_id) { $user_branch = $b; break; }
 }
 echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRANCH = ' . json_encode($user_branch) . ';</script>';
-$branchOverlay = '<div id="branch-location-overlay" style="position:fixed;top:90px;left:24px;z-index:9999;background:rgba(30,30,30,0.90);color:#fff;padding:12px 22px 12px 16px;border-radius:16px;font-size:15px;box-shadow:0 2px 12px 0 rgba(0,0,0,0.13);pointer-events:auto;max-width:290px;line-height:1.5;font-family:Inter,sans-serif;backdrop-filter:blur(2px);border:1.5px solid #cf8756;opacity:0.97;display:block;">';
+$branchOverlay = '<div id="branch-location-overlay" style="position:fixed;top:90px;left:24px;z-index:9999;background:rgba(30,30,30,0.90);color:#fff;padding:12px 22px 12px 16px;border-radius:16px;font-size:15px;box-shadow:0 2px 12px 0 rgba(0,0,0,0.13);pointer-events:auto;max-width:290px;line-height:1.5;font-family:Inter,sans-serif;backdrop-filter:blur(2px);border:1.5px solid #cf8756;opacity:0.97;display:block;cursor:move;user-select:none;">';
 $branchOverlay .= '<div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;">';
 $branchOverlay .= '<span style="display:inline-block;width:8px;height:8px;background:#cf8756;border-radius:50%;margin-right:10px;"></span>';
 $branchOverlay .= '<span style="font-weight:500;opacity:0.85;">You\'re currently browsing at</span>';
@@ -590,6 +607,64 @@ echo $branchOverlay;
 echo '<div id="branch-loading-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:100000;background:rgba(30,30,30,0.85);color:#fff;align-items:center;justify-content:center;font-family:Inter,sans-serif;"><div style="margin:auto;text-align:center;"><div class="fa fa-spinner fa-spin" style="font-size:2.5rem;margin-bottom:18px;"></div><div style="font-size:1.2rem;font-weight:600;">Switching branch...</div></div></div>';
 // ...existing code...
 ?><header class="raltt-header">
+<script>
+// --- Make branch overlay draggable ---
+document.addEventListener('DOMContentLoaded', function() {
+    const overlay = document.getElementById('branch-location-overlay');
+    if (!overlay) return;
+    let isDragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
+    overlay.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        // Get current position
+        const rect = overlay.getBoundingClientRect();
+        origX = rect.left;
+        origY = rect.top;
+        overlay.style.transition = 'none';
+        document.body.style.userSelect = 'none';
+    });
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        overlay.style.left = (origX + dx) + 'px';
+        overlay.style.top = (origY + dy) + 'px';
+    });
+    document.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            overlay.style.transition = '';
+            document.body.style.userSelect = '';
+        }
+    });
+    // Touch support
+    overlay.addEventListener('touchstart', function(e) {
+        if (e.touches.length !== 1) return;
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        const rect = overlay.getBoundingClientRect();
+        origX = rect.left;
+        origY = rect.top;
+        overlay.style.transition = 'none';
+    });
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging || e.touches.length !== 1) return;
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        overlay.style.left = (origX + dx) + 'px';
+        overlay.style.top = (origY + dy) + 'px';
+    }, {passive:false});
+    document.addEventListener('touchend', function() {
+        if (isDragging) {
+            isDragging = false;
+            overlay.style.transition = '';
+        }
+    });
+});
+</script>
 <script>
 // --- Branch overlay logic ---
 function haversine(lat1, lon1, lat2, lon2) {
@@ -733,7 +808,7 @@ function openBranchChangeModal(userLat, userLng) {
                     <a href="#"><i class="fa fa-circle-o"></i> Bowls</a>
                 </div>
             </div>
-            <a href="/feature-2d-visualizer.php">3D Visualizer</a>
+            <a href="../logged_user/3dvisualizer.php">3D Visualizer</a>
             <a href="user_my_cart.php">My Cart</a>
         </nav>
         <div class="user-area">
@@ -1032,6 +1107,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+</script>
+<script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="-vAdaLts54qAK1OtQj9SL";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
 </script>
 </body>
 </html>

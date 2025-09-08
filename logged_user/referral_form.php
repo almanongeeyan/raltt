@@ -1,7 +1,4 @@
-<!-- Code Owner Display -->
-<div style="text-align:center; margin-top:30px;">
-  <span style="font-size:1.2em; color:#888;">Code Owner (Coins)</span>
-</div>
+
 
 <?php // referral_modal.php ?>
 

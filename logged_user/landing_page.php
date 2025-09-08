@@ -17,9 +17,6 @@ if (!isset($_SESSION['logged_in'])) {
     exit();
 }
 
-// Show referral modal if referral_count == 1 - MUST BE AT TOP!
-
-
 
 // Always include the referral modal markup, but only auto-show if has_used_referral_code == 'FALSE'
 include 'referral_form.php';
