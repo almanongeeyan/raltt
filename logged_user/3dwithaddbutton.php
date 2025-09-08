@@ -438,6 +438,9 @@ include '../includes/headeruser.php';
                                 class="w-full bg-primary text-white rounded-lg py-2 px-4 font-bold hover:bg-secondary transition-colors mb-2 view-3d-btn">
                             <i class="fas fa-cube mr-2"></i>View in 3D
                         </button>
+                        <button class="w-full bg-[#2B3241] text-[#EF7232] rounded-lg py-2 px-4 font-bold hover:bg-[#EF7232] hover:text-[#2B3241] transition-colors add-to-cart-btn">
+                            <i class="fas fa-shopping-cart mr-2"></i>Add to Cart
+                        </button>
                     </div>
                 </div>
             `;
