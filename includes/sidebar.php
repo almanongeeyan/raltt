@@ -518,7 +518,7 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="#" class="dropdown-link">
+                                <a href="../staffadmin_access/admin_banner.php" class="dropdown-link">
                                     <!-- Banner Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="4,4 12,12 20,4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Banner</span>
