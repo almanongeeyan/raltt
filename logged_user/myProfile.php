@@ -1,3 +1,7 @@
+<?php
+include '../includes/headeruser.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,40 +14,6 @@
 </head>
 
 <body>
-
-    <header class="header">
-        <a href="index.php" class="logo">
-            <img src="images/header.png" alt="RALTT Logo">
-        </a>
-        <nav class="navbar">
-            <a href="#whats-new">What's New</a>
-            <div class="dropdown">
-                <button class="dropbtn">Features <i class="fas fa-caret-down"></i></button>
-                <div class="dropdown-content">
-                    <a href="2d_tile_visualizer.php"><i class="fas fa-cube"></i> 2D Tile Visualizer</a>
-                    <a href="referral_code.php"><i class="fas fa-users"></i> Referral Code</a>
-                </div>
-            </div>
-            <a href="product.php">Products</a>
-            <a href="#aboutus">About Us</a>
-        </nav>
-        <a href="login.php" class="login-btn"><i class="fas fa-user"></i> Login</a>
-        <div class="fas fa-bars" id="menu"></div>
-    </header>
-
-    <div class="sidebar">
-        <div class="sidebar-top">
-            <h2>User Name</h2>
-            <hr>
-            <nav>
-                <a href="#"><i class="fas fa-user"></i> Profile</a>
-                <a href="#"><i class="fas fa-box"></i> Orders</a>
-            </nav>
-        </div>
-        <div class="sidebar-bottom">
-            <a href="#"><i class="fas fa-right-from-bracket"></i> Logout</a>
-        </div>
-    </div>
 
     <div class="main-content">
         <div class="page-container">

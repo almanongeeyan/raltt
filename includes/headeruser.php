@@ -819,7 +819,7 @@ function openBranchChangeModal(userLat, userLng) {
                     <i class="fa fa-caret-down" style="color:#fff;font-size:1.1rem;"></i>
                 </button>
                 <div class="user-dropdown-content" id="accountDropdownContent" style="right:0;top:44px;min-width:170px;">
-                    <a href="#"><i class="fa fa-user"></i> Account</a>
+                    <a href="../logged_user/myProfile.php"><i class="fa fa-user"></i> Account</a>
                     <a href="../logout.php"><i class="fa fa-sign-out"></i> Logout</a>
                 </div>
             </div>
@@ -857,9 +857,9 @@ function openBranchChangeModal(userLat, userLng) {
         <a href="#">My Favourite</a>
         <a href="#">My Cart</a>
         <div class="user-dropdown-mobile" tabindex="0">
-            <a href="#">Account <i class="fa fa-caret-down"></i></a>
+            <a href="../logged_user/myProfile.php">Account <i class="fa fa-caret-down"></i></a>
             <div class="dropdown-content">
-                <a href="#"><i class="fa fa-user"></i> My Account</a>
+                <a href="../logged_user/myProfile.php"><i class="fa fa-user"></i> My Account</a>
                 <a href="../logout.php"><i class="fa fa-sign-out"></i> Logout</a>
             </div>
         </div>
