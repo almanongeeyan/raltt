@@ -16,3 +16,10 @@
 [2025-09-07 07:42:16] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
 [2025-09-07 07:55:42] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
 [2025-09-07 07:58:20] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
+[2025-09-10 05:52:59] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
+[2025-09-10 05:53:04] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
+[2025-09-10 05:53:10] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
+[2025-09-10 05:57:06] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
+[2025-09-10 05:57:35] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
+[2025-09-10 06:00:32] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
+[2025-09-10 06:00:36] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist

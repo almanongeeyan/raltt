@@ -108,6 +108,11 @@ include '../includes/headeruser.php';
             box-shadow: 0 0 0 2px rgba(125, 49, 10, 0.2);
         }
         
+        /* New rule to change dropdown text color */
+        .form-select {
+            color: #7d310a;
+        }
+        
         .file-upload {
             border: 2px dashed #cf8756;
             border-radius: 12px;
