@@ -535,14 +535,14 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
-                                <a href="#" class="dropdown-link">
+                                <a href="admin_cancelRequests.php" class="dropdown-link">
                                     <!-- Cancel Request Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/><line x1="6" y1="18" x2="18" y2="6" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Cancel Request</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="#" class="dropdown-link">
+                                <a href="admin_customTickets.php" class="dropdown-link">
                                     <!-- Customer Tickets Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 7V5a2 2 0 012-2h6a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
                                     <span>Customer Tickets</span>
