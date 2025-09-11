@@ -473,13 +473,6 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_financialreports.php" class="dropdown-link">
-                                    <!-- Financial Reports Icon -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 17v-6M12 17v-2M16 17v-4" stroke="currentColor" stroke-width="2"/></svg>
-                                    <span>Financial Reports</span>
-                                </a>
-                            </li>
-                            <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_salesreports.php" class="dropdown-link">
                                     <!-- Sales Reports Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-4M12 17v-7M17 17v-2" stroke="currentColor" stroke-width="2"/></svg>

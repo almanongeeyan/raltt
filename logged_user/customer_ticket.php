@@ -210,12 +210,9 @@ include '../includes/headeruser.php';
 <body class="min-h-screen pt-24">
     <div class="container mx-auto px-4 py-8">
         <div class="page-container">
-            <!-- Page Header with Back Button -->
+            <!-- Page Header -->
             <div class="mb-6">
-                <button class="back-btn text-white font-bold py-3 px-6 rounded-xl flex items-center" onclick="window.history.back();">
-                    <i class="fa-solid fa-arrow-left mr-2"></i>
-                    <span>Back to Account</span>
-                </button>
+                <h2 class="text-2xl font-black text-primary">Customer Support</h2>
             </div>
 
             <!-- Main Content -->
@@ -315,16 +312,7 @@ include '../includes/headeruser.php';
                             <div id="filePreview" class="mt-4 grid grid-cols-3 gap-2 hidden"></div>
                         </div>
                         
-                        <div class="mb-6">
-                            <label class="block text-textdark font-medium mb-2">Preferred Resolution</label>
-                            <select class="form-select w-full p-3">
-                                <option value="">Select resolution</option>
-                                <option value="exchange">Exchange for Same Item</option>
-                                <option value="refund">Refund</option>
-                                <option value="store-credit">Store Credit</option>
-                                <option value="contact-me">Contact Me to Discuss Options</option>
-                            </select>
-                        </div>
+
                         
                         <button type="button" class="submit-btn w-full text-white font-bold py-3 rounded-lg" onclick="submitTicket()">
                             Submit Ticket
@@ -341,53 +329,50 @@ include '../includes/headeruser.php';
                                 <span>Ticket History</span>
                             </div>
                         </div>
-                        
-                        <div class="space-y-4 max-h-96 overflow-y-auto">
+                        <div class="space-y-6 max-h-96 overflow-y-auto">
                             <!-- Ticket 1 -->
-                            <div class="ticket-item p-4">
-                                <div class="flex justify-between items-start mb-2">
+                            <div class="ticket-item p-6 shadow-sm hover:shadow-md transition-all border border-[#e8d9cf] rounded-xl bg-white flex flex-col gap-2">
+                                <div class="flex justify-between items-center mb-1">
                                     <div>
-                                        <p class="font-bold text-textdark">Cracked Tiles - Order #ORD-123456</p>
-                                        <p class="text-sm text-textlight">Submitted on Nov 16, 2023</p>
+                                        <p class="font-bold text-textdark text-base">Cracked Tiles - Order #ORD-123456</p>
+                                        <p class="text-xs text-textlight">Submitted on Nov 16, 2023</p>
                                     </div>
-                                    <span class="status-pending text-xs font-medium py-1 px-2 rounded-full">Pending</span>
+                                    <span class="status-pending text-xs font-medium py-1 px-3 rounded-full">Pending</span>
                                 </div>
-                                <p class="text-sm text-textdark mb-2">Several tiles arrived with cracks along the edges...</p>
-                                <div class="flex justify-between items-center">
-                                    <span class="ticket-badge text-xs font-medium py-1 px-2 rounded-full">Exchange Requested</span>
-                                    <button class="text-primary text-sm font-medium">View Details</button>
+                                <p class="text-sm text-textdark mb-1">Several tiles arrived with cracks along the edges...</p>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="ticket-badge text-xs font-medium py-1 px-3 rounded-full">Exchange Requested</span>
+                                    <button class="text-primary text-sm font-medium view-details-btn" data-ticket="1">View Details</button>
                                 </div>
                             </div>
-                            
                             <!-- Ticket 2 -->
-                            <div class="ticket-item p-4">
-                                <div class="flex justify-between items-start mb-2">
+                            <div class="ticket-item p-6 shadow-sm hover:shadow-md transition-all border border-[#e8d9cf] rounded-xl bg-white flex flex-col gap-2">
+                                <div class="flex justify-between items-center mb-1">
                                     <div>
-                                        <p class="font-bold text-textdark">Shattered Tiles - Order #ORD-123457</p>
-                                        <p class="text-sm text-textlight">Submitted on Nov 5, 2023</p>
+                                        <p class="font-bold text-textdark text-base">Shattered Tiles - Order #ORD-123457</p>
+                                        <p class="text-xs text-textlight">Submitted on Nov 5, 2023</p>
                                     </div>
-                                    <span class="status-resolved text-xs font-medium py-1 px-2 rounded-full">Resolved</span>
+                                    <span class="status-resolved text-xs font-medium py-1 px-3 rounded-full">Resolved</span>
                                 </div>
-                                <p class="text-sm text-textdark mb-2">Two tiles were completely shattered upon opening the box...</p>
-                                <div class="flex justify-between items-center">
-                                    <span class="ticket-badge text-xs font-medium py-1 px-2 rounded-full">Replacement Sent</span>
-                                    <button class="text-primary text-sm font-medium">View Details</button>
+                                <p class="text-sm text-textdark mb-1">Two tiles were completely shattered upon opening the box...</p>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="ticket-badge text-xs font-medium py-1 px-3 rounded-full">Replacement Sent</span>
+                                    <button class="text-primary text-sm font-medium view-details-btn" data-ticket="2">View Details</button>
                                 </div>
                             </div>
-                            
                             <!-- Ticket 3 -->
-                            <div class="ticket-item p-4">
-                                <div class="flex justify-between items-start mb-2">
+                            <div class="ticket-item p-6 shadow-sm hover:shadow-md transition-all border border-[#e8d9cf] rounded-xl bg-white flex flex-col gap-2">
+                                <div class="flex justify-between items-center mb-1">
                                     <div>
-                                        <p class="font-bold text-textdark">Color Mismatch - Order #ORD-123455</p>
-                                        <p class="text-sm text-textlight">Submitted on Oct 28, 2023</p>
+                                        <p class="font-bold text-textdark text-base">Color Mismatch - Order #ORD-123455</p>
+                                        <p class="text-xs text-textlight">Submitted on Oct 28, 2023</p>
                                     </div>
-                                    <span class="status-closed text-xs font-medium py-1 px-2 rounded-full">Closed</span>
+                                    <span class="status-closed text-xs font-medium py-1 px-3 rounded-full">Closed</span>
                                 </div>
-                                <p class="text-sm text-textdark mb-2">Tiles received don't match the sample color...</p>
-                                <div class="flex justify-between items-center">
-                                    <span class="ticket-badge text-xs font-medium py-1 px-2 rounded-full">Refund Issued</span>
-                                    <button class="text-primary text-sm font-medium">View Details</button>
+                                <p class="text-sm text-textdark mb-1">Tiles received don't match the sample color...</p>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="ticket-badge text-xs font-medium py-1 px-3 rounded-full">Refund Issued</span>
+                                    <button class="text-primary text-sm font-medium view-details-btn" data-ticket="3">View Details</button>
                                 </div>
                             </div>
                         </div>
@@ -417,7 +402,72 @@ include '../includes/headeruser.php';
         </div>
     </div>
 
+    <!-- Ticket Details Modal -->
+    <div id="ticketDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header p-6 flex justify-between items-center">
+                <h3 class="text-xl font-black text-primary">Ticket Details</h3>
+                <button class="close-btn text-2xl" onclick="closeModal('ticketDetailsModal')">&times;</button>
+            </div>
+            <div class="p-6" id="ticketDetailsContent">
+                <!-- Ticket details will be injected here -->
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Ticket details data (for demo)
+        const ticketDetailsData = {
+            1: {
+                title: 'Cracked Tiles - Order #ORD-123456',
+                date: 'Nov 16, 2023',
+                status: 'Pending',
+                description: 'Several tiles arrived with cracks along the edges. Please see attached photos for reference.',
+                resolution: 'Exchange Requested',
+                response: 'Our team is reviewing your request. We will update you soon.'
+            },
+            2: {
+                title: 'Shattered Tiles - Order #ORD-123457',
+                date: 'Nov 5, 2023',
+                status: 'Resolved',
+                description: 'Two tiles were completely shattered upon opening the box. Replacement requested.',
+                resolution: 'Replacement Sent',
+                response: 'Replacement tiles have been shipped. Thank you for your patience.'
+            },
+            3: {
+                title: 'Color Mismatch - Order #ORD-123455',
+                date: 'Oct 28, 2023',
+                status: 'Closed',
+                description: 'Tiles received don\'t match the sample color. Refund requested.',
+                resolution: 'Refund Issued',
+                response: 'Refund has been processed. We apologize for the inconvenience.'
+            }
+        };
+
+        // View Details modal logic
+        document.querySelectorAll('.view-details-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const ticketId = this.getAttribute('data-ticket');
+                const data = ticketDetailsData[ticketId];
+                if (data) {
+                    document.getElementById('ticketDetailsContent').innerHTML = `
+                        <div class="mb-4">
+                            <h4 class="font-bold text-lg text-primary mb-1">${data.title}</h4>
+                            <p class="text-xs text-textlight mb-2">Submitted on ${data.date}</p>
+                            <span class="inline-block mb-2 px-3 py-1 rounded-full text-xs font-medium ${data.status === 'Pending' ? 'status-pending' : data.status === 'Resolved' ? 'status-resolved' : 'status-closed'}">${data.status}</span>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm text-textdark mb-1"><span class="font-medium">Description:</span> ${data.description}</p>
+                            <p class="text-sm text-textdark mb-1"><span class="font-medium">Resolution:</span> ${data.resolution}</p>
+                        </div>
+                        <div class="bg-light rounded-lg p-3">
+                            <p class="text-xs text-textdark"><span class="font-medium">Support Response:</span> ${data.response}</p>
+                        </div>
+                    `;
+                    document.getElementById('ticketDetailsModal').style.display = 'flex';
+                }
+            });
+        });
         // Select order function
         function selectOrder(element, orderId) {
             // Remove selected class from all orders
