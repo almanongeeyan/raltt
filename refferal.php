@@ -70,12 +70,12 @@ body {
 }
 
 .sub-text {
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    font-size: clamp(0.9rem, 1.8vw, 1.2rem);
-    margin-top: 0.5rem;
-    color: #555;
-    margin-bottom: -1500px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+  margin-top: 0.5rem;
+  color: #555;
+  margin-bottom: 1.5rem;
 }
 
 .cards-container {
@@ -125,12 +125,10 @@ body {
 }
 
 .footer-text-block {
-    max-width: 900px;
-    margin: 0 auto 60px;
-    padding: 0 1rem;
-    text-align: center;
-    margin-top: 100px;
-    margin-bottom: -175px;
+  max-width: 900px;
+  margin: 100px auto 60px;
+  padding: 0 1rem;
+  text-align: center;
 }
 
 .footer-heading {
@@ -172,11 +170,7 @@ body {
     </div>
   </div>
 
-  <div class="footer-text-block" style="margin-bottom: -300px;">
-    <h2 class="footer-heading">
-      Join <span class="highlight">RALTT</span> Today and Start Referring!
-    </h2>
-  </div>
+ 
 
 </body>
 
