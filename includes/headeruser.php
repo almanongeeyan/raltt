@@ -262,6 +262,22 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
             font-size: 1.3rem;
         }
 
+        /* Customer support icon */
+        .raltt-header .support-icon {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #fff;
+            margin-right: 12px;
+            transition: color 0.18s;
+            z-index: 200;
+        }
+        .raltt-header .support-icon:hover {
+            color: #ff7a22;
+        }
+
         /* Mobile search icon and bar */
         .raltt-header .search-icon-mobile {
             cursor: pointer;
@@ -400,7 +416,7 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                width: 32px;
+            width: 32px;
                 height: 32px;
                 cursor: pointer;
                 z-index: 120;
@@ -802,10 +818,7 @@ function openBranchChangeModal(userLat, userLng) {
                 <a href="#" id="productsDropdownToggle">Products <i class="fa fa-caret-down"></i></a>
                 <div class="dropdown-content" id="productsDropdownContent">
                     <a href="#" id="floorTilesLink"><i class="fa fa-th-large"></i> Floor Tiles</a>
-                    <a href="#"><i class="fa fa-door-open"></i> PVC Doors</a>
-                    <a href="#"><i class="fa fa-tint"></i> Sinks</a>
-                    <a href="#"><i class="fa fa-grip-horizontal"></i> Tile Vinyl</a>
-                    <a href="#"><i class="fa fa-circle-o"></i> Bowls</a>
+                    <a href="#"><i class="fa fa-cube"></i> Other Products</a>
                 </div>
             </div>
             <a href="../logged_user/3dvisualizer.php">3D Visualizer</a>
@@ -820,6 +833,7 @@ function openBranchChangeModal(userLat, userLng) {
                 </button>
                 <div class="user-dropdown-content" id="accountDropdownContent" style="right:0;top:44px;min-width:170px;">
                     <a href="../logged_user/myProfile.php"><i class="fa fa-user"></i> Account</a>
+                    <a href="../logged_user/customer_ticket.php"><i class="fa fa-ticket"></i> Customer Ticket</a>
                     <a href="../logout.php"><i class="fa fa-sign-out"></i> Logout</a>
                 </div>
             </div>
@@ -847,15 +861,13 @@ function openBranchChangeModal(userLat, userLng) {
             <a href="#">Products <i class="fa fa-caret-down"></i></a>
             <div class="dropdown-content">
                 <a href="#"><i class="fa fa-th-large"></i> Floor Tiles</a>
-                <a href="#"><i class="fa fa-door-open"></i> PVC Doors</a>
-                <a href="#"><i class="fa fa-tint"></i> Sinks</a>
-                <a href="#"><i class="fa fa-grip-horizontal"></i> Tile Vinyl</a>
-                <a href="#"><i class="fa fa-circle-o"></i> Bowls</a>
+                <a href="#"><i class="fa fa-cube"></i> Other Products</a>
             </div>
         </div>
         <a href="/feature-2d-visualizer.php">2D Visualizer</a>
         <a href="#">My Favourite</a>
         <a href="#">My Cart</a>
+    <!-- ...existing code... -->
         <div class="user-dropdown-mobile" tabindex="0">
             <a href="../logged_user/myProfile.php">Account <i class="fa fa-caret-down"></i></a>
             <div class="dropdown-content">
@@ -880,6 +892,14 @@ function openBranchChangeModal(userLat, userLng) {
         const searchIconMobile = document.getElementById('raltt-search-icon-mobile');
         const searchBarMobile = document.getElementById('raltt-search-bar-mobile');
         const searchCloseMobile = document.getElementById('raltt-search-close-mobile');
+
+        // Customer support icon functionality
+        const supportIcon = document.getElementById('support-icon');
+        if (supportIcon) {
+            supportIcon.addEventListener('click', () => {
+                window.location.href = '../logged_user/customer_ticket.php';
+            });
+        }
 
         // Function to toggle the desktop search bar
         function toggleDesktopSearch(show) {

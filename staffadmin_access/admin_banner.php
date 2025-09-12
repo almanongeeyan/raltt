@@ -93,8 +93,8 @@ viewBtns.forEach(btn => {
             e.preventDefault();
             return;
         }
-        // Redirect to admin_banner.php with branch id
-        window.location.href = 'admin_banner.php?branch_id=' + branchid;
+        // Redirect to adding_banners.php with branch id
+        window.location.href = 'adding_banners.php?branch_id=' + branchid;
     });
 });
 

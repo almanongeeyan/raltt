@@ -16,6 +16,10 @@
 [2025-09-07 07:42:16] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
 [2025-09-07 07:55:42] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
 [2025-09-07 07:58:20] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
+<<<<<<< HEAD
+[2025-09-10 05:46:43] Login error: SQLSTATE[HY000]: General error: 2006 MySQL server has gone away
+[2025-09-10 05:46:59] Database connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+=======
 [2025-09-10 05:52:59] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
 [2025-09-10 05:53:04] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
 [2025-09-10 05:53:10] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
@@ -23,3 +27,4 @@
 [2025-09-10 05:57:35] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
 [2025-09-10 06:00:32] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
 [2025-09-10 06:00:36] Login error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.users' doesn't exist
+>>>>>>> 422b8d4c364b9cec2e116e982b3e0c48a4963de4

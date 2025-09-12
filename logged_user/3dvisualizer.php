@@ -68,13 +68,12 @@ include '../includes/headeruser.php';
             border-radius: 20px;
             box-shadow: 0 8px 32px 0 rgba(207,135,86,0.2), 0 1.5px 0 #fff;
             overflow: hidden;
-            /* Hide scrollbars for all browsers */
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
         #visualizer-3d::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none;
         }
         
         .bathroom-container {
@@ -98,7 +97,7 @@ include '../includes/headeruser.php';
             width: 100%;
             height: 100%;
             object-fit: cover;
-            pointer-events: none; /* Allows mouse events to pass through to the canvas */
+            pointer-events: none;
         }
         
         #webgl-canvas {
@@ -108,6 +107,111 @@ include '../includes/headeruser.php';
             width: 100%;
             height: 100%;
             z-index: 1;
+        }
+        
+        .room-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .room-btn {
+            flex: 1;
+            min-width: 90px;
+            padding: 10px 5px;
+            border-radius: 10px;
+            background: #f3e9e1;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+            color: #7d310a;
+            font-size: 14px;
+        }
+        
+        .room-btn:hover, .room-btn.active {
+            background: #cf8756;
+            color: white;
+            border-color: #7d310a;
+        }
+        
+        .room-btn i {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .room-visualizer-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            border-radius: 16px;
+            background: #f7f3ef;
+            margin-top: 15px;
+        }
+        
+        #room-background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        
+        #room-tile-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+        
+        .tile-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f9f5f2;
+            border-radius: 10px;
+        }
+        
+        .tile-controls label {
+            font-weight: 600;
+            color: #7d310a;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        .tile-controls input {
+            width: 120px;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            flex-direction: column;
+        }
+        
+        .floor-mask {
+            position: absolute;
+            mix-blend-mode: multiply;
+            z-index: 3;
         }
     </style>
 </head>
@@ -147,6 +251,36 @@ include '../includes/headeruser.php';
                         </div>
                     </div>
                 </div>
+
+                <!-- Room Visualization Section -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 mt-6">
+                    <h2 class="text-xl font-bold text-primary mb-4">Room Visualization</h2>
+                    <div class="room-buttons">
+                        <div class="room-btn active" data-room="indoor">
+                            <i class="fas fa-home"></i>
+                            <span>Indoor</span>
+                        </div>
+                        <div class="room-btn" data-room="kitchen">
+                            <i class="fas fa-utensils"></i>
+                            <span>Kitchen</span>
+                        </div>
+                        <div class="room-btn" data-room="bathroom">
+                            <i class="fas fa-bath"></i>
+                            <span>Bathroom</span>
+                        </div>
+                        <div class="room-btn" data-room="bedroom">
+                            <i class="fas fa-bed"></i>
+                            <span>Bedroom</span>
+                        </div>
+                        <div class="room-btn" data-room="pool">
+                            <i class="fas fa-swimming-pool"></i>
+                            <span>Pool</span>
+                        </div>
+                    </div>
+                    <div class="room-visualizer-container mt-4">
+                        <img id="room-background-image" src="../images/visualizer/v_indoor.png" alt="Room Background">
+                    </div>
+                </div>
             </div>
             
             <div class="lg:w-1/2 w-full">
@@ -184,6 +318,8 @@ include '../includes/headeruser.php';
     let aboveViewCanvas, aboveViewCtx, aboveTileImg = null, aboveFurnitureImg = null;
     let tileScaleAbove = 1;
     let tileIsBestForTable = false;
+
+
 
     // Data handling
     let allProducts = [];
@@ -327,6 +463,8 @@ include '../includes/headeruser.php';
         }
     }
     
+
+    
     // Render 3D model and update above view
     function render3D(imageUrl, isBestForTable) {
         const container = document.getElementById('visualizer-3d');
@@ -374,6 +512,8 @@ include '../includes/headeruser.php';
             drawAboveView();
         }
     }
+    
+
 
     // Fetch products
     function fetchProducts() {
@@ -503,7 +643,7 @@ include '../includes/headeruser.php';
     // Preload furniture image
     function preloadFurnitureImg() {
         aboveFurnitureImg = new window.Image();
-        aboveFurnitureImg.src = '../images/visualizer/table_topview.png'; // You must provide this image
+        aboveFurnitureImg.src = '../images/visualizer/table_topview.png';
         aboveFurnitureImg.onload = drawAboveView;
     }
 
@@ -520,6 +660,31 @@ include '../includes/headeruser.php';
                 e.preventDefault();
             }, { passive: false });
         }
+    });
+    </script>
+    <script>
+    // Room visualization image switching
+    document.addEventListener('DOMContentLoaded', function() {
+        const roomButtons = document.querySelectorAll('.room-btn');
+        const roomBgImg = document.getElementById('room-background-image');
+        const roomImageMap = {
+            indoor: '../images/visualizer/v_indoor.png',
+            kitchen: '../images/visualizer/v_kitchen.png',
+            bathroom: '../images/visualizer/v_bathroom.png',
+            bedroom: '../images/visualizer/v_bedroom.png',
+            pool: '../images/visualizer/v_pool.png'
+        };
+        roomButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active from all
+                roomButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const room = btn.getAttribute('data-room');
+                if (roomImageMap[room]) {
+                    roomBgImg.src = roomImageMap[room];
+                }
+            });
+        });
     });
     </script>
 </body>
