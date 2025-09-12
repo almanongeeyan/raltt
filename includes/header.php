@@ -318,14 +318,14 @@
 <body>
     <header class="header">
         <a href="index.php" class="logo">
-            <img src="images/header.png" alt="RALTT Logo">
+            <img src="images/newlogo.PNG" alt="RALTT Logo">
         </a>
         <nav class="navbar">
-            <a href="#whats-new">What's New</a>
+            <!-- 'What's New' button removed as requested -->
             <div class="dropdown">
                 <button class="dropbtn">Features <i class="fas fa-caret-down"></i></button>
                 <div class="dropdown-content">
-                    <a href="2d_visualizer_homepage.php"><i class="fas fa-cube"></i> 2D Tile Visualizer</a>
+                    <a href="2d_visualizer_homepage.php"><i class="fas fa-cube"></i> 3D Tile Visualizer</a>
                     <a href="refferal.php"><i class="fas fa-users"></i> Referral Code</a>
                 </div>
             </div>

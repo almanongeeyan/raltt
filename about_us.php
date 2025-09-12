@@ -359,7 +359,7 @@ include 'includes/header.php';
                 <span class="highlight">RALTT:</span> Bring Your<br>
                 Visions to Life:<br>
                 Design Stunning Spaces,<br>
-                with our <span class="highlight">2D Tile Visualizer</span>
+                with our <span class="highlight"></span>3D Tile Visualizer</span>
             </div>
 
             <div class="grid-top-right">
