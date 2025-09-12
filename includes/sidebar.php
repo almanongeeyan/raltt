@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Branch name mapping
 $branch_names = [
     1 => 'Deparo',
-    2 => 'Vangaurd',
+    2 => 'Vanguard',
     3 => 'Brixton',
     4 => 'Samaria',
     5 => 'Kiko'
