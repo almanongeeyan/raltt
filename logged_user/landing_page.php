@@ -18,11 +18,9 @@ if (!isset($_SESSION['logged_in'])) {
 }
 
 
-// Always include the referral modal markup, but only auto-show if has_used_referral_code == 'FALSE'
 include 'referral_form.php';
-include 'recommendation_form.php'; // Include recommendation modal markup
+include 'recommendation_form.php'; 
 
-// Determine if recommendation modal should be shown (user has no record in user_design_preferences)
 $showRecommendationModal = false;
 if (isset($_SESSION['user_id'])) {
   try {
@@ -37,11 +35,9 @@ if (isset($_SESSION['user_id'])) {
       }
     }
   } catch (Exception $e) {
-    // Fallback: do not show modal on error
   }
 }
 
-// Check has_used_referral_code from DB for the logged-in user
 $showReferralModal = false;
 if (isset($_SESSION['user_id'])) {
   try {
@@ -56,13 +52,11 @@ if (isset($_SESSION['user_id'])) {
       }
     }
   } catch (Exception $e) {
-    // Fallback: do not show modal on error
   }
 }
 
 include '../includes/headeruser.php';
 
-// --- Branches data (add lat/lng for each branch) ---
 $branches = [
   [ 'id' => 1, 'name' => 'Deparo',   'lat' => 14.752338, 'lng' => 121.017677 ],
   [ 'id' => 2, 'name' => 'Vanguard', 'lat' => 14.759202, 'lng' => 121.062861 ],
@@ -76,7 +70,6 @@ foreach ($branches as $b) {
   if ($b['id'] === $user_branch_id) { $user_branch = $b; break; }
 }
 echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRANCH = ' . json_encode($user_branch) . ';</script>';
-// Branch overlay removed; now handled globally in headeruser.php
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -117,7 +110,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           if (dist < minDist) { minDist = dist; nearest = b; }
         });
       if (nearest) {
-        // Update overlay visually
         const el = document.getElementById('branch-current');
         if (el) {
           el.innerHTML = nearest.name + ' Branch';
@@ -1201,15 +1193,39 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     document.addEventListener('DOMContentLoaded', function() {
       // For tile selection section (static tiles)
       document.querySelectorAll('.tile-selection .bg-white').forEach(function(card) {
-        card.style.cursor = 'pointer';
-        card.onclick = function() {
-          const name = card.querySelector('h3') ? card.querySelector('h3').textContent : '';
-          fetch('processes/get_product_details.php?sku='+encodeURIComponent(name))
-            .then(r=>r.json()).then(data=>{
-              if (data && !data.error) openProductModal(data);
-              else openProductModal({name:name, sku:'', description:'No details found.', image_path:card.querySelector('img').src});
-            });
-        };
+        // Remove card clickability
+        card.style.cursor = 'default';
+        card.onclick = null;
+        // Make only the Explore Now button clickable
+        const btn = card.querySelector('button');
+        if (btn) {
+          btn.style.cursor = 'pointer';
+          btn.onclick = function(e) {
+            e.stopPropagation();
+            const name = card.querySelector('h3') ? card.querySelector('h3').textContent.trim().toLowerCase() : '';
+            // Only redirect for the specified designs, do not open 3D modal
+            const allowed = [
+              'minimalist',
+              'floral',
+              'black and white',
+              'modern',
+              'rustic',
+              'geometric'
+            ];
+            if (allowed.includes(name)) {
+              // Convert to filename format
+              let file = name.replace(/ /g, '_').replace(/&/g, 'and') + '_products.php';
+              window.location.href = file;
+              return;
+            }
+            // For any other tile, fallback to modal (if any in future)
+            fetch('processes/get_product_details.php?sku='+encodeURIComponent(name))
+              .then(r=>r.json()).then(data=>{
+                if (data && !data.error) openProductModal(data);
+                else openProductModal({name:name, sku:'', description:'No details found.', image_path:card.querySelector('img').src});
+              });
+          };
+        }
       });
     });
     </script>

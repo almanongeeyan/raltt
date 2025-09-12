@@ -61,18 +61,26 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
         .raltt-header .logo-area {
             display: flex;
             align-items: center;
-            gap: 18px;
-            max-width: 180px;
+            gap: 10px;
+            max-width: 140px;
             flex: 0 0 auto;
-            margin-right: 18px;
+            margin-right: 12px;
             z-index: 200;
+            height: 100%;
+            background: none !important;
+            box-shadow: none !important;
         }
 
         .raltt-header .logo-img {
-            width: 250px;
-            height: 180px;
+            width: 110px;
+            height: 48px;
             object-fit: contain;
             display: block;
+            margin: 0;
+            padding: 0;
+            background: none !important;
+            box-shadow: none !important;
+            /* If logo image file has a background, replace it with a transparent PNG */
         }
 
         .raltt-header .brand-text {
@@ -403,13 +411,14 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
             }
 
             .raltt-header .logo-area {
-                max-width: 120px;
+                max-width: 90px;
                 margin-right: 0;
+                height: 100%;
             }
 
             .raltt-header .logo-img {
-                width: 70px;
-                height: 32px;
+                width: 60px;
+                height: 28px;
             }
 
             .raltt-header .burger {
@@ -544,8 +553,8 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
             }
 
             .raltt-header .logo-img {
-                width: 70px;
-                height: 50px;
+                width: 48px;
+                height: 22px;
             }
 
             .raltt-header .brand-main {
@@ -809,7 +818,7 @@ function openBranchChangeModal(userLat, userLng) {
 }
 </script>
     <div class="logo-area">
-        <img src="../images/logover2.png" alt="Logo" class="logo-img">
+        <img src="../images/userlogo.png" alt="Logo" class="logo-img">
     </div>
     <div class="nav-and-user">
         <nav class="nav">
@@ -818,7 +827,7 @@ function openBranchChangeModal(userLat, userLng) {
                 <a href="#" id="productsDropdownToggle">Products <i class="fa fa-caret-down"></i></a>
                 <div class="dropdown-content" id="productsDropdownContent">
                     <a href="#" id="floorTilesLink"><i class="fa fa-th-large"></i> Floor Tiles</a>
-                    <a href="#"><i class="fa fa-cube"></i> Other Products</a>
+                    <a href="../logged_user/other_products.php" id="otherProductsLink"><i class="fa fa-cube"></i> Other Products</a>
                 </div>
             </div>
             <a href="../logged_user/3dvisualizer.php">3D Visualizer</a>
@@ -861,7 +870,7 @@ function openBranchChangeModal(userLat, userLng) {
             <a href="#">Products <i class="fa fa-caret-down"></i></a>
             <div class="dropdown-content">
                 <a href="#"><i class="fa fa-th-large"></i> Floor Tiles</a>
-                <a href="#"><i class="fa fa-cube"></i> Other Products</a>
+                <a href="../logged_user/other_products.php"><i class="fa fa-cube"></i> Other Products</a>
             </div>
         </div>
         <a href="/feature-2d-visualizer.php">2D Visualizer</a>
@@ -1035,6 +1044,13 @@ function openBranchChangeModal(userLat, userLng) {
             floorTilesLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 window.location.href = '../logged_user/landing_page.php#premium-tiles';
+            });
+        }
+        // --- Other Products link navigation (desktop) ---
+        const otherProductsLink = document.getElementById('otherProductsLink');
+        if (otherProductsLink) {
+            otherProductsLink.addEventListener('click', function(e) {
+                // Allow default navigation
             });
         }
         // --- Account icon dropdown expand/collapse ---

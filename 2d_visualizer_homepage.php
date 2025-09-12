@@ -109,7 +109,7 @@ include 'includes/header.php';
             margin-bottom: 16px;
         }
         .visualizer-btn {
-            background: #F47C2E;
+            background: #7d310a;
             color: #fff;
             font-weight: 700;
             font-size: 1.08rem;
@@ -118,11 +118,11 @@ include 'includes/header.php';
             padding: 10px 28px;
             cursor: pointer;
             transition: background 0.2s;
-            box-shadow: 0 2px 8px 0 rgba(244,124,46,0.08);
+            box-shadow: 0 2px 8px 0 rgba(125,49,10,0.08);
             text-decoration: none; 
         }
         .visualizer-btn:hover {
-            background: #d9651c;
+            background: #5a2307;
         }
 
         .visualizer-cards-section {
@@ -157,7 +157,7 @@ include 'includes/header.php';
         }
         .card-icon {
             font-size: 2.5rem;
-            color: #F47C2E;
+            color: #7d310a;
             margin-bottom: 18px;
         }
         .card-title {
@@ -210,20 +210,20 @@ include 'includes/header.php';
         </div>
     </section>
 
-    <!-- 2D Tile Visualizer Section -->
+    <!-- 3D Tile Visualizer Section -->
     <section class="tile-visualizer-section">
         <div class="tile-visualizer-container">
             <div class="tile-visualizer-image">
                 <!-- Mock image, replace src with your real image later -->
-                <img src="images/2d.PNG" alt="2D Tile Visualizer" />
+                <img src="images/2d.PNG" alt="3D Tile Visualizer" />
             </div>
             <div class="tile-visualizer-content">
-                <h2>2D Tile Visualizer</h2> 
+                <h2>3D Tile Visualizer</h2> 
                 <p>
                     You will definitely enjoy visualizing tiles of your choice and selecting pre-designed rooms to witness their chosen products in their home environment.
                 </p>
                 <p class="tile-visualizer-bold">
-                    <br>Let's enhance your shopping journey with our 2D Tile Visualizer!
+                    <br>Let's enhance your shopping journey with our 3D Tile Visualizer!
                 </p>
                 <!-- <button class="visualizer-btn">Try Our Visualizer!</button> -->
                 <br><button></button><a href="user_login_form.php" class="visualizer-btn">Try Our Visualizer!</a></button>

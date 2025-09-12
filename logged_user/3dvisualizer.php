@@ -109,70 +109,6 @@ include '../includes/headeruser.php';
             z-index: 1;
         }
         
-        .room-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-            justify-content: center;
-        }
-        
-        .room-btn {
-            flex: 1;
-            min-width: 90px;
-            padding: 10px 5px;
-            border-radius: 10px;
-            background: #f3e9e1;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            font-weight: 600;
-            color: #7d310a;
-            font-size: 14px;
-        }
-        
-        .room-btn:hover, .room-btn.active {
-            background: #cf8756;
-            color: white;
-            border-color: #7d310a;
-        }
-        
-        .room-btn i {
-            display: block;
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-        
-        .room-visualizer-container {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            overflow: hidden;
-            border-radius: 16px;
-            background: #f7f3ef;
-            margin-top: 15px;
-        }
-        
-        #room-background-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
-        
-        #room-tile-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-        }
-        
         .tile-controls {
             display: flex;
             justify-content: space-between;
@@ -213,6 +149,125 @@ include '../includes/headeruser.php';
             mix-blend-mode: multiply;
             z-index: 3;
         }
+        
+        /* Floating containers styles */
+        .floating-container-section {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        
+        .floating-containers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 0;
+            margin: 0;
+            width: 510px;
+            height: 450px;
+            max-width: 100%;
+            padding: 0;
+        }
+        
+        .floating-container {
+            background: #f9f5f2;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            aspect-ratio: 1/1;
+        }
+
+        .floating-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+        
+        .floating-container:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        }
+        
+        .floating-container.empty:before {
+            content: '+';
+            font-size: 32px;
+            color: #cf8756;
+            opacity: 0.7;
+        }
+        
+        /* Removed duplicate .floating-container img rule to enforce object-fit: cover and full square fill */
+        
+        .drag-instructions {
+            text-align: center;
+            margin-top: 16px;
+            color: #7d310a;
+            font-weight: 500;
+        }
+        
+        .container-highlight {
+            border: 2px solid #7d310a;
+            background-color: rgba(125, 49, 10, 0.1);
+        }
+        
+        .tile-dragging {
+            opacity: 0.8;
+            transform: scale(1.05);
+            z-index: 100;
+        }
+        
+        .drag-scroll-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        
+        .drag-scroll-top, .drag-scroll-bottom {
+            position: absolute;
+            width: 100%;
+            height: 15px;
+            background: rgba(125, 49, 10, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: all;
+        }
+        
+        .drag-scroll-top {
+            top: 0;
+        }
+        
+        .drag-scroll-bottom {
+            bottom: 0;
+        }
+        
+        .drag-scroll-top.visible, .drag-scroll-bottom.visible {
+            opacity: 1;
+        }
+        
+        .drag-scroll-top i, .drag-scroll-bottom i {
+            color: #7d310a;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body class="bg-light min-h-screen pt-24">
@@ -252,33 +307,23 @@ include '../includes/headeruser.php';
                     </div>
                 </div>
 
-                <!-- Room Visualization Section -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 mt-6">
-                    <h2 class="text-xl font-bold text-primary mb-4">Room Visualization</h2>
-                    <div class="room-buttons">
-                        <div class="room-btn active" data-room="indoor">
-                            <i class="fas fa-home"></i>
-                            <span>Indoor</span>
-                        </div>
-                        <div class="room-btn" data-room="kitchen">
-                            <i class="fas fa-utensils"></i>
-                            <span>Kitchen</span>
-                        </div>
-                        <div class="room-btn" data-room="bathroom">
-                            <i class="fas fa-bath"></i>
-                            <span>Bathroom</span>
-                        </div>
-                        <div class="room-btn" data-room="bedroom">
-                            <i class="fas fa-bed"></i>
-                            <span>Bedroom</span>
-                        </div>
-                        <div class="room-btn" data-room="pool">
-                            <i class="fas fa-swimming-pool"></i>
-                            <span>Pool</span>
-                        </div>
+                <!-- Floating Containers Section -->
+                <div class="floating-container-section">
+                    <h2 class="text-xl font-bold text-primary mb-4">Tile Arrangement</h2>
+                    <p class="text-textlight text-sm mb-4">Drag tiles from the products section to any container below to create your custom arrangement.</p>
+                    
+                    <div class="floating-containers-grid" id="floating-containers">
+                        <!-- Containers will be generated by JavaScript -->
                     </div>
-                    <div class="room-visualizer-container mt-4">
-                        <img id="room-background-image" src="../images/visualizer/v_indoor.png" alt="Room Background">
+                    
+                    <p class="drag-instructions">
+                        <i class="fas fa-hand-point-up mr-2"></i>
+                        Drag tiles from the products section to place them in containers
+                    </p>
+                    <div class="flex justify-center mt-4">
+                        <button id="export-arrangement-btn" class="bg-primary text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-secondary transition-colors">
+                            <i class="fas fa-download mr-2"></i>Export as Image
+                        </button>
                     </div>
                 </div>
             </div>
@@ -306,6 +351,16 @@ include '../includes/headeruser.php';
         </div>
     </div>
 
+    <!-- Drag scroll indicators -->
+    <div class="drag-scroll-container">
+        <div class="drag-scroll-top" id="drag-scroll-top">
+            <i class="fas fa-chevron-up"></i>
+        </div>
+        <div class="drag-scroll-bottom" id="drag-scroll-bottom">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/controls/OrbitControls.js"></script>
     <script>
@@ -319,12 +374,15 @@ include '../includes/headeruser.php';
     let tileScaleAbove = 1;
     let tileIsBestForTable = false;
 
-
-
     // Data handling
     let allProducts = [];
     let currentPage = 1;
     const productsPerPage = 8;
+    
+    // Floating containers
+    let draggedTile = null;
+    let containers = [];
+    let dragScrollInterval = null;
     
     // Initialize 3D scene for single tile preview
     function init3DScene() {
@@ -463,8 +521,6 @@ include '../includes/headeruser.php';
         }
     }
     
-
-    
     // Render 3D model and update above view
     function render3D(imageUrl, isBestForTable) {
         const container = document.getElementById('visualizer-3d');
@@ -513,8 +569,164 @@ include '../includes/headeruser.php';
         }
     }
     
-
-
+    // Initialize floating containers
+    function initFloatingContainers() {
+        const containersGrid = document.getElementById('floating-containers');
+        containersGrid.innerHTML = '';
+        containers = [];
+        
+        for (let i = 0; i < 9; i++) {
+            const container = document.createElement('div');
+            container.className = 'floating-container empty';
+            container.dataset.index = i;
+            containers.push({element: container, tile: null});
+            
+            // Add event listeners for drag and drop
+            container.addEventListener('dragover', handleDragOver);
+            container.addEventListener('dragenter', handleDragEnter);
+            container.addEventListener('dragleave', handleDragLeave);
+            container.addEventListener('drop', handleDrop);
+            
+            containersGrid.appendChild(container);
+        }
+    }
+    
+    // Drag and drop handlers
+    function handleDragStart(e) {
+        draggedTile = {
+            productId: e.target.dataset.productId,
+            imageUrl: e.target.src,
+            productName: e.target.dataset.productName
+        };
+        e.target.classList.add('tile-dragging');
+        
+        // Setup auto-scroll when dragging
+        document.addEventListener('dragover', handleDocumentDragOver);
+    }
+    
+    function handleDragEnd(e) {
+        e.target.classList.remove('tile-dragging');
+        draggedTile = null;
+        
+        // Clean up auto-scroll
+        document.removeEventListener('dragover', handleDocumentDragOver);
+        stopAutoScroll();
+        
+        // Hide scroll indicators
+        document.getElementById('drag-scroll-top').classList.remove('visible');
+        document.getElementById('drag-scroll-bottom').classList.remove('visible');
+    }
+    
+    function handleDragOver(e) {
+        e.preventDefault();
+    }
+    
+    function handleDragEnter(e) {
+        e.preventDefault();
+        e.target.classList.add('container-highlight');
+    }
+    
+    function handleDragLeave(e) {
+        e.target.classList.remove('container-highlight');
+    }
+    
+    function handleDrop(e) {
+        e.preventDefault();
+        e.target.classList.remove('container-highlight');
+        
+        if (!draggedTile) return;
+        
+        const containerIndex = parseInt(e.target.dataset.index);
+        const container = containers[containerIndex];
+        
+        // Update container with tile
+        container.tile = draggedTile;
+        container.element.classList.remove('empty');
+        container.element.innerHTML = `<img src="${draggedTile.imageUrl}" alt="${draggedTile.productName}" draggable="false">`;
+        
+        // Add remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 transition-opacity duration-200';
+        removeBtn.innerHTML = '×';
+        removeBtn.onclick = function(event) {
+            event.stopPropagation();
+            resetContainer(containerIndex);
+        };
+        container.element.appendChild(removeBtn);
+        
+        // Show remove button on hover
+        container.element.addEventListener('mouseenter', () => {
+            removeBtn.classList.remove('opacity-0');
+            removeBtn.classList.add('opacity-100');
+        });
+        
+        container.element.addEventListener('mouseleave', () => {
+            removeBtn.classList.remove('opacity-100');
+            removeBtn.classList.add('opacity-0');
+        });
+        
+        draggedTile = null;
+    }
+    
+    function resetContainer(index) {
+        const container = containers[index];
+        container.tile = null;
+        container.element.classList.add('empty');
+        container.element.innerHTML = '';
+    }
+    
+    // Auto-scroll functionality
+    function handleDocumentDragOver(e) {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollThreshold = 100;
+        
+        const dragScrollTop = document.getElementById('drag-scroll-top');
+        const dragScrollBottom = document.getElementById('drag-scroll-bottom');
+        
+        // Show/hide top scroll indicator
+        if (scrollTop > 0 && e.clientY < scrollThreshold) {
+            dragScrollTop.classList.add('visible');
+            startAutoScroll('up');
+        } else {
+            dragScrollTop.classList.remove('visible');
+            if (!(e.clientY < scrollThreshold)) {
+                stopAutoScroll();
+            }
+        }
+        
+        // Show/hide bottom scroll indicator
+        if (scrollTop + windowHeight < scrollHeight && e.clientY > windowHeight - scrollThreshold) {
+            dragScrollBottom.classList.add('visible');
+            startAutoScroll('down');
+        } else {
+            dragScrollBottom.classList.remove('visible');
+            if (!(e.clientY > windowHeight - scrollThreshold)) {
+                stopAutoScroll();
+            }
+        }
+    }
+    
+    function startAutoScroll(direction) {
+        if (dragScrollInterval) clearInterval(dragScrollInterval);
+        
+        dragScrollInterval = setInterval(() => {
+            if (direction === 'up') {
+                window.scrollBy(0, -20);
+            } else {
+                window.scrollBy(0, 20);
+            }
+        }, 20);
+    }
+    
+    function stopAutoScroll() {
+        if (dragScrollInterval) {
+            clearInterval(dragScrollInterval);
+            dragScrollInterval = null;
+        }
+    }
+    
     // Fetch products
     function fetchProducts() {
         document.getElementById('products-grid').innerHTML = `
@@ -568,7 +780,12 @@ include '../includes/headeruser.php';
             card.innerHTML = `
                 <div class="relative">
                     ${badge}
-                    <img src="${product.product_image || '../images/user/tile1.jpg'}" alt="${product.product_name}" class="w-full h-48 object-cover bg-light" />
+                    <img src="${product.product_image || '../images/user/tile1.jpg'}" 
+                         alt="${product.product_name}" 
+                         class="w-full h-48 object-cover bg-light product-image"
+                         draggable="true"
+                         data-product-id="${product.id}"
+                         data-product-name="${product.product_name}" />
                 </div>
                 <div class="p-4 flex-1 flex flex-col">
                     <h3 class="font-bold text-primary text-base mb-1">${product.product_name}</h3>
@@ -583,6 +800,15 @@ include '../includes/headeruser.php';
             `;
             grid.appendChild(card);
         });
+        
+        // Add drag event listeners to product images
+        setTimeout(() => {
+            const productImages = document.querySelectorAll('.product-image');
+            productImages.forEach(img => {
+                img.addEventListener('dragstart', handleDragStart);
+                img.addEventListener('dragend', handleDragEnd);
+            });
+        }, 100);
     }
     
     // Render pagination controls
@@ -651,6 +877,7 @@ include '../includes/headeruser.php';
     document.addEventListener('DOMContentLoaded', function() {
         init3DScene();
         initAboveView();
+        initFloatingContainers();
         preloadFurnitureImg();
         fetchProducts();
         // Prevent page scroll when mouse is over 3D preview
@@ -661,31 +888,87 @@ include '../includes/headeruser.php';
             }, { passive: false });
         }
     });
-    </script>
-    <script>
-    // Room visualization image switching
+    // Export as image functionality
     document.addEventListener('DOMContentLoaded', function() {
-        const roomButtons = document.querySelectorAll('.room-btn');
-        const roomBgImg = document.getElementById('room-background-image');
-        const roomImageMap = {
-            indoor: '../images/visualizer/v_indoor.png',
-            kitchen: '../images/visualizer/v_kitchen.png',
-            bathroom: '../images/visualizer/v_bathroom.png',
-            bedroom: '../images/visualizer/v_bedroom.png',
-            pool: '../images/visualizer/v_pool.png'
-        };
-        roomButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Remove active from all
-                roomButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const room = btn.getAttribute('data-room');
-                if (roomImageMap[room]) {
-                    roomBgImg.src = roomImageMap[room];
-                }
+        const exportBtn = document.getElementById('export-arrangement-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+                exportTileArrangementAsImage();
             });
-        });
+        }
     });
+
+    function exportTileArrangementAsImage() {
+        const grid = document.getElementById('floating-containers');
+        const cols = 3;
+        const rows = 3;
+        const cellW = grid.offsetWidth / cols;
+        const cellH = grid.offsetHeight / rows;
+        const canvas = document.createElement('canvas');
+        canvas.width = grid.offsetWidth;
+        canvas.height = grid.offsetHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Fill background
+        ctx.fillStyle = '#f9f5f2';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw each tile
+        for (let i = 0; i < rows * cols; i++) {
+            const container = grid.children[i];
+            if (!container) continue;
+            const img = container.querySelector('img');
+            if (img && img.src) {
+                // Draw image as cover
+                drawImageCover(ctx, img, (i % cols) * cellW, Math.floor(i / cols) * cellH, cellW, cellH);
+            }
+        }
+
+        // Draw improved watermark (centered, diagonal, shadow, better opacity)
+        const watermark = 'Rich Anne Lea Tiles Trading';
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(-Math.atan(canvas.height / canvas.width));
+        ctx.font = 'bold 38px Inter, Arial, sans-serif';
+        ctx.globalAlpha = 0.22;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // Shadow for watermark
+        ctx.shadowColor = 'rgba(125,49,10,0.25)';
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+        ctx.strokeText(watermark, 0, 0);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#7d310a';
+        ctx.fillText(watermark, 0, 0);
+        ctx.restore();
+
+        // Download
+        const link = document.createElement('a');
+        link.download = 'tile-arrangement.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    // Helper to draw image as cover (like object-fit: cover)
+    function drawImageCover(ctx, img, x, y, w, h) {
+        const imgRatio = img.naturalWidth / img.naturalHeight;
+        const cellRatio = w / h;
+        let drawW, drawH, offsetX, offsetY;
+        if (imgRatio > cellRatio) {
+            drawH = h;
+            drawW = h * imgRatio;
+            offsetX = x - (drawW - w) / 2;
+            offsetY = y;
+        } else {
+            drawW = w;
+            drawH = w / imgRatio;
+            offsetX = x;
+            offsetY = y - (drawH - h) / 2;
+        }
+        ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+    }
     </script>
 </body>
 </html>

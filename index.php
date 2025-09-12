@@ -639,9 +639,9 @@ include 'includes/header.php';
         <img src="images/homepage.jpg" alt="Beautiful tile designs">
         <div class="container">
             <div class="hero-content">
-                <h1>Bring Your Visions to Life: <span>Design Stunning Spaces</span> with Our 2D Tile Visualizer</h1>
+                <h1>Bring Your Visions to Life: <span>Design Stunning Spaces</span> with Our 3D Tile Visualizer</h1>
                 <p>Rich Anne Lea Tiles Trading</p>
-                <button class="btn">Start Visualizing Now</button>
+                <a href="user_login_form.php" class="btn">Start Visualizing Now</a>
             </div>
         </div>
     </section>
@@ -654,7 +654,7 @@ include 'includes/header.php';
         <div class="container">
             <div class="video-text-container">
                 <div class="video-text">
-                    <h1><span style="color: #F47C2E;">Craft Your Visions</span> <br>with our<br>Tile Visualizer Tool</h1>
+                    <h1><span style="color: #F47C2E;"><b>Craft Your Visions</b></span> <br><b>with our</b><br><b>Tile Visualizer Tool</b></h1>
                     <p>Enhancing your imagination with the use of tile visualizer in creating limitless designs all you want.</p>
                 </div>
                 <div class="video-container">
@@ -667,7 +667,7 @@ include 'includes/header.php';
     <!-- Meet RALTT Section -->
     <section class="meet-raltt-section" data-scroll>
         <div class="container">
-            <h3>MEET RALTT</h3>
+            <h3><b>MEET RALTT</b></h3>
             <h1>Tile Visualizer and E-Commerce in One Website</h1>
             <p>Browse while using our tile visualizer tool and check out items you want and deliver at the same day.</p>
         </div>
@@ -677,17 +677,17 @@ include 'includes/header.php';
     <section class="tabbed-section" data-scroll>
         <div class="container">
             <div class="tab-buttons">
-                <button class="tab-btn active" data-tab="visualizer-tab">2D Visualizer</button>
+                <button class="tab-btn active" data-tab="visualizer-tab">3D Visualizer</button>
                 <button class="tab-btn" data-tab="ecommerce-tab">Tile E-Commerce</button>
             </div>
             
             <div class="tab-content active" id="visualizer-tab">
-                <img src="images/2dtilehomepage.png" alt="2D Visualizer">
+                <img src="images/2dtilehomepage.png" alt="3D Visualizer">
                 <div class="tab-text">
-                    <h2>2D Tile Visualizer</h2>
-                    <div class="subtitle">Expand imagination with 2D</div>
+                    <h2>3D Tile Visualizer</h2>
+                    <div class="subtitle">Expand imagination with 3D</div>
                     <div class="description">
-                        Enhance your shopping experience with our 2D Tile Visualizer! Simply upload an image to see how
+                        Enhance your shopping experience with our 3D Tile Visualizer! Simply upload an image to see how
                         tiles, marble, or wood flooring fit your space. Visualize with confidence and make informed
                         decisions effortlessly!
                     </div>

@@ -366,3 +366,11 @@ INPUT: {"name":"Sample","price":"122","spec":"Sinks"}
 CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_otherproduct_description.py --name "Sample" --price "122" --spec "Sinks"
 INPUT: {"name":"Sample","price":"122","spec":"Sinks"}
 
+2025-09-12 07:34:46
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_otherproduct_description.py --name "Toilet (1 seater) eme" --price "1500" --spec "Bowls"
+INPUT: {"name":"Toilet (1 seater) eme","price":"1500","spec":"Bowls"}
+
+2025-09-12 07:35:22
+CMD: C:\Users\pc\AppData\Local\Programs\Python\Python313\python.exe C:\xampp\htdocs\raltt\staffadmin_access\processes/generate_otherproduct_description.py --name "Wooden Door" --price "1200" --spec "PVC Doors"
+INPUT: {"name":"Wooden Door","price":"1200","spec":"PVC Doors"}
+
