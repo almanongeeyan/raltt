@@ -7,7 +7,7 @@ include '../includes/sidebar.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Cancel Orders Dashboard</title>
+    <title>Admin Support Ticket Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -56,9 +56,9 @@ include '../includes/sidebar.php';
             <div class="max-w-7xl mx-auto py-8 px-4">
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-gray-800 flex items-center">
-                        <i class="fas fa-clipboard-list mr-3 text-blue-600"></i>Cancel Orders Dashboard
+                        <i class="fas fa-clipboard-list mr-3 text-blue-600"></i>Support Ticket Dashboard
                     </h1>
-                    <p class="text-gray-600 mt-2">Manage and track Cancelled orders across all branches</p>
+                    <p class="text-gray-600 mt-2">Manage and track Support Tickets across branches</p>
                 </div>
 
 
@@ -93,7 +93,7 @@ include '../includes/sidebar.php';
                         }
                         $isUserBranch = ($user_branch_name === $branch['name']);
                         ?>
-                        <a href="<?= $isUserBranch ? 'cancelOrders.php' : '#' ?>" 
+                        <a href="<?= $isUserBranch ? 'admin_customTickets.php' : '#' ?>" 
                            class="view-orders-btn text-center <?= $isUserBranch ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-400 cursor-not-allowed opacity-60' ?> 
                            font-medium px-5 py-2.5 rounded-lg shadow-sm transition flex items-center justify-center w-full"
                            data-branch="<?= $branch['name'] ?>" 

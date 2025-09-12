@@ -542,7 +542,7 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="admin_customTickets.php" class="dropdown-link">
+                                <a href="adminSupportTicket.php" class="dropdown-link">
                                     <!-- Customer Tickets Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 7V5a2 2 0 012-2h6a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
                                     <span>Customer Tickets</span>

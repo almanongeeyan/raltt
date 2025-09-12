@@ -239,8 +239,7 @@ include '../includes/sidebar.php';
                 <div class="mb-8">
                     <a href="javascript:history.back()" class="flex items-center text-gray-800 hover:text-primary transition">
                         <h1 class="text-3xl font-black flex items-center">
-                            <i class="fa-solid fa-arrow-left text-xl mr-2"></i>
-                            Customer Tickets
+                        <i class="fas fa-undo-alt mr-3 text-[#94481b]"></i>Back
                         </h1>
                     </a>
                 </div>
