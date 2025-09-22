@@ -306,7 +306,7 @@ include '../includes/headeruser.php';
             <div class="mb-6">
                 <button class="back-btn text-white font-bold py-3 px-6 rounded-xl flex items-center" onclick="window.history.back();">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
-                    <span>Back to Account</span>
+                    <span>Back</span>
                 </button>
             </div>
 
