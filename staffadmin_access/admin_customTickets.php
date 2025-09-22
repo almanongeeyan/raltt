@@ -239,7 +239,7 @@ include '../includes/sidebar.php';
                 <div class="mb-8">
                     <a href="javascript:history.back()" class="flex items-center text-gray-800 hover:text-primary transition">
                         <h1 class="text-3xl font-black flex items-center">
-                        <i class="fa-solid fa-arrow-left"></i>Back
+                        <i class="fa-solid fa-arrow-left"></i> Back to branches
                         </h1>
                     </a>
                 </div>
