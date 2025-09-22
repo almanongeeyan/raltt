@@ -98,7 +98,7 @@ include '../includes/sidebar.php';
                            font-medium px-5 py-2.5 rounded-lg shadow-sm transition flex items-center justify-center w-full"
                            data-branch="<?= $branch['name'] ?>" 
                            <?= $isUserBranch ? '' : 'disabled' ?>>
-                            <i class="fas fa-eye mr-2"></i> View Orders
+                            <i class="fas fa-eye mr-2"></i> View Tickets
                         </a>
                     </div>
                     <?php endforeach; ?>

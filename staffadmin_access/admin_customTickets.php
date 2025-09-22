@@ -16,13 +16,13 @@ include '../includes/sidebar.php';
             theme: {
                 extend: {
                     colors: {
-                        primary: '#7d310a',
-                        secondary: '#cf8756',
-                        accent: '#e8a56a',
-                        dark: '#270f03',
-                        light: '#f9f5f2',
-                        textdark: '#333',
-                        textlight: '#777',
+                        primary: '#2563eb',
+                        secondary: '#60a5fa',
+                        accent: '#93c5fd',
+                        dark: '#1e3a8a',
+                        light: '#eef2ff',
+                        textdark: '#1f2937',
+                        textlight: '#6b7280',
                     },
                     fontFamily: {
                         inter: ['Inter', 'sans-serif'],
@@ -75,7 +75,7 @@ include '../includes/sidebar.php';
             top: 0;
             background-color: white;
             z-index: 10;
-            border-bottom: 1px solid #e8d9cf;
+            border-bottom: 1px solid #dbeafe;
             margin-bottom: 1.5rem;
             /* Equivalent to mb-6 */
             padding-bottom: 1rem;
@@ -84,25 +84,25 @@ include '../includes/sidebar.php';
 
 
         .ticket-header {
-            background: linear-gradient(90deg, #f9f5f2 0%, #f0e6df 100%);
-            border-bottom: 1px solid #e8d9cf;
+            background: linear-gradient(90deg, #eef2ff 0%, #dbeafe 100%);
+            border-bottom: 1px solid #dbeafe;
         }
 
         .ticket-item {
-            border: 1px solid #e8d9cf;
+            border: 1px solid #dbeafe;
             border-radius: 12px;
             transition: all 0.3s ease;
             cursor: pointer;
         }
 
         .ticket-item:hover {
-            border-color: #cf8756;
+            border-color: #60a5fa;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .status-pending {
-            background-color: #fef3c7;
-            color: #d97706;
+            background-color: #dbeafe;
+            color: #2563eb;
         }
 
         .status-processing {
@@ -121,19 +121,19 @@ include '../includes/sidebar.php';
         }
         
         .order-card {
-            border: 1px solid #e8d9cf;
+            border: 1px solid #dbeafe;
             border-radius: 12px;
             transition: all 0.3s ease;
             cursor: pointer;
         }
         
         .order-card:hover, .order-card.selected {
-            border-color: #7d310a;
-            box-shadow: 0 4px 12px rgba(125, 49, 10, 0.1);
+            background-color: #eef2ff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
         }
         
         .order-card.selected {
-            background-color: #f9f5f2;
+            background-color: #eef2ff;
         }
 
         .modal {
@@ -171,7 +171,7 @@ include '../includes/sidebar.php';
             bottom: -2px;
             width: 100%;
             height: 2px;
-            background-color: #7d310a;
+            background-color: #2563eb; /* Blue */
             transform: scaleX(0);
             transition: transform 0.3s ease;
         }
@@ -191,7 +191,7 @@ include '../includes/sidebar.php';
             left: 0;
             width: 100%;
             height: 1px;
-            background-color: #7d310a;
+            background-color: #2563eb; /* Blue */
             transform: scaleX(0);
             transform-origin: left;
             transition: transform 0.3s ease;
@@ -215,7 +215,7 @@ include '../includes/sidebar.php';
             left: 0;
             width: 100%;
             height: 2px;
-            background-color: #7d310a;
+            background-color: #2563eb; /* Blue */
             transform: scaleX(0);
             transition: transform 0.3s ease;
         }
@@ -239,7 +239,7 @@ include '../includes/sidebar.php';
                 <div class="mb-8">
                     <a href="javascript:history.back()" class="flex items-center text-gray-800 hover:text-primary transition">
                         <h1 class="text-3xl font-black flex items-center">
-                        <i class="fas fa-undo-alt mr-3 text-[#94481b]"></i>Back
+                        <i class="fa-solid fa-arrow-left"></i>Back
                         </h1>
                     </a>
                 </div>

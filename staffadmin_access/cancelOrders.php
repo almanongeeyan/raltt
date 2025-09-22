@@ -43,7 +43,7 @@ include '../includes/sidebar.php';
             left: 0;
             width: 100%;
             height: 2px;
-            background-color: #94481b;
+            background-color: #2563eb; /* Blue */
             transform: scaleX(0);
             transition: transform 0.3s ease;
         }
@@ -53,7 +53,7 @@ include '../includes/sidebar.php';
         }
 
         .tab-button.active {
-            color: #94481b;
+            color: #2563eb; /* Blue */
         }
 
         .watermark {
@@ -103,7 +103,7 @@ include '../includes/sidebar.php';
                     <div class="flex items-center">
                         <a href="admin_cancelRequests.php" class="flex items-center no-underline hover:no-underline">
                             <h1 class="text-3xl font-bold text-gray-800 flex items-center">
-                                <i class="fas fa-undo-alt mr-3 text-[#94481b]"></i>Back
+                                <i class="fa-solid fa-arrow-left"></i> <s> </s>Back to branches
                             </h1>
                         </a>
                     </div>
@@ -112,10 +112,9 @@ include '../includes/sidebar.php';
                 <div class="bg-white rounded-2xl shadow-lg p-6 relative">
                     <div class="flex flex-col mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 flex items-center mb-4">
-                            <i class="fas fa-list-alt mr-2 text-[#94481b]"></i>Requests
+                            <i class="fas fa-list-alt mr-2 text-blue-600"></i>Requests
                         </h2>
 
-                        <!-- Tabs -->
                         <div class="flex flex-wrap gap-4 mb-4 border-b border-gray-200">
                             <button class="tab-button text-primary py-2 active" data-tab="pending">
                                 Pending
@@ -125,7 +124,6 @@ include '../includes/sidebar.php';
                             </button>
                         </div>
 
-                        <!-- Filter Dropdown -->
                         <div class="flex gap-4">
                             <select id="date-filter"
                                 class="w-1/2 p-3 text-textdark rounded-lg border border-gray-300 bg-white form-select">
@@ -146,16 +144,13 @@ include '../includes/sidebar.php';
 
                     </div>
 
-                    <!-- Tab Content -->
                     <div id="tab-content" class="min-h-[400px] relative">
-                        <!-- Content will be rendered here by JavaScript -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Receipt Modal -->
     <div id="receiptModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-40 hidden">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl relative overflow-hidden max-h-[90vh]">
             <button id="closeReceiptModal"
@@ -231,12 +226,12 @@ include '../includes/sidebar.php';
                 <div class="p-8">
                     <div class="receipt-header flex justify-between items-start mb-6 pb-2 border-b border-gray-300">
                         <div class="flex flex-col">
-                            <div class="text-2xl font-bold text-[#94481b]">Rich Anne Lea Tiles Trading</div>
+                            <div class="text-2xl font-bold text-blue-600">Rich Anne Lea Tiles Trading</div>
                             <div class="text-base text-gray-700 font-semibold">${request.branch}</div>
                             <div class="text-sm text-gray-500">${branchAddress}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-xl font-bold text-[#94481b]">INVOICE</div>
+                            <div class="text-xl font-bold text-blue-600">INVOICE</div>
                             <div class="text-sm text-gray-700">Order #${request.orderId}</div>
                             <div class="text-sm text-gray-700">Date: ${request.date}</div>
                         </div>
@@ -319,7 +314,7 @@ include '../includes/sidebar.php';
                             </div>
                             <div class="flex justify-between py-1 font-bold text-lg">
                                 <span class="text-gray-800">Total:</span>
-                                <span class="text-[#94481b]">₱${grandTotal.toLocaleString()}</span>
+                                <span class="text-blue-600">₱${grandTotal.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
@@ -391,7 +386,7 @@ include '../includes/sidebar.php';
                     </tbody>
                 </table>
             </div>
-        `;
+            `;
 
             tabContent.innerHTML = tableHtml;
 
