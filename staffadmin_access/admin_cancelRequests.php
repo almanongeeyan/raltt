@@ -77,7 +77,7 @@ include '../includes/sidebar.php';
                             <i class="fas <?= $branch['icon'] ?> text-2xl text-blue-600"></i>
                         </div>
                         <div class="font-bold text-lg text-gray-900 mb-2 text-center tracking-wide flex-1 flex items-center justify-center"><?= $branch['name'] ?></div>
-                        <div class="text-sm text-gray-600 mb-4 flex-1 flex items-center justify-center"><?= $branch['orders'] ?> Orders</div>
+                        <div class="text-sm text-gray-600 mb-4 flex-1 flex items-center justify-center"><?= $branch['orders'] ?> Requests</div>
                         <?php
                         // Get user's branch from session (use branch_id and map to branch name)
                         if (!isset($user_branch_name)) {

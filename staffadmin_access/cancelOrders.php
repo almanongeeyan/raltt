@@ -43,7 +43,8 @@ include '../includes/sidebar.php';
             left: 0;
             width: 100%;
             height: 2px;
-            background-color: #2563eb; /* Blue */
+            background-color: #2563eb;
+            /* Blue */
             transform: scaleX(0);
             transition: transform 0.3s ease;
         }
@@ -53,7 +54,8 @@ include '../includes/sidebar.php';
         }
 
         .tab-button.active {
-            color: #2563eb; /* Blue */
+            color: #2563eb;
+            /* Blue */
         }
 
         .watermark {
@@ -103,7 +105,7 @@ include '../includes/sidebar.php';
                     <div class="flex items-center">
                         <a href="admin_cancelRequests.php" class="flex items-center no-underline hover:no-underline">
                             <h1 class="text-3xl font-bold text-gray-800 flex items-center">
-                                <i class="fa-solid fa-arrow-left"></i> <s> </s>Back to branches
+                                <i class="fa-solid fa-arrow-left"></i>Back to Dashboard
                             </h1>
                         </a>
                     </div>
@@ -124,28 +126,39 @@ include '../includes/sidebar.php';
                             </button>
                         </div>
 
-                        <div class="flex gap-4">
-                            <select id="date-filter"
-                                class="w-1/2 p-3 text-textdark rounded-lg border border-gray-300 bg-white form-select">
-                                <option value="all">All Time</option>
-                                <option value="7-days">Last 7 Days</option>
-                                <option value="30-days">Last 30 Days</option>
-                            </select>
-                            <select id="branch-filter"
-                                class="w-1/2 p-3 text-textdark rounded-lg border border-gray-300 bg-white form-select">
-                                <option value="all">All Branches</option>
-                                <option value="Brixton Branch">Brixton Branch</option>
-                                <option value="Samaria Branch">Samaria Branch</option>
-                                <option value="Vanguard Branch">Vanguard Branch</option>
-                                <option value="Deparo Branch">Deparo Branch</option>
-                                <option value="Kiko Branch">Kiko Branch</option>
-                            </select>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="w-full md:w-1/3">
+                                <label for="date-range-filter" class="block text-gray-700 text-sm font-medium mb-1">Date Range</label>
+                                <select id="date-range-filter"
+                                    class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white form-select">
+                                    <option value="all">All Time</option>
+                                    <option value="7-days">Last 7 Days</option>
+                                    <option value="30-days">Last 30 Days</option>
+                                </select>
+                            </div>
+                            <div class="w-full md:w-1/3">
+                                <label for="single-date-filter" class="block text-gray-700 text-sm font-medium mb-1">Specific Date</label>
+                                <input type="date" id="single-date-filter"
+                                    class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">
+                            </div>
+                            <div class="w-full md:w-1/3">
+                                <label for="branch-filter" class="block text-gray-700 text-sm font-medium mb-1">Branch</label>
+                                <select id="branch-filter"
+                                    class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white form-select">
+                                    <option value="all">All Branches</option>
+                                    <option value="Brixton Branch">Brixton Branch</option>
+                                    <option value="Samaria Branch">Samaria Branch</option>
+                                    <option value="Vanguard Branch">Vanguard Branch</option>
+                                    <option value="Deparo Branch">Deparo Branch</option>
+                                    <option value="Kiko Branch">Kiko Branch</option>
+                                </select>
+                            </div>
                         </div>
 
                     </div>
 
                     <div id="tab-content" class="min-h-[400px] relative">
-                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -181,12 +194,13 @@ include '../includes/sidebar.php';
         const closeReceiptModalBtn = document.getElementById('closeReceiptModal');
         const receiptContent = document.getElementById('receiptContent');
 
-        const dateFilter = document.getElementById('date-filter');
+        const dateRangeFilter = document.getElementById('date-range-filter');
+        const singleDateFilter = document.getElementById('single-date-filter');
         const branchFilter = document.getElementById('branch-filter');
         const pendingBtn = document.querySelector('[data-tab="pending"]');
         const resolvedBtn = document.querySelector('[data-tab="resolved"]');
 
-        let currentFilter = { status: 'pending', date: 'all', branch: 'all' };
+        let currentFilter = { status: 'pending', dateRange: 'all', singleDate: '', branch: 'all' };
 
         closeReceiptModalBtn.addEventListener('click', () => {
             receiptModal.classList.add('hidden');
@@ -344,11 +358,48 @@ include '../includes/sidebar.php';
             }
         });
 
+        dateRangeFilter.addEventListener('change', () => {
+            currentFilter.dateRange = dateRangeFilter.value;
+            singleDateFilter.value = ''; // Clear the specific date filter
+            currentFilter.singleDate = '';
+            renderRequests(currentFilter.status);
+        });
+
+        singleDateFilter.addEventListener('change', () => {
+            currentFilter.singleDate = singleDateFilter.value;
+            dateRangeFilter.value = 'all'; // Reset the date range filter
+            currentFilter.dateRange = 'all';
+            renderRequests(currentFilter.status);
+        });
+
+        branchFilter.addEventListener('change', () => {
+            currentFilter.branch = branchFilter.value;
+            renderRequests(currentFilter.status);
+        });
+
         function renderRequests(tab) {
             const requests = requestsData[tab] || [];
             tabContent.innerHTML = '';
 
-            if (requests.length === 0) {
+            let filteredRequests = requests.filter(request => {
+                let dateMatch = true;
+                if (currentFilter.singleDate) {
+                    dateMatch = new Date(request.date).toDateString() === new Date(currentFilter.singleDate).toDateString();
+                } else if (currentFilter.dateRange === '7-days') {
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                    dateMatch = new Date(request.date) >= sevenDaysAgo;
+                } else if (currentFilter.dateRange === '30-days') {
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    dateMatch = new Date(request.date) >= thirtyDaysAgo;
+                }
+
+                const branchMatch = currentFilter.branch === 'all' || request.branch === currentFilter.branch;
+                return dateMatch && branchMatch;
+            });
+
+            if (filteredRequests.length === 0) {
                 tabContent.innerHTML = '<div class="text-center text-gray-500 py-12">No requests found.</div>';
                 return;
             }
@@ -367,7 +418,7 @@ include '../includes/sidebar.php';
                     <tbody class="bg-white">
             `;
 
-            requests.forEach(request => {
+            filteredRequests.forEach(request => {
                 const actionButton = tab === 'pending' ?
                     `<button class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-xs font-semibold transition w-[150px] process-request-btn" data-request='${JSON.stringify(request)}'>Process</button>` :
                     `<button class="px-3 py-1 rounded bg-gray-600 text-white hover:bg-gray-700 text-xs font-semibold transition w-[150px] process-request-btn" data-request='${JSON.stringify(request)}'>View</button>`;
@@ -392,13 +443,13 @@ include '../includes/sidebar.php';
 
             // Add event listeners for the new buttons
             document.querySelectorAll('.process-request-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', function() {
                     const request = JSON.parse(this.getAttribute('data-request'));
                     showReceiptModal(request);
                 });
             });
         }
-        
+
         function closeModal() {
             receiptModal.classList.add('hidden');
         }

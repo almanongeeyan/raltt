@@ -8,7 +8,7 @@ include '../includes/sidebar.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Orders Dashboard</title>
+    <title>Cancel Requests</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -119,19 +119,20 @@ include '../includes/sidebar.php';
             background-color: #e5e7eb;
             color: #4b5563;
         }
-        
+
         .order-card {
             border: 1px solid #dbeafe;
             border-radius: 12px;
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        
-        .order-card:hover, .order-card.selected {
+
+        .order-card:hover,
+        .order-card.selected {
             background-color: #eef2ff;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
         }
-        
+
         .order-card.selected {
             background-color: #eef2ff;
         }
@@ -171,7 +172,8 @@ include '../includes/sidebar.php';
             bottom: -2px;
             width: 100%;
             height: 2px;
-            background-color: #2563eb; /* Blue */
+            background-color: #2563eb;
+            /* Blue */
             transform: scaleX(0);
             transition: transform 0.3s ease;
         }
@@ -191,7 +193,8 @@ include '../includes/sidebar.php';
             left: 0;
             width: 100%;
             height: 1px;
-            background-color: #2563eb; /* Blue */
+            background-color: #2563eb;
+            /* Blue */
             transform: scaleX(0);
             transform-origin: left;
             transition: transform 0.3s ease;
@@ -200,11 +203,12 @@ include '../includes/sidebar.php';
         .view-details-btn:hover::after {
             transform: scaleX(1);
         }
-        
+
         .tab-button {
             position: relative;
             font-weight: 500;
-            flex: 1; /* This will make buttons occupy equal space */
+            flex: 1;
+            /* This will make buttons occupy equal space */
             text-align: center;
         }
 
@@ -215,7 +219,8 @@ include '../includes/sidebar.php';
             left: 0;
             width: 100%;
             height: 2px;
-            background-color: #2563eb; /* Blue */
+            background-color: #2563eb;
+            /* Blue */
             transform: scaleX(0);
             transition: transform 0.3s ease;
         }
@@ -237,9 +242,10 @@ include '../includes/sidebar.php';
         <main class="min-h-screen">
             <div class="max-w-7xl mx-auto py-8 px-4">
                 <div class="mb-8">
-                    <a href="javascript:history.back()" class="flex items-center text-gray-800 hover:text-primary transition">
+                    <a href="javascript:history.back()"
+                        class="flex items-center text-gray-800 hover:text-primary transition">
                         <h1 class="text-3xl font-black flex items-center">
-                        <i class="fa-solid fa-arrow-left"></i> Back to branches
+                            <i class="fa-solid fa-arrow-left"></i>Back to branches
                         </h1>
                     </a>
                 </div>
@@ -254,21 +260,33 @@ include '../includes/sidebar.php';
                                     <span>Ticket History</span>
                                 </div>
                                 <div class="flex gap-4">
-                                    <button id="pending-btn" class="tab-button text-primary py-2 active">Pending</button>
+                                    <button id="pending-btn"
+                                        class="tab-button text-primary py-2 active">Pending</button>
                                     <button id="resolved-btn" class="tab-button text-primary py-2">Resolved</button>
                                 </div>
-                                
+
                             </div>
                             <!-- Filter Dropdown -->
-                            <div class="mb-6">
-                                <select id="issue-filter" class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">
-                                    <option value="">All Issues</option>
-                                    <option value="Cracked Tiles">Cracked Tiles</option>
-                                    <option value="Shattered Tiles">Shattered Tiles</option>
-                                    <option value="Defective Tiles">Defective Tiles</option>
-                                    <option value="Wrong Item Delivered">Wrong Item Delivered</option>
-                                    <option value="Other Issue">Other Issue</option>
-                                </select>
+                            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                                <div class="flex-1">
+                                    <label for="issue-filter" class="block text-textdark font-medium mb-1">Issue
+                                        Filter</label>
+                                    <select id="issue-filter"
+                                        class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">
+                                        <option value="">All Issues</option>
+                                        <option value="Cracked Tiles">Cracked Tiles</option>
+                                        <option value="Shattered Tiles">Shattered Tiles</option>
+                                        <option value="Defective Tiles">Defective Tiles</option>
+                                        <option value="Wrong Item Delivered">Wrong Item Delivered</option>
+                                        <option value="Other Issue">Other Issue</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1">
+                                    <label for="date-filter" class="block text-textdark font-medium mb-1">Date
+                                        Filter</label>
+                                    <input type="date" id="date-filter"
+                                        class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">
+                                </div>
                             </div>
 
                             <div id="ticket-list" class="space-y-4">
@@ -298,16 +316,22 @@ include '../includes/sidebar.php';
                     const pendingBtn = document.getElementById('pending-btn');
                     const resolvedBtn = document.getElementById('resolved-btn');
                     const issueFilter = document.getElementById('issue-filter');
+                    const dateFilter = document.getElementById('date-filter');
                     const detailsModal = document.getElementById('detailsModal');
                     const modalContentInner = document.getElementById('modal-content-inner');
 
-                    let currentFilter = { status: 'Pending', issue: '' };
+                    let currentFilter = { status: 'Pending', issue: '', date: '' };
 
                     function filterAndRenderTickets() {
                         let filteredTickets = ticketsData.filter(ticket => {
                             const statusMatch = currentFilter.status ? ticket.status.toLowerCase() === currentFilter.status.toLowerCase() : true;
                             const issueMatch = currentFilter.issue ? ticket.issue === currentFilter.issue : true;
-                            return statusMatch && issueMatch;
+
+                            const ticketDate = new Date(ticket.date);
+                            const filterDate = currentFilter.date ? new Date(currentFilter.date) : null;
+                            const dateMatch = filterDate ? ticketDate.toDateString() === filterDate.toDateString() : true;
+
+                            return statusMatch && issueMatch && dateMatch;
                         });
 
                         ticketList.innerHTML = '';
@@ -340,9 +364,9 @@ include '../includes/sidebar.php';
                             `;
                             ticketList.innerHTML += ticketHtml;
                         });
-                        
+
                         document.querySelectorAll('.view-details-btn').forEach(button => {
-                            button.addEventListener('click', function(e) {
+                            button.addEventListener('click', function (e) {
                                 e.stopPropagation(); // Prevents the parent div from being clicked
                                 const ticketId = this.closest('.order-card').dataset.ticketId;
                                 const ticket = ticketsData.find(t => t.id === ticketId);
@@ -353,13 +377,13 @@ include '../includes/sidebar.php';
                         });
 
                         document.querySelectorAll('.order-card').forEach(card => {
-                            card.addEventListener('click', function() {
+                            card.addEventListener('click', function () {
                                 document.querySelectorAll('.order-card').forEach(c => c.classList.remove('selected'));
                                 this.classList.add('selected');
                             });
                         });
                     }
-                    
+
                     function renderTicketDetails(ticket) {
                         const statusClass = `status-${ticket.status.toLowerCase()}`;
                         const isPending = ticket.status === 'Pending';
@@ -476,7 +500,7 @@ include '../includes/sidebar.php';
 
                         modalContentInner.innerHTML = modalHtml;
                         detailsModal.style.display = 'flex';
-                        
+
                         document.querySelectorAll('.close-modal-btn').forEach(btn => {
                             btn.addEventListener('click', () => {
                                 detailsModal.style.display = 'none';
@@ -496,7 +520,7 @@ include '../includes/sidebar.php';
                             });
                         }
                     }
-                    
+
                     pendingBtn.addEventListener('click', () => {
                         currentFilter.status = 'Pending';
                         pendingBtn.classList.add('active');
@@ -515,7 +539,12 @@ include '../includes/sidebar.php';
                         currentFilter.issue = e.target.value;
                         filterAndRenderTickets();
                     });
-                    
+
+                    dateFilter.addEventListener('change', (e) => {
+                        currentFilter.date = e.target.value;
+                        filterAndRenderTickets();
+                    });
+
                     // Initial render
                     filterAndRenderTickets();
                 </script>
@@ -523,4 +552,5 @@ include '../includes/sidebar.php';
         </main>
     </div>
 </body>
+
 </html>
