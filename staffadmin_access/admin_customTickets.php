@@ -307,9 +307,9 @@ include '../includes/sidebar.php';
 
                 <script>
                     const ticketsData = [
-                        { id: 'TKT-789456', orderId: 'ORD-123456', date: 'Nov 16, 2023', status: 'Pending', issue: 'Cracked Tiles', description: 'Several tiles arrived with cracks along the edges. The package appeared to have been mishandled during transit.', resolution: 'Exchange for Same Item', product: 'Arte Ceramiche Matte Floor Tile', price: 200, branch: 'Deparo Branch', qty: 2, customerName: 'Juan Dela Cruz', customerEmail: 'juan.dcruz@email.com', customerPhone: '0917-123-4567' },
-                        { id: 'TKT-789457', orderId: 'ORD-123457', date: 'Nov 5, 2023', status: 'Resolved', issue: 'Shattered Tiles', description: 'Two tiles were completely shattered upon opening the box. The sound was very distinct when the package was dropped by the delivery personnel.', resolution: 'Replacement Sent', product: 'Porcelain Wood-Look Tile', price: 150, branch: 'Brixton Branch', qty: 1, customerName: 'Maria Santos', customerEmail: 'maria.santos@email.com', customerPhone: '0922-345-6789' },
-                        { id: 'TKT-789455', orderId: 'ORD-123455', date: 'Oct 28, 2023', status: 'Closed', issue: 'Color Mismatch', description: 'Tiles received don\'t match the sample color from the showroom. They are a much darker shade of beige.', resolution: 'Refund Issued', product: 'Marble Effect Wall Tile', price: 700, branch: 'Vanguard Branch', qty: 1, customerName: 'Pedro Reyes', customerEmail: 'pedro.reyes@email.com', customerPhone: '0933-456-7890' },
+                        { id: 'TKT-789456', orderId: 'ORD-123456', date: 'Nov 16, 2023', status: 'Pending', issue: 'Cracked Tiles', description: 'Several tiles arrived with cracks along the edges. The package appeared to have been mishandled during transit.', resolution: 'Exchange for Same Item', product: 'Arte Ceramiche Matte Floor Tile', price: 200, branch: 'Deparo Branch', qty: 2, customerName: 'Juan Dela Cruz', customerEmail: 'juan.dcruz@email.com', customerPhone: '0917-123-4567', customerAddress: '123 Main St, Anytown, Philippines' },
+                        { id: 'TKT-789457', orderId: 'ORD-123457', date: 'Nov 5, 2023', status: 'Resolved', issue: 'Shattered Tiles', description: 'Two tiles were completely shattered upon opening the box. The sound was very distinct when the package was dropped by the delivery personnel.', resolution: 'Replacement Sent', product: 'Porcelain Wood-Look Tile', price: 150, branch: 'Brixton Branch', qty: 1, customerName: 'Maria Santos', customerEmail: 'maria.santos@email.com', customerPhone: '0922-345-6789', customerAddress: '456 Oak Ave, Somewhere, Philippines' },
+                        { id: 'TKT-789455', orderId: 'ORD-123455', date: 'Oct 28, 2023', status: 'Closed', issue: 'Color Mismatch', description: 'Tiles received don\'t match the sample color from the showroom. They are a much darker shade of beige.', resolution: 'Refund Issued', product: 'Marble Effect Wall Tile', price: 700, branch: 'Vanguard Branch', qty: 1, customerName: 'Pedro Reyes', customerEmail: 'pedro.reyes@email.com', customerPhone: '0933-456-7890', customerAddress: '789 Elm St, Nowhere, Philippines' },
                     ];
 
                     const ticketList = document.getElementById('ticket-list');
@@ -351,8 +351,8 @@ include '../includes/sidebar.php';
                                         </div>
                                         <div class="flex-grow">
                                             <p class="font-bold text-textdark">${ticket.product}</p>
-                                            <p class="text-sm text-textlight">Order #${ticket.orderId} • ${ticket.date}</p>
-                                            <p class="text-sm text-textlight">${ticket.branch} • Qty: ${ticket.qty}</p>
+                                            <p class="text-sm text-textlight">${ticket.customerName} • ${ticket.date}</p>
+                                            <p class="text-sm text-textlight">${ticket.customerAddress} • Qty: ${ticket.qty}</p>
                                         </div>
                                     </div>
                                     <div class="text-right">
@@ -397,6 +397,29 @@ include '../includes/sidebar.php';
                                         <h2 class="text-2xl font-black text-primary">Ticket Details</h2>
                                         <button class="text-2xl text-textlight hover:text-textdark close-modal-btn">&times;</button>
                                     </div>
+                                    
+                                    <div class="mb-6">
+                                        <h3 class="text-lg font-bold text-textdark mb-2">Customer Information</h3>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-textdark font-medium mb-1">Name</label>
+                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerName}</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-textdark font-medium mb-1">Email</label>
+                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerEmail}</div>
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <label class="block text-textdark font-medium mb-1">Address</label>
+                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerAddress}</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-textdark font-medium mb-1">Mobile</label>
+                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerPhone}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                         <div>
                                             <label class="block text-textdark font-medium mb-1">Ticket ID</label>
@@ -415,10 +438,6 @@ include '../includes/sidebar.php';
                                         <div>
                                             <label class="block text-textdark font-medium mb-1">Date</label>
                                             <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.date}</div>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-textdark font-medium mb-1">Customer Name</label>
-                                            <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerName}</div>
                                         </div>
                                         <div class="md:col-span-2">
                                             <label class="block text-textdark font-medium mb-1">Issue Type</label>
@@ -453,6 +472,29 @@ include '../includes/sidebar.php';
                                         <h2 class="text-2xl font-black text-primary">Ticket Details</h2>
                                         <button class="text-2xl text-textlight hover:text-textdark close-modal-btn">&times;</button>
                                     </div>
+                                    
+                                    <div class="mb-6">
+                                        <h3 class="text-lg font-bold text-textdark mb-2">Customer Information</h3>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-textdark font-medium mb-1">Name</label>
+                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerName}</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-textdark font-medium mb-1">Email</label>
+                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerEmail}</div>
+                                            </div>
+                                            <div class="md:col-span-2">
+                                                <label class="block text-textdark font-medium mb-1">Address</label>
+                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerAddress}</div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-textdark font-medium mb-1">Mobile</label>
+                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerPhone}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                         <div>
                                             <label class="block text-textdark font-medium mb-1">Ticket ID</label>
@@ -471,10 +513,6 @@ include '../includes/sidebar.php';
                                         <div>
                                             <label class="block text-textdark font-medium mb-1">Date</label>
                                             <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.date}</div>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-textdark font-medium mb-1">Customer Name</label>
-                                            <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerName}</div>
                                         </div>
                                         <div class="md:col-span-2">
                                             <label class="block text-textdark font-medium mb-1">Issue Type</label>
