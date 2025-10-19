@@ -69,7 +69,7 @@
                                 <option value="">All Branches</option>
                                 <option value="Brixton">Brixton</option>
                                 <option value="Vanguard">Vanguard</option>
-                                <option value="Kiko">Kiko</option>
+                                <option value="Phase 1">Phase 1</option>
                                 <option value="Deparo">Deparo</option>
                                 <option value="Samaria">Samaria</option>
                             </select>
@@ -120,7 +120,7 @@
                             <!-- Example Row 3 -->
                             <tr class="hover:bg-blue-50 transition">
                                 <td class="px-4 py-3 font-semibold text-gray-700">Classic White Tiles</td>
-                                <td class="px-4 py-3 text-gray-700">Kiko</td>
+                                <td class="px-4 py-3 text-gray-700">Phase 1</td>
                                 <td class="px-4 py-3 text-blue-700 font-bold">20</td>
                                 <td class="px-4 py-3 text-green-700 font-bold">₱10,000.00</td>
                                 <td class="px-4 py-3 text-gray-500">2025-08-15</td>

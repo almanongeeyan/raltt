@@ -361,42 +361,7 @@
             height: 100%;
             width: 100%;
         }
-
-        .location-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .location-actions button {
-            flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-confirm-location {
-            background-color: var(--success-color);
-            color: white;
-        }
-
-        .btn-confirm-location:hover {
-            background-color: #45a049;
-        }
-
-        .btn-cancel-location {
-            background-color: var(--error-color);
-            color: white;
-        }
-
-        .btn-cancel-location:hover {
-            background-color: #d32f2f;
-        }
-
+        
         /* Compact adjustments for short viewports */
         @media (max-height: 800px) {
             html { font-size: 14px; }
@@ -432,7 +397,7 @@
     <div class="signup-container">
         <form class="signup-form" id="signupForm">
             <h2>Sign Up</h2>
-            <p>Create an account</p>
+            <p>Create an account for Rich Anne Lea Tiles Trading</p>
             
             <div class="form-group">
                 <label for="fullname">Name</label>
@@ -474,13 +439,8 @@
                 </div>
                 <div id="location-info"></div>
                 
-                <!-- Map container -->
                 <div class="map-container" id="map-container">
                     <div id="map"></div>
-                    <div class="location-actions">
-                        <button type="button" class="btn-confirm-location" id="confirm-location">Confirm Location</button>
-                        <button type="button" class="btn-cancel-location" id="cancel-location">Cancel</button>
-                    </div>
                 </div>
             </div>
             
@@ -514,7 +474,6 @@
         </form>
     </div>
 
-    <!-- Load Leaflet CSS and JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -545,65 +504,41 @@
             let marker = null;
             let userLocation = null;
 
-            // Initialize the map
+            // Initialize a STATIC, non-interactive map
             function initMap(lat, lng) {
                 const mapContainer = document.getElementById('map-container');
                 mapContainer.style.display = 'block';
-                
+
                 // Remove existing map if any
                 if (map) {
+                    map.off();
                     map.remove();
                 }
-                
-                // Create new map
-                map = L.map('map').setView([lat, lng], 15);
-                
+
+                // Create new map with interaction disabled
+                map = L.map('map', {
+                    dragging: false, 
+                    zoomControl: false, 
+                    scrollWheelZoom: false, 
+                    doubleClickZoom: false, 
+                    boxZoom: false, 
+                    keyboard: false,
+                    tap: false // Disables tap interaction on mobile
+                }).setView([lat, lng], 15);
+
                 // Add OpenStreetMap tiles
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
-                
-                // Add marker for user's location
-                marker = L.marker([lat, lng], {draggable: true}).addTo(map)
-                    .bindPopup('Your location<br>Drag to adjust').openPopup();
-                
-                // Update address when marker is dragged
-                marker.on('dragend', function(event) {
-                    const position = marker.getLatLng();
-                    updateAddressFromCoordinates(position.lat, position.lng);
-                });
-            }
 
-            // Update address from coordinates using OpenStreetMap Nominatim
-            async function updateAddressFromCoordinates(lat, lng) {
-                const locationInfo = document.getElementById('location-info');
-                locationInfo.style.color = 'blue';
-                locationInfo.textContent = 'Looking up address...';
-                
-                try {
-                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-                    
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    
-                    const data = await response.json();
-                    
-                    if (data.display_name) {
-                        document.getElementById('address').value = data.display_name;
-                        locationInfo.style.color = 'green';
-                        locationInfo.textContent = 'Address updated from map position';
-                        userLocation = { lat, lng, address: data.display_name };
-                    } else {
-                        throw new Error('No address found for these coordinates');
-                    }
-                } catch (error) {
-                    console.error('Geocoding error:', error);
-                    locationInfo.style.color = 'red';
-                    locationInfo.textContent = 'Could not retrieve address. Please try again.';
-                }
+                // Add a NON-DRAGGABLE marker for user's location
+                marker = L.marker([lat, lng], {
+                    draggable: false, 
+                    interactive: false // Marker won't capture mouse events
+                }).addTo(map)
+                  .bindPopup('Your Location').openPopup();
             }
-
+            
             // Password strength checker
             function checkPasswordStrength(password) {
                 let strength = 0;
@@ -631,13 +566,15 @@
             // Validate password
             function validatePassword(password) {
                 const validationMsg = document.getElementById('password-validation');
-                
+                if (password.length === 0) {
+                    validationMsg.textContent = '';
+                    return false;
+                }
                 if (password.length < 8) {
                     validationMsg.textContent = 'Password must be at least 8 characters long';
                     validationMsg.style.color = 'red';
                     return false;
                 }
-                
                 validationMsg.textContent = 'Password meets requirements';
                 validationMsg.style.color = 'green';
                 return true;
@@ -646,7 +583,7 @@
             // Validate confirm password
             function validateConfirmPassword(password, confirmPassword) {
                 const matchStatus = document.getElementById('password-match-status');
-                if (!password) {
+                if (confirmPassword.length === 0) {
                     matchStatus.textContent = '';
                     return false;
                 }
@@ -677,13 +614,15 @@
             // Validate address
             function validateAddress(address) {
                 const validationMsg = document.getElementById('address-validation');
-                
+                if (address.length === 0) {
+                    validationMsg.textContent = '';
+                    return false;
+                }
                 if (address.trim().length < 5) {
                     validationMsg.textContent = 'Please enter a valid address';
                     validationMsg.style.color = 'red';
                     return false;
                 }
-                
                 validationMsg.textContent = '';
                 return true;
             }
@@ -707,8 +646,9 @@
                         locationInfo.style.color = 'green';
                         locationInfo.textContent = 'Address set successfully!';
                         userLocation = { lat: latitude, lng: longitude, address: data.display_name };
-                        // Initialize map with user's location
-                        initMap(latitude, longitude);
+                        
+                        // Initialize static map for visual confirmation
+                        setTimeout(() => { initMap(latitude, longitude); }, 100);
                         return data.display_name;
                     } else {
                         throw new Error('No address found for these coordinates.');
@@ -741,7 +681,8 @@
                                 await fetchAddress(latitude, longitude);
                                 locateBtn.textContent = 'Location Set';
                                 locateBtn.style.backgroundColor = '#4CAF50'; 
-                                locateBtn.style.cursor = 'not-allowed';
+                                locateBtn.style.cursor = 'default';
+                                // Note: The button remains disabled to prevent re-locating
                                 checkFormCompletion();
                             } catch (error) {
                                 locationInfo.style.color = 'red';
@@ -793,34 +734,6 @@
             }
             
             document.getElementById('locate-btn').addEventListener('click', getAndSetLocation);
-            
-            // Confirm location button
-            document.getElementById('confirm-location').addEventListener('click', function() {
-                if (marker) {
-                    const position = marker.getLatLng();
-                    updateAddressFromCoordinates(position.lat, position.lng);
-                    
-                    // Hide the map
-                    document.getElementById('map-container').style.display = 'none';
-                    
-                    // Update UI
-                    const locationInfo = document.getElementById('location-info');
-                    locationInfo.style.color = 'green';
-                    locationInfo.textContent = 'Location confirmed!';
-                    
-                    const locateBtn = document.getElementById('locate-btn');
-                    locateBtn.textContent = 'Location Set';
-                    locateBtn.style.backgroundColor = '#4CAF50'; 
-                    locateBtn.style.cursor = 'not-allowed';
-                    
-                    checkFormCompletion();
-                }
-            });
-            
-            // Cancel location button
-            document.getElementById('cancel-location').addEventListener('click', function() {
-                document.getElementById('map-container').style.display = 'none';
-            });
 
             // Form validation and submission
             const signupForm = document.getElementById('signupForm');
@@ -837,6 +750,31 @@
             const houseAddressInput = document.getElementById('house_address');
 
             let isNumberVerified = false;
+            let resendTimer = null;
+            let resendCountdown = 0;
+
+            function startResendCountdown() {
+                resendCountdown = 120; // 2 minutes
+                sendCodeBtn.disabled = true;
+                updateResendButtonText();
+                resendTimer = setInterval(() => {
+                    resendCountdown--;
+                    updateResendButtonText();
+                    if (resendCountdown <= 0) {
+                        clearInterval(resendTimer);
+                        sendCodeBtn.disabled = false;
+                        sendCodeBtn.textContent = 'Resend';
+                    }
+                }, 1000);
+            }
+
+            function updateResendButtonText() {
+                if (resendCountdown > 0) {
+                    const min = Math.floor(resendCountdown / 60);
+                    const sec = resendCountdown % 60;
+                    sendCodeBtn.textContent = `Resend (${min}:${sec.toString().padStart(2, '0')})`;
+                }
+            }
             
             // Enhanced form completion check
             function checkFormCompletion() {
@@ -847,7 +785,7 @@
                 const isLocationSet = document.getElementById('address').value.trim() !== '';
                 
                 signupSubmitBtn.disabled = !(isNameValid && isNumberVerified && isAddressValid && 
-                                            isPasswordValid && isPasswordMatch && isLocationSet);
+                                             isPasswordValid && isPasswordMatch && isLocationSet);
             }
 
             // Phone verification
@@ -894,27 +832,28 @@
                         });
                         return; // Stop the process
                     }
-                    
                     // Step 2: If not registered, proceed to send verification code
                     const formData = new FormData();
                     formData.append('phone', phoneNumber);
-                    
+
                     const response = await fetch('connection/send_verification_debug.php', {
                         method: 'POST',
                         body: formData
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.status === 'success') {
                         verifyStatusDiv.textContent = 'Code Sent. Check your messages.';
                         verifyStatusDiv.style.color = 'green';
                         verificationForm.style.display = 'block';
-                        
+
                         // Store the phone number for verification
                         phoneInput.dataset.verifiedPhone = phoneNumber;
-                        sendCodeBtn.textContent = 'Resend';
-                        sendCodeBtn.disabled = false; // Allow resending the code
+
+                        // Start resend countdown
+                        if (resendTimer) clearInterval(resendTimer);
+                        startResendCountdown();
                     } else {
                         throw new Error(data.message);
                     }
@@ -932,7 +871,7 @@
             confirmCodeBtn.addEventListener('click', async () => {
                 const phoneNumber = phoneInput.dataset.verifiedPhone || phoneInput.value;
                 const verificationCode = verificationCodeInput.value;
-                
+
                 if (!verificationCode || verificationCode.length !== 6) {
                     verifyStatusDiv.style.color = 'red';
                     verifyStatusDiv.textContent = 'Please enter a valid 6-digit code.';
@@ -949,14 +888,14 @@
                     const formData = new FormData();
                     formData.append('phone', phoneNumber);
                     formData.append('code', verificationCode);
-                    
+
                     const response = await fetch('connection/check_verification.php', {
                         method: 'POST',
                         body: formData
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.status === 'success') {
                         verifyStatusDiv.textContent = 'Phone number verified successfully! ✅';
                         verifyStatusDiv.style.color = 'green';
@@ -966,14 +905,15 @@
                         phoneInput.disabled = true;
                         verificationCodeInput.disabled = true;
                         sendCodeBtn.disabled = true;
-                        
+                        if (resendTimer) clearInterval(resendTimer);
+
                         // Add hidden field for verified phone number
                         const hiddenPhoneInput = document.createElement('input');
                         hiddenPhoneInput.type = 'hidden';
                         hiddenPhoneInput.name = 'verified_phone';
                         hiddenPhoneInput.value = phoneNumber;
                         signupForm.appendChild(hiddenPhoneInput);
-                        
+
                         checkFormCompletion();
                     } else {
                         throw new Error(data.message);
@@ -1016,8 +956,19 @@
 
             // Form submission
             signupForm.addEventListener('submit', async (e) => {
+                let submitter = e.submitter || document.activeElement;
+                if (!submitter || submitter.id !== 'signup-submit-btn') {
+                    e.preventDefault();
+                    return;
+                }
                 e.preventDefault();
-                
+
+                // Clear previous validation messages
+                document.getElementById('name-validation').textContent = '';
+                document.getElementById('address-validation').textContent = '';
+                document.getElementById('password-validation').textContent = '';
+                document.getElementById('password-match-status').textContent = '';
+
                 // Final validation check
                 if (!isNumberVerified) {
                     Swal.fire({
@@ -1036,37 +987,49 @@
                     });
                     return;
                 }
-
-                if (passwordInput.value.length < 8) {
+                
+                // Final check on all validations
+                if (!validateName(fullnameInput.value) || 
+                    !validateAddress(houseAddressInput.value) ||
+                    !validatePassword(passwordInput.value) ||
+                    document.getElementById('address').value.trim() === '') {
+                        
                     Swal.fire({
                         icon: 'error',
-                        title: 'Password Too Short',
-                        text: 'Password must be at least 8 characters long.'
+                        title: 'Incomplete Form',
+                        text: 'Please fill out all required fields correctly.'
                     });
                     return;
                 }
+                
 
                 const submitBtn = document.getElementById('signup-submit-btn');
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Signing up...';
 
                 try {
-                    // Create FormData object from the form
                     const formData = new FormData(signupForm);
-                    
-                    // Add location data if available
+
+                    if (isNumberVerified && phoneInput.dataset.verifiedPhone) {
+                        formData.set('verified_phone', phoneInput.dataset.verifiedPhone);
+                    }
+
                     if (userLocation) {
                         formData.append('latitude', userLocation.lat);
                         formData.append('longitude', userLocation.lng);
                     }
-                    
-                    // Make actual AJAX request to your PHP endpoint
+
                     const response = await fetch('connection/registered_account_process.php', {
                         method: 'POST',
                         body: formData
                     });
-                    
-                    const data = await response.json();
+
+                    let data;
+                    try {
+                        data = await response.json();
+                    } catch (jsonErr) {
+                        throw new Error('Registration failed. The server sent an invalid response.');
+                    }
 
                     if (data.status === 'success') {
                         Swal.fire({
@@ -1076,8 +1039,20 @@
                             confirmButtonText: 'Proceed to Login'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = 'user_login_form.php'; 
+                                window.location.href = 'user_login_form.php';
                             }
+                        });
+                    } else if (data.status === 'error' && data.errors) {
+                        // Show validation errors under each field
+                        if (data.errors.fullname) {
+                            document.getElementById('name-validation').textContent = data.errors.fullname;
+                            document.getElementById('name-validation').style.color = 'red';
+                        }
+                        // ... (add other fields as needed)
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Registration Failed',
+                            text: data.message || 'Validation failed. Please check your input.'
                         });
                     } else {
                         throw new Error(data.message || 'Registration failed');
@@ -1089,9 +1064,9 @@
                         title: 'Registration Failed',
                         text: error.message || 'Something went wrong. Please try again later.'
                     });
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Sign up';
                 }
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign up';
             });
         });
     </script>

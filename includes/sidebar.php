@@ -10,7 +10,7 @@ $branch_names = [
     2 => 'Vanguard',
     3 => 'Brixton',
     4 => 'Samaria',
-    5 => 'Kiko'
+    5 => 'Phase 1'
 ];
 
 // Get branch_id from session (set this during staff login)
@@ -18,7 +18,7 @@ $branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
 $sidebar_logo = 'STAFF';
 if ($branch_id && isset($branch_names[$branch_id])) {
     $sidebar_logo = $branch_names[$branch_id];
-    // Set branch_name in session for use in other pages (e.g., 'Kiko Branch')
+    // Set branch_name in session for use in other pages (e.g., 'Phase 1 Branch')
     $_SESSION['branch_name'] = $branch_names[$branch_id] . ' Branch';
 }
 ?>
@@ -497,7 +497,7 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_branchesproduct.php" class="dropdown-link">
+                                <a href="../staffadmin_access/admin_addproduct.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
                                     <!-- Products Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Products</span>
@@ -511,7 +511,7 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_banner.php" class="dropdown-link">
+                                <a href="../staffadmin_access/adding_banners.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
                                     <!-- Banner Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="4,4 12,12 20,4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Banner</span>
@@ -528,14 +528,14 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
-                                <a href="admin_cancelRequests.php" class="dropdown-link">
+                                <a href="../staffadmin_access/cancelOrders.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
                                     <!-- Cancel Request Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/><line x1="6" y1="18" x2="18" y2="6" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Cancel Request</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="adminSupportTicket.php" class="dropdown-link">
+                                <a href="../staffadmin_access/admin_customTickets.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
                                     <!-- Customer Tickets Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 7V5a2 2 0 012-2h6a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
                                     <span>Customer Tickets</span>

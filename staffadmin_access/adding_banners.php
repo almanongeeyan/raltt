@@ -143,30 +143,38 @@
         </div>
     </div>
     
-    <div id="delete-modal" class="modal fixed inset-0 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl p-6 m-4 max-w-sm w-full">
-            <div class="flex flex-col items-center space-y-4">
-                <div class="bg-red-100 rounded-full p-3">
-                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3.042l-6.928-12.857a1.996 1.996 0 00-3.464 0L3.342 16.958A2.001 2.001 0 005.074 21z" />
-                    </svg>
-                </div>
-                <h3 class="text-lg font-bold text-gray-900">Confirm Deletion</h3>
-                <p class="text-sm text-gray-500 text-center">Are you sure you want to delete this banner? This action cannot be undone.</p>
-                <div class="flex justify-center space-x-4 w-full">
-                    <button id="cancel-delete-btn" class="flex-1 bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300">Cancel</button>
-                    <button id="confirm-delete-btn" class="flex-1 bg-red-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300">Confirm</button>
-                </div>
+    <!-- Confirmation Modal (for delete/change) -->
+    <div id="confirm-modal" class="modal fixed inset-0 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 m-4 max-w-md w-full flex flex-col items-center relative">
+            <div id="confirm-modal-icon" class="rounded-full p-4 mb-4 flex items-center justify-center" style="background: #fef2f2;">
+                <svg id="confirm-modal-svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3.042l-6.928-12.857a1.996 1.996 0 00-3.464 0L3.342 16.958A2.001 2.001 0 005.074 21z" />
+                </svg>
             </div>
+            <h3 id="confirm-modal-title" class="text-xl font-bold text-gray-900 mb-2 text-center">Confirm Action</h3>
+            <p id="confirm-modal-message" class="text-base text-gray-600 text-center mb-6">Are you sure you want to proceed?</p>
+            <div class="flex justify-center space-x-4 w-full">
+                <button id="confirm-modal-cancel" class="flex-1 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-200">Cancel</button>
+                <button id="confirm-modal-confirm" class="flex-1 bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200">Yes, Continue</button>
+            </div>
+            <button id="confirm-modal-close" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         </div>
     </div>
 
     <script>
+
         document.addEventListener('DOMContentLoaded', () => {
             const bannerSlots = document.querySelectorAll('.banner-slot');
-            const deleteModal = document.getElementById('delete-modal');
-            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            // Confirmation modal elements
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmModalTitle = document.getElementById('confirm-modal-title');
+            const confirmModalMessage = document.getElementById('confirm-modal-message');
+            const confirmModalCancel = document.getElementById('confirm-modal-cancel');
+            const confirmModalConfirm = document.getElementById('confirm-modal-confirm');
+            const confirmModalClose = document.getElementById('confirm-modal-close');
+            const confirmModalIcon = document.getElementById('confirm-modal-icon');
+            const confirmModalSvg = document.getElementById('confirm-modal-svg');
+            let confirmCallback = null;
             // Cropper modal elements
             const cropperModal = document.getElementById('cropper-modal');
             const cropperImage = document.getElementById('cropper-image');
@@ -175,7 +183,49 @@
             let cropper = null;
             let cropperCallback = null;
 
-            let currentSlotToDelete = null;
+            // Show confirmation modal
+            function showConfirmModal({title, message, type = 'delete', onConfirm}) {
+                confirmModalTitle.textContent = title;
+                confirmModalMessage.textContent = message;
+                confirmCallback = onConfirm;
+                // Icon and color
+                if (type === 'delete') {
+                    confirmModalIcon.style.background = '#fef2f2';
+                    confirmModalSvg.classList.remove('text-yellow-500');
+                    confirmModalSvg.classList.add('text-red-600');
+                    confirmModalSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3.042l-6.928-12.857a1.996 1.996 0 00-3.464 0L3.342 16.958A2.001 2.001 0 005.074 21z" />';
+                } else if (type === 'change') {
+                    confirmModalIcon.style.background = '#fefce8';
+                    confirmModalSvg.classList.remove('text-red-600');
+                    confirmModalSvg.classList.add('text-yellow-500');
+                    confirmModalSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 8v.01" />';
+                }
+                confirmModal.classList.remove('hidden');
+            }
+
+            function hideConfirmModal() {
+                confirmModal.classList.add('hidden');
+                confirmCallback = null;
+            }
+
+            confirmModalCancel.addEventListener('click', hideConfirmModal);
+            confirmModalClose.addEventListener('click', hideConfirmModal);
+            confirmModalConfirm.addEventListener('click', () => {
+                if (typeof confirmCallback === 'function') confirmCallback();
+                hideConfirmModal();
+            });
+
+            // Load banners from server and display
+            fetch('processes/get_branch_banners.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.banners) {
+                        Object.entries(data.banners).forEach(([order, img]) => {
+                            const slot = document.getElementById('banner-slot-' + order);
+                            if (slot) setBannerImage(slot, img, false); // false: don't save again
+                        });
+                    }
+                });
 
             // Helper: check if image is 1920x1080
             function is1920x1080(img) {
@@ -269,23 +319,89 @@
             };
 
             // Set banner image in slot
-            function setBannerImage(slot, dataUrl) {
+            function setBannerImage(slot, dataUrl, save = true) {
                 const placeholder = slot.querySelector('.banner-placeholder');
                 const imageContainer = slot.querySelector('.banner-image-container');
                 const image = imageContainer.querySelector('img');
                 image.src = dataUrl;
                 placeholder.classList.add('hidden');
                 imageContainer.classList.remove('hidden');
+
+                if (save) {
+                    // Determine order from slot id (e.g., banner-slot-1 => 1)
+                    let order = 1;
+                    const idMatch = slot.id && slot.id.match(/banner-slot-(\d+)/);
+                    if (idMatch) order = parseInt(idMatch[1]);
+
+                    // Confirm update if already has image
+                    if (image.dataset.hasImage === '1') {
+                        showConfirmModal({
+                            title: 'Change Banner',
+                            message: 'Are you sure you want to change this banner? This will replace the current image.',
+                            type: 'change',
+                            onConfirm: () => saveBanner(slot, dataUrl, order, image)
+                        });
+                        return;
+                    }
+                    saveBanner(slot, dataUrl, order, image);
+                } else {
+                    image.dataset.hasImage = '1';
+                }
+            }
+
+            function saveBanner(slot, dataUrl, order, image) {
+                fetch('processes/process_save_banner.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `image=${encodeURIComponent(dataUrl)}&order=${order}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('Failed to save banner: ' + (data.message || 'Unknown error'));
+                    } else {
+                        image.dataset.hasImage = '1';
+                    }
+                })
+                .catch(() => {
+                    alert('Failed to save banner due to network/server error.');
+                });
             }
 
             // Function to perform the actual deletion
             const deleteBanner = (slot) => {
-                const placeholder = slot.querySelector('.banner-placeholder');
-                const imageContainer = slot.querySelector('.banner-image-container');
-                const image = imageContainer.querySelector('img');
-                image.src = "";
-                imageContainer.classList.add('hidden');
-                placeholder.classList.remove('hidden');
+                let order = 1;
+                const idMatch = slot.id && slot.id.match(/banner-slot-(\d+)/);
+                if (idMatch) order = parseInt(idMatch[1]);
+                showConfirmModal({
+                    title: 'Delete Banner',
+                    message: 'Are you sure you want to delete this banner? This action cannot be undone.',
+                    type: 'delete',
+                    onConfirm: () => {
+                        fetch('processes/process_save_banner.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `image=&order=${order}`
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!data.success) {
+                                alert('Failed to delete banner: ' + (data.message || 'Unknown error'));
+                            } else {
+                                const placeholder = slot.querySelector('.banner-placeholder');
+                                const imageContainer = slot.querySelector('.banner-image-container');
+                                const image = imageContainer.querySelector('img');
+                                image.src = "";
+                                image.dataset.hasImage = '';
+                                imageContainer.classList.add('hidden');
+                                placeholder.classList.remove('hidden');
+                            }
+                        })
+                        .catch(() => {
+                            alert('Failed to delete banner due to network/server error.');
+                        });
+                    }
+                });
             };
 
             // Event listeners for each banner slot
@@ -298,13 +414,17 @@
                 // Change Banner
                 changeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    handleFileUpload(slot);
+                    showConfirmModal({
+                        title: 'Change Banner',
+                        message: 'Are you sure you want to change this banner? This will replace the current image.',
+                        type: 'change',
+                        onConfirm: () => handleFileUpload(slot)
+                    });
                 });
-                // Delete Banner - open modal
+                // Delete Banner
                 deleteBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    currentSlotToDelete = slot;
-                    deleteModal.classList.remove('hidden');
+                    deleteBanner(slot);
                 });
             });
 

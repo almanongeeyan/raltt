@@ -13,72 +13,27 @@ include 'includes/header.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rich Anne Lea Tiles Trading - Tile Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
-    <link rel="stylesheet" href="style.css">
     <style>
-        /* Base Styles */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
         html {
             scroll-behavior: smooth;
-            overflow-x: hidden;
         }
         
         body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
             font-family: 'Inter', sans-serif;
-            color: #333;
-            line-height: 1.6;
-            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
         }
-
-        /* Container for all sections */
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Hero Section */
-        .home-section {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            max-height: 800px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            will-change: transform;
-        }
-
-        .home-section img {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-            will-change: transform;
-        }
+        
         .home-section::after {
             content: "";
             position: absolute;
@@ -90,536 +45,7 @@ include 'includes/header.php';
             pointer-events: none;
             background: radial-gradient(circle at 50% 40%, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0.15) 90%, rgba(0,0,0,0.05) 100%);
         }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            color: white;
-            text-align: center;
-            padding: 0 20px;
-            width: 100%;
-            will-change: transform;
-        }
-
-        .hero-content h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.2;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .hero-content p {
-            font-size: clamp(1rem, 2vw, 1.5rem);
-            margin-bottom: 2rem;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-
-        .hero-content button {
-            background: #94481b;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            will-change: transform;
-        }
-
-        .hero-content button:hover {
-            background: #b35923;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        /* Video Text Section */
-        .video-text-section {
-            padding: 60px 0;
-            width: 100%;
-            will-change: transform;
-        }
-
-        .video-text-container {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 40px;
-        }
-
-        .video-text {
-            flex: 1;
-            min-width: 300px;
-            text-align: center;
-        }
-
-        .video-text h1 {
-            font-size: clamp(1.8rem, 4vw, 2.8rem);
-            line-height: 1.2;
-            margin-bottom: 1rem;
-        }
-
-        .video-text p {
-            font-size: 1rem;
-            color: #666;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .video-container {
-            flex: 1;
-            min-width: 300px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .video-container video {
-            width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            will-change: transform;
-        }
-
-        /* Meet RALTT Section */
-        .meet-raltt-section {
-            padding: 60px 0;
-            width: 100%;
-            text-align: center;
-            will-change: transform;
-        }
-
-        .meet-raltt-section h3 {
-            color: #F47C2E;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-        }
-
-        .meet-raltt-section h1 {
-            font-size: clamp(1.8rem, 4vw, 2.5rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.3;
-        }
-
-        .meet-raltt-section p {
-            color: #666;
-            font-size: 1.1rem;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        /* Tabbed Section */
-        .tabbed-section {
-            padding: 60px 0;
-            width: 100%;
-            will-change: transform;
-        }
-
-        .tab-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            font-size: 1.1rem;
-            font-weight: 600;
-            padding: 12px 25px;
-            border-radius: 30px;
-            background: #fff;
-            color: #94481b;
-            border: 2px solid #94481b;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            will-change: transform;
-        }
-
-        .tab-btn.active {
-            background: #94481b;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(148, 72, 27, 0.3);
-        }
-
-        .tab-content {
-            display: none;
-            align-items: center;
-            gap: 40px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-
-        .tab-content.active {
-            display: flex;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .tab-content img {
-            flex: 1;
-            min-width: 300px;
-            max-width: 100%;
-            border-radius: 15px;
-            will-change: transform;
-        }
-
-        .tab-text {
-            flex: 1;
-            min-width: 300px;
-            text-align: left;
-        }
-
-        .tab-content h2 {
-            font-size: clamp(1.8rem, 4vw, 2.2rem);
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            line-height: 1.3;
-        }
-
-        .tab-content .subtitle {
-            color: #888;
-            font-size: 0.98rem;
-            margin-bottom: 1rem;
-        }
-
-        .tab-content .description {
-            color: #555;
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .animated-btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #94481b;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            letter-spacing: 0.01em;
-            white-space: nowrap;
-            will-change: transform;
-        }
-
-        .animated-btn:hover {
-            background: #b35923;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        /* Trusted Section */
-        .trusted-section {
-            width: 100%;
-            padding: 80px 0;
-            text-align: center;
-            background: #faf9f7;
-            will-change: transform;
-        }
-
-        .trusted-section h1 {
-            font-size: clamp(2rem, 5vw, 2.7rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.3;
-        }
-
-        .trusted-section .subtitle {
-            color: #888;
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }
-
-        .distributor-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
-        }
-
-        .distributor-item {
-            background: #f8f8f8;
-            border-radius: 15px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            aspect-ratio: 1/1;
-            will-change: transform;
-        }
-
-        .distributor-item img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            filter: grayscale(20%);
-            transition: all 0.3s ease;
-            will-change: transform, filter;
-        }
-
-        .distributor-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            background: white;
-        }
-
-        .distributor-item:hover img {
-            filter: grayscale(0%);
-        }
-
-        /* App Section */
-        .app-section {
-            width: 100%;
-            padding: 80px 0;
-            text-align: center;
-            will-change: transform;
-        }
-
-        .app-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 60px 20px;
-            background: #faf9f7;
-            border-radius: 20px;
-        }
-
-        .app-section h1 {
-            font-size: clamp(1.8rem, 4vw, 2.4rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.3;
-        }
-
-        .app-section .subtitle {
-            color: #aaa;
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-        }
-
-        .app-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 40px;
-            flex-wrap: wrap;
-        }
-
-        .app-image {
-            flex: 1;
-            min-width: 300px;
-            max-width: 400px;
-        }
-
-        .app-image img {
-            width: 100%;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            will-change: transform;
-        }
-
-        .app-details {
-            flex: 1;
-            min-width: 300px;
-            text-align: center;
-        }
-
-        .app-highlight {
-            font-size: 1.25rem;
-            color: #94481b;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            line-height: 1.5;
-        }
-
-        /* Unified Button Styles */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #94481b;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 30px;
-            padding: 12px 30px;
-            margin: 8px 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            width: 240px;
-            min-width: 180px;
-            max-width: 100%;
-            transition: all 0.3s ease;
-            gap: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            letter-spacing: 0.01em;
-            white-space: nowrap;
-            will-change: transform;
-        }
-
-        .btn i {
-            font-size: 1.15em;
-        }
-
-        .btn:hover {
-            background: #b35923;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        .btn-download {
-            background: #94481b;
-        }
-
-        .btn-playstore {
-            background: #4285F4;
-        }
-
-        .btn-playstore:hover {
-            background: #3367D6;
-        }
-
-        .btn-divider {
-            color: #888;
-            font-size: 1.05rem;
-            margin: 10px 0;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-divider::before,
-        .btn-divider::after {
-            content: "";
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-            margin: 0 10px;
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .home-section {
-                height: 80vh;
-            }
-            
-            .hero-content {
-                padding: 0 15px;
-            }
-            
-            .video-text-container {
-                flex-direction: column;
-                gap: 30px;
-            }
-            
-            .video-text, .video-container {
-                width: 100%;
-                padding: 0 15px;
-            }
-            
-            .tab-buttons {
-                gap: 10px;
-            }
-            
-            .tab-btn {
-                padding: 10px 20px;
-                font-size: 1rem;
-            }
-            
-            .tab-content {
-                flex-direction: column;
-                gap: 20px;
-                text-align: center;
-            }
-            
-            .tab-text {
-                text-align: center;
-                padding: 0 15px;
-            }
-            
-            .distributor-grid {
-                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-                gap: 15px;
-                padding: 20px;
-            }
-            
-            .distributor-item {
-                padding: 15px;
-            }
-            
-            .app-content {
-                flex-direction: column;
-            }
-            
-            .app-details {
-                text-align: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 280px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .home-section {
-                height: 70vh;
-            }
-            
-            .hero-content h1 {
-                font-size: 1.8rem;
-            }
-            
-            .hero-content p {
-                font-size: 1rem;
-            }
-            
-            .tab-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .tab-btn {
-                width: 100%;
-            }
-            
-            .distributor-grid {
-                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-                gap: 10px;
-                padding: 15px;
-            }
-            
-            .app-container {
-                padding: 40px 15px;
-            }
-            
-            .app-highlight {
-                font-size: 1.1rem;
-            }
-        }
-
-        /* Performance optimizations */
+        
         [data-scroll] {
             opacity: 0;
             transition: opacity 0.6s ease, transform 0.6s ease;
@@ -630,132 +56,223 @@ include 'includes/header.php';
             opacity: 1;
             transform: translateY(0);
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        /* Button hover effects */
+        .btn, .tab-btn, .animated-btn {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .btn::before, .tab-btn::before, .animated-btn::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(244,124,46,0.15) 0%, rgba(148,72,27,0.10) 100%);
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+            opacity: 0.7;
+            z-index: 0;
+        }
+        .btn:hover::before, .tab-btn:hover::before, .animated-btn:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        .btn:hover, .tab-btn:hover, .animated-btn:hover {
+            box-shadow: 0 8px 32px 0 rgba(244,124,46,0.15), 0 1.5px 8px 0 rgba(148,72,27,0.10);
+            filter: brightness(1.05) saturate(1.1);
+            transition: box-shadow 0.3s, filter 0.3s;
+        }
+        .btn:active, .tab-btn:active, .animated-btn:active {
+            filter: brightness(0.97) saturate(0.95);
+        }
+        .tab-btn.active {
+            box-shadow: 0 8px 32px 0 rgba(244,124,46,0.18), 0 1.5px 8px 0 rgba(148,72,27,0.13);
+        }
     </style>
 </head>
-
-<body>
+<body class="flex flex-col min-h-screen">
     <!-- Hero Section -->
-    <section class="home-section" data-scroll>
-        <img src="images/homepage.jpg" alt="Beautiful tile designs">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Bring Your Visions to Life: <span>Design Stunning Spaces</span> with Our 3D Tile Visualizer</h1>
-                <p>Rich Anne Lea Tiles Trading</p>
-                <a href="user_login_form.php" class="btn">Start Visualizing Now</a>
+    <section class="home-section relative w-full h-screen max-h-[800px] overflow-hidden flex items-center justify-center" data-scroll>
+        <img src="images/homepage.jpg" alt="Beautiful tile designs" class="absolute w-full h-full object-cover z-10">
+        <div class="container mx-auto px-5">
+            <div class="hero-content relative z-20 text-white text-center px-5 w-full">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight drop-shadow-lg">
+                    Bring Your Visions to Life: <span class="block">Design Stunning Spaces</span> with Our 3D Tile Visualizer
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 drop-shadow">Rich Anne Lea Tiles Trading</p>
+                <a href="user_login_form.php" class="btn bg-[#94481b] text-white border-none py-3 px-8 text-lg font-semibold rounded-full cursor-pointer transition-all duration-300 shadow-lg hover:bg-[#b35923] hover:-translate-y-1 hover:shadow-xl">
+                    Start Visualizing Now
+                </a>
             </div>
         </div>
     </section>
-        <br>
-        <br>
-        <br>
-        <br>
+
+    <div class="my-16"></div>
+
     <!-- Video Text Section -->
-    <section class="video-text-section" data-scroll>
-        <div class="container">
-            <div class="video-text-container">
-                <div class="video-text">
-                    <h1><span style="color: #F47C2E;"><b>Craft Your Visions</b></span> <br><b>with our</b><br><b>Tile Visualizer Tool</b></h1>
-                    <p>Enhancing your imagination with the use of tile visualizer in creating limitless designs all you want.</p>
+    <section class="video-text-section py-16 w-full" data-scroll>
+        <div class="container mx-auto px-5">
+            <div class="video-text-container flex flex-wrap items-center justify-between gap-10">
+                <div class="video-text flex-1 min-w-[300px] text-center">
+                    <h1 class="text-3xl md:text-4xl lg:text-5xl leading-tight mb-4">
+                        <span class="text-[#F47C2E] font-bold">Craft Your Visions</span> 
+                        <br><span class="font-bold">with our</span>
+                        <br><span class="font-bold">Tile Visualizer Tool</span>
+                    </h1>
+                    <p class="text-base text-gray-600 max-w-[500px] mx-auto">
+                        Enhancing your imagination with the use of tile visualizer in creating limitless designs all you want.
+                    </p>
                 </div>
-                <div class="video-container">
-                    <video src="images/video.mp4" autoplay loop muted playsinline></video>
+                <div class="video-container flex-1 min-w-[300px] max-w-[600px] mx-auto">
+                    <video src="images/video.mp4" autoplay loop muted playsinline class="w-full rounded-xl shadow-xl"></video>
                 </div>
             </div>
         </div>
     </section>
-<br>
+
+    <div class="my-4"></div>
+
     <!-- Meet RALTT Section -->
-    <section class="meet-raltt-section" data-scroll>
-        <div class="container">
-            <h3><b>MEET RALTT</b></h3>
-            <h1>Tile Visualizer and E-Commerce in One Website</h1>
-            <p>Browse while using our tile visualizer tool and check out items you want and deliver at the same day.</p>
+    <section class="meet-raltt-section py-16 w-full text-center" data-scroll>
+        <div class="container mx-auto px-5">
+            <h3 class="text-[#F47C2E] font-semibold tracking-wide mb-4"><b>MEET RALTT</b></h3>
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                Tile Visualizer and E-Commerce in One Website
+            </h1>
+            <p class="text-gray-600 text-lg max-w-[700px] mx-auto">
+                Browse while using our tile visualizer tool and check out items you want and deliver at the same day.
+            </p>
         </div>
     </section>
 
     <!-- Tabbed Section -->
-    <section class="tabbed-section" data-scroll>
-        <div class="container">
-            <div class="tab-buttons">
-                <button class="tab-btn active" data-tab="visualizer-tab">3D Visualizer</button>
-                <button class="tab-btn" data-tab="ecommerce-tab">Tile E-Commerce</button>
+    <section class="tabbed-section py-16 w-full" data-scroll>
+        <div class="container mx-auto px-5">
+            <div class="tab-buttons flex justify-center gap-5 mb-8 flex-wrap">
+                <button class="tab-btn text-lg font-semibold py-3 px-6 rounded-full bg-white text-[#94481b] border-2 border-[#94481b] cursor-pointer transition-all duration-300 active:bg-[#94481b] active:text-white active:-translate-y-1 active:shadow-lg" data-tab="visualizer-tab" id="tab-btn-visualizer">
+                    3D Visualizer
+                </button>
+                <button class="tab-btn text-lg font-semibold py-3 px-6 rounded-full bg-white text-[#94481b] border-2 border-[#94481b] cursor-pointer transition-all duration-300" data-tab="ecommerce-tab" id="tab-btn-ecommerce">
+                    Tile E-Commerce
+                </button>
             </div>
             
-            <div class="tab-content active" id="visualizer-tab">
-                <img src="images/2dtilehomepage.png" alt="3D Visualizer">
-                <div class="tab-text">
-                    <h2>3D Tile Visualizer</h2>
-                    <div class="subtitle">Expand imagination with 3D</div>
-                    <div class="description">
+            <div class="tab-content active flex items-center gap-10 mt-8 flex-wrap w-full fade-in" id="visualizer-tab">
+                <img src="images/2dtilehomepage.png" alt="3D Visualizer" class="flex-1 min-w-[300px] max-w-full rounded-2xl">
+                <div class="tab-text flex-1 min-w-[300px] text-left">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-2 leading-tight">3D Tile Visualizer</h2>
+                    <div class="subtitle text-gray-500 text-sm mb-4">Expand imagination with 3D</div>
+                    <div class="description text-gray-700 text-lg mb-6">
                         Enhance your shopping experience with our 3D Tile Visualizer! Simply upload an image to see how
                         tiles, marble, or wood flooring fit your space. Visualize with confidence and make informed
                         decisions effortlessly!
                     </div>
-                    <a href="user_login_form.php" class="animated-btn">Launch visualizer</a>
+                    <a href="user_login_form.php" class="animated-btn inline-block py-3 px-8 bg-[#94481b] text-white border-none rounded-full text-lg font-semibold no-underline transition-all duration-300 shadow-lg">
+                        Launch visualizer
+                    </a>
                 </div>
             </div>
             
-            <div class="tab-content" id="ecommerce-tab">
-                <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
-                    <img src="images/tilehp1.PNG" alt="Tile Shop 1" style="flex: 1; min-width: 200px; max-width: 100%;">
-                    <img src="images/tilehp2.PNG" alt="Tile Shop 2" style="flex: 1; min-width: 200px; max-width: 100%;">
+            <div class="tab-content hidden items-center gap-10 mt-8 flex-wrap w-full" id="ecommerce-tab">
+                <div class="flex gap-5 flex-wrap justify-center flex-1 min-w-[300px]">
+                    <img src="images/tilehp1.PNG" alt="Tile Shop 1" class="flex-1 min-w-[200px] max-w-full rounded-2xl">
+                    <img src="images/tilehp2.PNG" alt="Tile Shop 2" class="flex-1 min-w-[200px] max-w-full rounded-2xl">
                 </div>
-                <div class="tab-text">
-                    <h2>Choose over 1000+ tile designs</h2>
-                    <div class="subtitle">Add to cart and checkout your tile choice</div>
-                    <div class="description">
+                <div class="tab-text flex-1 min-w-[300px] text-left">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-2 leading-tight">Choose over 1000+ tile designs</h2>
+                    <div class="subtitle text-gray-500 text-sm mb-4">Add to cart and checkout your tile choice</div>
+                    <div class="description text-gray-700 text-lg mb-6">
                         Choose from over 1000+ tile designs at RALTT! Discover a variety of styles in tiles, marble, and
                         wood flooring to perfectly match your space.
                     </div>
-                    <a href="userloginform.php" class="animated-btn">Buy now</a>
+                    <a href="userloginform.php" class="animated-btn inline-block py-3 px-8 bg-[#94481b] text-white border-none rounded-full text-lg font-semibold no-underline transition-all duration-300 shadow-lg">
+                        Buy now
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Trusted Distributors Section -->
-    <section class="trusted-section" data-scroll>
-        <div class="container">
-            <h1>Trusted by over <span style="color: #F47C2E;">50+ distributors</span></h1>
-            <div class="subtitle">Low prices vs. other tile trade retailers</div>
-            <div class="distributor-grid">
-                <div class="distributor-item"><img src="images/distributors/logo1.jpg" alt="Distributor 1"></div>
-                <div class="distributor-item"><img src="images/distributors/logo2.jpg" alt="Distributor 2"></div>
-                <div class="distributor-item"><img src="images/distributors/logo3.jpg" alt="Distributor 3"></div>
-                <div class="distributor-item"><img src="images/distributors/logo4.jpg" alt="Distributor 4"></div>
-                <div class="distributor-item"><img src="images/distributors/logo5.jpg" alt="Distributor 5"></div>
-                <div class="distributor-item"><img src="images/distributors/logo6.jpg" alt="Distributor 6"></div>
-                <div class="distributor-item"><img src="images/distributors/logo7.jpg" alt="Distributor 7"></div>
-                <div class="distributor-item"><img src="images/distributors/logo8.jpg" alt="Distributor 8"></div>
-                <div class="distributor-item"><img src="images/distributors/logo9.jpg" alt="Distributor 9"></div>
-                <div class="distributor-item"><img src="images/distributors/logo10.jpg" alt="Distributor 10"></div>
-                <div class="distributor-item"><img src="images/distributors/logo11.jpg" alt="Distributor 11"></div>
+    <!-- Trusted Section -->
+    <section class="trusted-section w-full py-20 text-center bg-[#faf9f7]" data-scroll>
+        <div class="container mx-auto px-5">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+                Trusted by over <span class="text-[#F47C2E]">50+ distributors</span>
+            </h1>
+            <div class="subtitle text-gray-500 text-xl mb-8">Low prices vs. other tile trade retailers</div>
+            <div class="distributor-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 w-full max-w-[1200px] mx-auto p-8 bg-white rounded-2xl shadow-lg">
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo1.jpg" alt="Distributor 1" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo2.jpg" alt="Distributor 2" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo3.jpg" alt="Distributor 3" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo4.jpg" alt="Distributor 4" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo5.jpg" alt="Distributor 5" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo6.jpg" alt="Distributor 6" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo7.jpg" alt="Distributor 7" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo8.jpg" alt="Distributor 8" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo9.jpg" alt="Distributor 9" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo10.jpg" alt="Distributor 10" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
+                <div class="distributor-item bg-gray-100 rounded-2xl p-5 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg hover:bg-white aspect-square">
+                    <img src="images/distributors/logo11.jpg" alt="Distributor 11" class="max-w-full max-h-full object-contain grayscale-[20%] hover:grayscale-0 transition-all duration-300">
+                </div>
             </div>
         </div>
     </section>
 
     <!-- App Download Section -->
-    <section class="app-section" data-scroll>
-        <div class="container">
-            <div class="app-container">
-                <h1>Checkout wherever you are!</h1>
-                <div class="subtitle">Download our app now</div>
-                <div class="app-content">
-                    <div class="app-image">
-                        <img src="images/phonehome.jpg" alt="Phone Mockup">
+    <section class="app-section w-full py-20 text-center" data-scroll>
+        <div class="container mx-auto px-5">
+            <div class="app-container max-w-[1100px] mx-auto p-16 bg-[#faf9f7] rounded-2xl">
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">Checkout wherever you are!</h1>
+                <div class="subtitle text-gray-400 text-lg mb-8">Download our app now</div>
+                <div class="app-content flex items-center justify-center gap-10 flex-wrap">
+                    <div class="app-image flex-1 min-w-[300px] max-w-[400px]">
+                        <img src="images/phonehome.jpg" alt="Phone Mockup" class="w-full rounded-2xl shadow-xl">
                     </div>
-                    <div class="app-details">
-                        <div class="app-highlight">
+                    <div class="app-details flex-1 min-w-[300px] text-center">
+                        <div class="app-highlight text-[#94481b] text-xl font-semibold mb-8 leading-relaxed">
                             Let's make your ideas come<br>
                             into real-life visuals within<br>
                             your hands.
                         </div>
-                        <a href="#" class="btn btn-download">
-                            <i class="fas fa-download"></i> Download the App
+                        <a href="#" class="btn bg-[#94481b] text-white text-lg font-semibold border-none rounded-full py-3 px-8 my-2 shadow-lg w-60 max-w-full transition-all duration-300 hover:bg-[#b35923] hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-2 no-underline">
+                            <i class="fas fa-download text-lg"></i> Download the App
                         </a>
-                        <div class="btn-divider">or</div>
-                        <a href="#" class="btn btn-playstore">
-                            <i class="fab fa-google-play"></i> Get on Google Play
+                        <div class="btn-divider text-gray-500 text-base my-3 relative flex items-center justify-center">
+                            <span class="before:content-[''] before:flex-1 before:border-b before:border-gray-300 before:mx-2 after:content-[''] after:flex-1 after:border-b after:border-gray-300 after:mx-2">or</span>
+                        </div>
+                        <a href="#" class="btn bg-[#4285F4] text-white text-lg font-semibold border-none rounded-full py-3 px-8 my-2 shadow-lg w-60 max-w-full transition-all duration-300 hover:bg-[#3367D6] hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-2 no-underline">
+                            <i class="fab fa-google-play text-lg"></i> Get on Google Play
                         </a>
                     </div>
                 </div>
@@ -765,21 +282,56 @@ include 'includes/header.php';
 
     <script>
         // Tab functionality
+
         document.addEventListener('DOMContentLoaded', function() {
             const tabButtons = document.querySelectorAll('.tab-btn');
-            
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            // Helper to set active button based on visible tab
+            function setActiveTabButton() {
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active', 'bg-[#94481b]', 'text-white', '-translate-y-1', 'shadow-lg');
+                    btn.classList.add('bg-white', 'text-[#94481b]');
+                });
+                tabContents.forEach(content => {
+                    if (content.classList.contains('active') && !content.classList.contains('hidden')) {
+                        const tabId = content.id;
+                        const btn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+                        if (btn) {
+                            btn.classList.add('active', 'bg-[#94481b]', 'text-white', '-translate-y-1', 'shadow-lg');
+                            btn.classList.remove('bg-white', 'text-[#94481b]');
+                        }
+                    }
+                });
+            }
+
+            // Initial state: ensure correct button is active
+            setActiveTabButton();
+
             tabButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     // Remove active class from all buttons and content
-                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                    
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('active', 'bg-[#94481b]', 'text-white', '-translate-y-1', 'shadow-lg');
+                        btn.classList.add('bg-white', 'text-[#94481b]');
+                    });
+                    tabContents.forEach(content => {
+                        content.classList.remove('active', 'flex');
+                        content.classList.add('hidden');
+                    });
+
                     // Add active class to clicked button
-                    this.classList.add('active');
-                    
+                    this.classList.add('active', 'bg-[#94481b]', 'text-white', '-translate-y-1', 'shadow-lg');
+                    this.classList.remove('bg-white', 'text-[#94481b]');
+
                     // Show corresponding content
                     const tabId = this.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
+                    const tabContent = document.getElementById(tabId);
+                    tabContent.classList.remove('hidden');
+                    tabContent.classList.add('active', 'flex', 'fade-in');
+
+                    // Ensure only the correct button is active
+                    setActiveTabButton();
                 });
             });
 
@@ -821,13 +373,11 @@ include 'includes/header.php';
             // Initialize scroll animation
             window.addEventListener('load', () => {
                 handleScrollAnimation();
-                // Force a reflow to trigger animations after page load
                 scrollElements.forEach(el => el.offsetHeight);
             });
             
+            let ticking = false;
             window.addEventListener('scroll', () => {
-                // Throttle scroll events for performance
-                let ticking = false;
                 if (!ticking) {
                     window.requestAnimationFrame(() => {
                         handleScrollAnimation();

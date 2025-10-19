@@ -101,6 +101,7 @@ include '../includes/headeruser.php';
             border: 1px solid #e8d9cf;
             border-radius: 8px;
             transition: all 0.3s ease;
+            color: #333; /* Fix font color for visibility */
         }
         
         .form-input:focus, .form-textarea:focus, .form-select:focus {
@@ -108,7 +109,6 @@ include '../includes/headeruser.php';
             box-shadow: 0 0 0 2px rgba(125, 49, 10, 0.2);
         }
         
-        /* New rule to change dropdown text color */
         .form-select {
             color: #7d310a;
         }
@@ -135,6 +135,15 @@ include '../includes/headeruser.php';
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
         }
         
         .modal-content {
@@ -145,6 +154,14 @@ include '../includes/headeruser.php';
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
+            transform: scale(0.95) translateY(40px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(.4,2,.3,1);
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
         }
         
         .modal-header {
@@ -199,9 +216,164 @@ include '../includes/headeruser.php';
             color: #4b5563;
         }
         
+        .order-ref-input {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+            gap: 0.5rem;
+        }
+        
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 7%;
+            right: 7%;
+            height: 6px;
+            background: linear-gradient(90deg, #e8d9cf 0%, #f9f5f2 100%);
+            border-radius: 3px;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+        
+        .step-number {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e8d9cf 60%, #f9f5f2 100%);
+            color: #777;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 8px rgba(125,49,10,0.07);
+            border: 3px solid #e8d9cf;
+            transition: all 0.3s cubic-bezier(.4,2,.3,1);
+        }
+        
+        .step.active .step-number {
+            background: linear-gradient(135deg, #7d310a 60%, #cf8756 100%);
+            color: #fff;
+            border-color: #7d310a;
+            box-shadow: 0 4px 16px rgba(125,49,10,0.13);
+            transform: scale(1.08);
+        }
+        
+        .step.completed .step-number {
+            background: linear-gradient(135deg, #16a34a 60%, #a7f3d0 100%);
+            color: #fff;
+            border-color: #16a34a;
+            box-shadow: 0 4px 16px rgba(22,163,74,0.13);
+            transform: scale(1.08);
+        }
+        
+        .step-label {
+            font-size: 1rem;
+            color: #777;
+            font-weight: 500;
+            margin-top: 0.1rem;
+            letter-spacing: 0.01em;
+            text-align: center;
+        }
+        
+        .step.active .step-label {
+            color: #7d310a;
+            font-weight: 700;
+        }
+        
+        .step.completed .step-label {
+            color: #16a34a;
+            font-weight: 700;
+        }
+        
+        .form-section {
+            display: none;
+            opacity: 0;
+            transform: translateX(40px) scale(0.98);
+            transition: all 0.4s cubic-bezier(.4,2,.3,1);
+        }
+        
+        .form-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            animation: fadeInStep 0.5s cubic-bezier(.4,2,.3,1);
+        }
+        
+        @keyframes fadeInStep {
+            from { opacity: 0; transform: translateX(40px) scale(0.98); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        
+        .item-checkbox {
+            accent-color: #7d310a;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .file-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .file-preview-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .file-preview-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+        }
+        
+        .file-preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
         @media (max-width: 768px) {
             .ticket-container {
                 flex-direction: column;
+            }
+            
+            .step-indicator {
+                padding: 0 1rem;
+            }
+            
+            .step-label {
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -213,6 +385,22 @@ include '../includes/headeruser.php';
             <!-- Page Header -->
             <div class="mb-6">
                 <h2 class="text-2xl font-black text-primary">Customer Support</h2>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Order Reference</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Select Items</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Issue Details</div>
+                </div>
             </div>
 
             <!-- Main Content -->
@@ -227,96 +415,101 @@ include '../includes/headeruser.php';
                             </div>
                         </div>
                         
-                        <div class="mb-6">
-                            <h3 class="text-lg font-bold text-primary mb-4">Select Order with Damaged Tiles</h3>
-                            <p class="text-textlight text-sm mb-4">Choose from your recent orders to request an exchange for cracked or shattered tiles</p>
+                        <!-- Step 1: Order Reference -->
+                        <div class="form-section active" id="section1">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-bold text-primary mb-4">Enter Your Order Reference Number</h3>
+                                <p class="text-textlight text-sm mb-4">Please enter your order reference number in the format RAL-XXXXXXXX (8 characters of numbers or uppercase letters)</p>
+                                
+                                <div class="flex items-center">
+                                    <span class="bg-light text-primary font-bold py-3 px-4 rounded-l-lg border border-r-0 border-[#e8d9cf]">RAL-</span>
+                                    <input type="text" id="orderRefInput" class="form-input order-ref-input flex-grow rounded-l-none py-3" placeholder="XXXXXXXX" maxlength="8" pattern="[A-Z0-9]{8}" title="8 characters of numbers or uppercase letters">
+                                </div>
+                                <p class="text-xs text-textlight mt-2">Example: RAL-A1B2C3D4</p>
+                            </div>
                             
-                            <div class="space-y-4 max-h-60 overflow-y-auto p-2">
-                                <!-- Order 1 -->
-                                <div class="order-card p-4" onclick="selectOrder(this, 'order1')">
-                                    <div class="flex items-center">
-                                        <img src="https://placehold.co/64x64/f9f5f2/7d310a?text=AT" alt="Product" class="w-16 h-16 rounded-lg object-cover mr-4">
-                                        <div class="flex-grow">
-                                            <p class="font-bold text-textdark">Arte Ceramiche Matte Floor Tile</p>
-                                            <p class="text-sm text-textlight">Order #ORD-123456 • Nov 15, 2023</p>
-                                            <p class="text-sm text-textlight">Deparo Branch • Qty: 2</p>
-                                        </div>
-                                        <div class="text-primary font-black">₱200</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Order 2 -->
-                                <div class="order-card p-4" onclick="selectOrder(this, 'order2')">
-                                    <div class="flex items-center">
-                                        <img src="https://placehold.co/64x64/f9f5f2/7d310a?text=PW" alt="Product" class="w-16 h-16 rounded-lg object-cover mr-4">
-                                        <div class="flex-grow">
-                                            <p class="font-bold text-textdark">Porcelain Wood-Look Tile</p>
-                                            <p class="text-sm text-textlight">Order #ORD-123457 • Nov 18, 2023</p>
-                                            <p class="text-sm text-textlight">Brixton Branch • Qty: 1</p>
-                                        </div>
-                                        <div class="text-primary font-black">₱150</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Order 3 -->
-                                <div class="order-card p-4" onclick="selectOrder(this, 'order3')">
-                                    <div class="flex items-center">
-                                        <img src="https://placehold.co/64x64/f9f5f2/7d310a?text=MW" alt="Product" class="w-16 h-16 rounded-lg object-cover mr-4">
-                                        <div class="flex-grow">
-                                            <p class="font-bold text-textdark">Marble Effect Wall Tile</p>
-                                            <p class="text-sm text-textlight">Order #ORD-123458 • Nov 20, 2023</p>
-                                            <p class="text-sm text-textlight">Vanguard Branch • Qty: 1</p>
-                                        </div>
-                                        <div class="text-primary font-black">₱700</div>
-                                    </div>
-                                </div>
+                            <div class="flex justify-end">
+                                <button type="button" class="submit-btn text-white font-bold py-3 px-6 rounded-lg" onclick="validateOrderRef()">
+                                    Next <i class="fa-solid fa-arrow-right ml-2"></i>
+                                </button>
                             </div>
                         </div>
                         
-                        <div class="mb-6">
-                            <label class="block text-textdark font-medium mb-2">Issue Type</label>
-                            <select class="form-select w-full p-3">
-                                <option value="">Select issue type</option>
-                                <option value="cracked">Cracked Tiles</option>
-                                <option value="shattered">Shattered Tiles</option>
-                                <option value="defective">Defective Tiles</option>
-                                <option value="wrong-item">Wrong Item Delivered</option>
-                                <option value="other">Other Issue</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <label class="block text-textdark font-medium mb-2">When was the damage noticed?</label>
-                            <select class="form-select w-full p-3">
-                                <option value="">Select timeframe</option>
-                                <option value="upon-delivery">Upon Delivery</option>
-                                <option value="during-installation">During Installation</option>
-                                <option value="after-installation">After Installation</option>
-                                <option value="other-time">Other Time</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <label class="block text-textdark font-medium mb-2">Description of Issue</label>
-                            <textarea class="form-textarea w-full p-3" rows="4" placeholder="Please describe the issue in detail..."></textarea>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <label class="block text-textdark font-medium mb-2">Upload Photos (Optional but recommended)</label>
-                            <div class="file-upload p-6 text-center cursor-pointer">
-                                <i class="fa-solid fa-cloud-upload-alt text-3xl text-primary mb-2"></i>
-                                <p class="text-textdark font-medium">Click to upload or drag and drop</p>
-                                <p class="text-textlight text-sm">PNG, JPG up to 10MB</p>
-                                <input type="file" class="hidden" id="fileUpload" multiple accept="image/*">
+                        <!-- Step 2: Select Items -->
+                        <div class="form-section" id="section2">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-bold text-primary mb-4">Select Items with Issues</h3>
+                                <p class="text-textlight text-sm mb-4">Choose the items from your order that have issues</p>
+                                
+                                <div class="space-y-4 max-h-60 overflow-y-auto p-2" id="orderItemsContainer">
+                                    <!-- Order items will be dynamically inserted here -->
+                                </div>
                             </div>
-                            <div id="filePreview" class="mt-4 grid grid-cols-3 gap-2 hidden"></div>
+                            
+                            <div class="flex justify-between">
+                                <button type="button" class="back-btn text-white font-bold py-3 px-6 rounded-lg" onclick="goToStep(1)">
+                                    <i class="fa-solid fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button type="button" class="submit-btn text-white font-bold py-3 px-6 rounded-lg" onclick="nextStepSelectItems()">
+                                    Next <i class="fa-solid fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
                         </div>
                         
-
-                        
-                        <button type="button" class="submit-btn w-full text-white font-bold py-3 rounded-lg" onclick="submitTicket()">
-                            Submit Ticket
-                        </button>
+                        <!-- Step 3: Issue Details -->
+                        <div class="form-section" id="section3">
+                            <div class="mb-6">
+                                <h3 class="text-lg font-bold text-primary mb-4">Issue Details</h3>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-textdark font-medium mb-2">Issue Type</label>
+                                    <select class="form-select w-full p-3" id="issueType" required>
+                                        <option value="">Select issue type</option>
+                                        <option value="cracked">Cracked Tile</option>
+                                        <option value="shattered">Shattered Tile</option>
+                                        <option value="defective">Defective Tile</option>
+                                        <option value="wrong-item">Wrong Item Delivered</option>
+                                        <option value="payment">Payment Issues</option>
+                                        <option value="other">Other Issue</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-textdark font-medium mb-2">When was the damage noticed?</label>
+                                    <select class="form-select w-full p-3" id="damageTime" required>
+                                        <option value="">Select timeframe</option>
+                                        <option value="upon-delivery">Upon Delivery</option>
+                                        <option value="after-delivery">After Delivery</option>
+                                        <option value="other-time">Other Time</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-textdark font-medium mb-2">Description of Issue</label>
+                                    <textarea class="form-textarea w-full p-3" id="issueDescription" rows="4" placeholder="Please describe the issue in detail..." required></textarea>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-textdark font-medium mb-2">Upload Photos (Optional but recommended)</label>
+                                    <div class="file-upload p-6 text-center cursor-pointer" id="fileUploadArea">
+                                        <i class="fa-solid fa-cloud-upload-alt text-3xl text-primary mb-2"></i>
+                                        <p class="text-textdark font-medium">Click to upload or drag and drop</p>
+                                        <p class="text-textlight text-sm">PNG, JPG up to 10MB</p>
+                                        <input type="file" class="hidden" id="fileUpload" multiple accept="image/*">
+                                    </div>
+                                    <div id="filePreview" class="file-preview-container"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between">
+                                <button type="button" class="back-btn text-white font-bold py-3 px-6 rounded-lg" onclick="goToStep(2)">
+                                    <i class="fa-solid fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button type="button" class="submit-btn text-white font-bold py-3 px-6 rounded-lg" onclick="submitTicket()">
+                                    Submit Ticket
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 
@@ -385,18 +578,36 @@ include '../includes/headeruser.php';
     <!-- Success Modal -->
     <div id="successModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header p-6 flex justify-between items-center">
+            <div class="modal-header p-6 flex items-center">
                 <h3 class="text-xl font-black text-primary">Ticket Submitted Successfully</h3>
-                <button class="close-btn text-2xl" onclick="closeModal('successModal')">&times;</button>
             </div>
             <div class="p-6 text-center">
                 <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
                     <i class="fa-solid fa-check text-3xl text-green-600"></i>
                 </div>
                 <h4 class="font-bold text-textdark text-lg mb-2">Thank You for Your Submission</h4>
-                <p class="text-textlight mb-4">Your ticket #TKT-789456 has been submitted successfully. Our support team will contact you within 24-48 hours.</p>
+                <p class="text-textlight mb-4">Your ticket has been submitted successfully. Our support team will contact you within 24-48 hours.</p>
                 <button type="button" class="submit-btn w-full text-white font-bold py-3 rounded-lg" onclick="closeModal('successModal')">
                     Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header p-6 flex items-center">
+                <h3 class="text-xl font-black text-primary">Order Reference Error</h3>
+            </div>
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-times text-3xl text-red-600"></i>
+                </div>
+                <h4 class="font-bold text-textdark text-lg mb-2" id="errorModalTitle">Invalid Reference</h4>
+                <p class="text-textlight mb-4" id="errorModalMsg">Please enter a valid order reference number (8 characters of numbers or uppercase letters).</p>
+                <button type="button" class="submit-btn w-full text-white font-bold py-3 rounded-lg" onclick="closeModal('errorModal')">
+                    Close
                 </button>
             </div>
         </div>
@@ -405,9 +616,8 @@ include '../includes/headeruser.php';
     <!-- Ticket Details Modal -->
     <div id="ticketDetailsModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header p-6 flex justify-between items-center">
+            <div class="modal-header p-6 flex items-center">
                 <h3 class="text-xl font-black text-primary">Ticket Details</h3>
-                <button class="close-btn text-2xl" onclick="closeModal('ticketDetailsModal')">&times;</button>
             </div>
             <div class="p-6" id="ticketDetailsContent">
                 <!-- Ticket details will be injected here -->
@@ -444,44 +654,212 @@ include '../includes/headeruser.php';
             }
         };
 
-        // View Details modal logic
-        document.querySelectorAll('.view-details-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const ticketId = this.getAttribute('data-ticket');
-                const data = ticketDetailsData[ticketId];
-                if (data) {
-                    document.getElementById('ticketDetailsContent').innerHTML = `
-                        <div class="mb-4">
-                            <h4 class="font-bold text-lg text-primary mb-1">${data.title}</h4>
-                            <p class="text-xs text-textlight mb-2">Submitted on ${data.date}</p>
-                            <span class="inline-block mb-2 px-3 py-1 rounded-full text-xs font-medium ${data.status === 'Pending' ? 'status-pending' : data.status === 'Resolved' ? 'status-resolved' : 'status-closed'}">${data.status}</span>
-                        </div>
-                        <div class="mb-4">
-                            <p class="text-sm text-textdark mb-1"><span class="font-medium">Description:</span> ${data.description}</p>
-                            <p class="text-sm text-textdark mb-1"><span class="font-medium">Resolution:</span> ${data.resolution}</p>
-                        </div>
-                        <div class="bg-light rounded-lg p-3">
-                            <p class="text-xs text-textdark"><span class="font-medium">Support Response:</span> ${data.response}</p>
+        // Order data (for demo)
+        // Order data will be fetched from backend
+
+        // Current state
+        let currentStep = 1;
+        let selectedItems = [];
+        let uploadedFiles = [];
+
+        // Store current order info for ticket submission
+        let currentOrderId = null;
+        let currentOrderRef = null;
+
+        // Navigation functions with animation
+        function goToStep(step) {
+            const prevSection = document.getElementById(`section${currentStep}`);
+            const nextSection = document.getElementById(`section${step}`);
+            // Animate out current section
+            prevSection.classList.remove('active');
+            // Update step indicators
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`step${step}`).classList.add('active');
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}`).classList.add('completed');
+            }
+            // Animate in next section
+            setTimeout(() => {
+                prevSection.style.display = 'none';
+                nextSection.style.display = 'block';
+                setTimeout(() => {
+                    nextSection.classList.add('active');
+                }, 10);
+            }, 300);
+            currentStep = step;
+        }
+
+        // Step 2 Next button validation
+        function nextStepSelectItems() {
+            if (selectedItems.length === 0) {
+                showErrorModal('No Item Selected', 'Please select at least one item with issues.');
+                return;
+            }
+            goToStep(3);
+        }
+
+        // Validate order reference
+        function validateOrderRef() {
+            const orderRef = document.getElementById('orderRefInput').value.toUpperCase();
+            const pattern = /^[A-Z0-9]{8}$/;
+            if (!pattern.test(orderRef)) {
+                showErrorModal('Invalid Reference', 'Please enter a valid order reference number (8 characters of numbers or uppercase letters).');
+                return;
+            }
+            // AJAX call to backend
+            fetch('get_order_items.php?ref=' + encodeURIComponent(orderRef))
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        showErrorModal('Order Reference Not Found', data.error || 'Order reference not found. Please check your reference number and try again.');
+                        return;
+                    }
+                    // Save order info for ticket
+                    currentOrderId = data.items.length > 0 ? data.items[0].order_id : null;
+                    currentOrderRef = 'RAL-' + orderRef;
+                    loadOrderItems(data.items);
+                    goToStep(2);
+                })
+                .catch(() => {
+                    showErrorModal('Error', 'Unable to connect to server. Please try again later.');
+                });
+        }
+
+        async function submitTicket() {
+            const issueType = document.getElementById('issueType');
+            const damageTime = document.getElementById('damageTime');
+            const issueDescription = document.getElementById('issueDescription');
+            const orderRef = document.getElementById('orderRefInput').value.toUpperCase();
+
+            if (selectedItems.length === 0) {
+                showErrorModal('No Item Selected', 'Please select at least one item with issues.');
+                return;
+            }
+            if (!issueType.value) {
+                showErrorModal('Missing Issue Type', 'Please select an issue type.');
+                return;
+            }
+            if (!damageTime.value) {
+                showErrorModal('Missing Damage Time', 'Please select when the damage was noticed.');
+                return;
+            }
+            if (!issueDescription.value.trim()) {
+                showErrorModal('Missing Description', 'Please provide a description of the issue.');
+                return;
+            }
+            // Get user_id from PHP session
+            let userId = null;
+            try {
+                userId = <?php echo isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 'null'; ?>;
+            } catch (e) {
+                userId = null;
+            }
+            if (!userId) {
+                showErrorModal('User Error', 'User not logged in.');
+                return;
+            }
+            // Map frontend values to backend ENUMs
+            const issueTypeMap = {
+                'cracked': 'Cracked Tile',
+                'shattered': 'Shattered Tile',
+                'defective': 'Defective Tile',
+                'wrong-item': 'Wrong Item Delivered',
+                'payment': 'Payment Issues',
+                'other': 'Other'
+            };
+            const damageTimeMap = {
+                'upon-delivery': 'Upon Delivery',
+                'after-delivery': 'After Delivery',
+                'other-time': 'Other time'
+            };
+            // Get photo as base64 (first image only)
+            let photoBase64 = '';
+            const fileInput = document.getElementById('fileUpload');
+            if (fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                photoBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        resolve(e.target.result.split(',')[1]); // Remove data:image/...;base64,
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            const ticketData = {
+                user_id: userId,
+                order_id: currentOrderId,
+                order_reference: currentOrderRef,
+                issue_type: issueTypeMap[issueType.value] || '',
+                damage_time: damageTimeMap[damageTime.value] || '',
+                issue_description: issueDescription.value,
+                photo: photoBase64
+            };
+            // Save ticket via AJAX
+            try {
+                const response = await fetch('save_ticket.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ticketData)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showModal('successModal');
+                    setTimeout(() => { resetTicketForm(); }, 2000);
+                } else {
+                    showErrorModal('Ticket Error', result.error || 'Failed to submit ticket.');
+                }
+            } catch (err) {
+                showErrorModal('Server Error', 'Could not connect to server.');
+            }
+        }
+
+        // Show error modal
+        function showErrorModal(title, message) {
+            document.getElementById('errorModalTitle').textContent = title;
+            document.getElementById('errorModalMsg').textContent = message;
+            showModal('errorModal');
+        }
+
+        // Load order items
+        function loadOrderItems(items) {
+            const container = document.getElementById('orderItemsContainer');
+            let html = '';
+            if (!items || items.length === 0) {
+                html = '<div class="text-center text-textlight">No items found for this order.</div>';
+            } else {
+                items.forEach(item => {
+                    html += `
+                        <div class="order-card p-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" class="item-checkbox mr-4" id="item_${item.id}" value="${item.id}" onchange="toggleItemSelection('item_${item.id}')">
+                                <img src="${item.image || ''}" alt="Product" class="w-16 h-16 rounded-lg object-cover mr-4">
+                                <div class="flex-grow">
+                                    <p class="font-bold text-textdark">${item.name}</p>
+                                    <p class="text-sm text-textlight">Qty: ${item.quantity}</p>
+                                </div>
+                                <div class="text-primary font-black">₱${item.price}</div>
+                            </div>
                         </div>
                     `;
-                    document.getElementById('ticketDetailsModal').style.display = 'flex';
-                }
-            });
-        });
-        // Select order function
-        function selectOrder(element, orderId) {
-            // Remove selected class from all orders
-            document.querySelectorAll('.order-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            
-            // Add selected class to clicked order
-            element.classList.add('selected');
-            
-            // Store selected order (in a real application, you would use this value)
-            console.log('Selected order:', orderId);
+                });
+            }
+            container.innerHTML = html;
         }
-        
+
+        // Toggle item selection
+        function toggleItemSelection(itemId) {
+            const checkbox = document.getElementById(itemId);
+            
+            if (checkbox.checked) {
+                selectedItems.push(itemId);
+                checkbox.closest('.order-card').classList.add('selected');
+            } else {
+                selectedItems = selectedItems.filter(id => id !== itemId);
+                checkbox.closest('.order-card').classList.remove('selected');
+            }
+        }
+
         // File upload handling
         const fileUpload = document.getElementById('fileUpload');
         const filePreview = document.getElementById('filePreview');
@@ -489,7 +867,6 @@ include '../includes/headeruser.php';
         fileUpload.addEventListener('change', function(e) {
             const files = e.target.files;
             if (files.length > 0) {
-                filePreview.classList.remove('hidden');
                 filePreview.innerHTML = '';
                 
                 for (let i = 0; i < files.length; i++) {
@@ -498,10 +875,10 @@ include '../includes/headeruser.php';
                     
                     reader.onload = function(e) {
                         const preview = document.createElement('div');
-                        preview.className = 'relative';
+                        preview.className = 'file-preview-item';
                         preview.innerHTML = `
-                            <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg">
-                            <button type="button" class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs" onclick="removeImage(this)">×</button>
+                            <img src="${e.target.result}" alt="Preview">
+                            <div class="file-preview-remove" onclick="removeImage(this)">×</div>
                         `;
                         filePreview.appendChild(preview);
                     };
@@ -514,50 +891,67 @@ include '../includes/headeruser.php';
         // Remove image from preview
         function removeImage(button) {
             button.parentElement.remove();
-            if (filePreview.children.length === 0) {
-                filePreview.classList.add('hidden');
-            }
         }
         
-        // Submit ticket function
-        function submitTicket() {
-            // Validate form (simplified for demo)
-            const selectedOrder = document.querySelector('.order-card.selected');
-            const issueType = document.querySelector('select');
+        // Reset form and go to step 1
+        function resetTicketForm() {
+            // Reset form fields
+            document.getElementById('ticketForm').reset();
+            selectedItems = [];
             
-            if (!selectedOrder) {
-                alert('Please select an order with damaged tiles');
-                return;
+            // Remove selected class from order cards if any
+            document.querySelectorAll('.order-card.selected').forEach(card => card.classList.remove('selected'));
+            
+            // Hide all sections
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`section${i}`).classList.remove('active');
+                document.getElementById(`section${i}`).style.display = 'none';
+                document.getElementById(`step${i}`).classList.remove('active', 'completed');
             }
             
-            if (!issueType.value) {
-                alert('Please select an issue type');
-                return;
-            }
+            // Clear file preview
+            filePreview.innerHTML = '';
             
-            // Show success modal
-            document.getElementById('successModal').style.display = 'flex';
-            
-            // In a real application, you would submit the form data to a server here
+            // Show first section and step
+            setTimeout(() => {
+                document.getElementById('section1').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('section1').classList.add('active');
+                    document.getElementById('step1').classList.add('active');
+                }, 10);
+                currentStep = 1;
+            }, 10);
         }
         
-        // Modal functions
+        // Modal functions with animation
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+        
         function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
         }
-        
+
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modals = document.getElementsByClassName('modal');
             for (let i = 0; i < modals.length; i++) {
                 if (event.target === modals[i]) {
-                    modals[i].style.display = 'none';
+                    closeModal(modals[i].id);
                 }
             }
         }
         
         // Make file upload area droppable
-        const uploadArea = document.querySelector('.file-upload');
+        const uploadArea = document.getElementById('fileUploadArea');
         
         uploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
@@ -584,6 +978,91 @@ include '../includes/headeruser.php';
         uploadArea.addEventListener('click', function() {
             fileUpload.click();
         });
+
+        // View Details modal logic for user's tickets
+        document.addEventListener('click', async function(e) {
+            if (e.target.classList.contains('view-details-btn')) {
+                const ticketId = e.target.getAttribute('data-ticket');
+                const response = await fetch('get_user_ticket_details.php?ticket_id=' + encodeURIComponent(ticketId));
+                const result = await response.json();
+                if (result.success && result.ticket) {
+                    const t = result.ticket;
+                    let itemsHtml = '';
+                    if (t.items && t.items.length > 0) {
+                        itemsHtml = `<div class="mb-4">
+                            <h5 class="font-bold text-primary mb-2">Selected Tile Items</h5>
+                            <ul class="list-disc pl-6">
+                                ${t.items.map(item => {
+                                    const total = (parseFloat(item.unit_price) * parseInt(item.quantity)).toFixed(2);
+                                    return `<li class='mb-2 flex items-center'>
+                                        <span class='font-semibold text-textdark mr-2'>${item.product_name}</span>
+                                        <span class='bg-light px-2 py-1 rounded text-xs font-medium mr-2'>Qty: ${item.quantity}</span>
+                                        <span class='text-xs text-textlight mr-2'>(₱${item.unit_price} each)</span>
+                                        <span class='text-primary font-bold ml-auto'>Total: ₱${total}</span>
+                                    </li>`;
+                                }).join('')}
+                            </ul>
+                        </div>`;
+                    } else {
+                        itemsHtml = `<div class='mb-4 text-textlight'>No items selected for this ticket.</div>`;
+                    }
+                    document.getElementById('ticketDetailsContent').innerHTML = `
+                        <div class="mb-4">
+                            <h4 class="font-bold text-lg text-primary mb-1">${t.issue_type} - Order #${t.order_reference}</h4>
+                            <p class="text-xs text-textlight mb-2">Submitted on ${new Date(t.created_at).toLocaleString()}</p>
+                            <span class="inline-block mb-2 px-3 py-1 rounded-full text-xs font-medium status-pending">${t.ticket_status}</span>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm text-textdark mb-1"><span class="font-medium">Description:</span> ${t.issue_description}</p>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm text-textdark mb-1"><span class="font-medium">Damage Noticed:</span> ${t.damage_time || 'N/A'}</p>
+                        </div>
+                        ${itemsHtml}
+                    `;
+                    showModal('ticketDetailsModal');
+                }
+            }
+        });
+
+        // Load user's ticket history from database and display
+        async function loadTicketHistory() {
+            try {
+                const response = await fetch('get_user_tickets.php');
+                const result = await response.json();
+                const container = document.querySelector('.form-box.lg\\:w-96 .space-y-6');
+                if (!result.success || !result.tickets || result.tickets.length === 0) {
+                    container.innerHTML = '<div class="text-center text-textlight">No tickets submitted yet.</div>';
+                    return;
+                }
+                let html = '';
+                result.tickets.forEach(ticket => {
+                    let statusClass = 'status-pending';
+                    if (ticket.ticket_status === 'Resolved') statusClass = 'status-resolved';
+                    else if (ticket.ticket_status === 'Closed') statusClass = 'status-closed';
+                    html += `
+                        <div class="ticket-item p-6 shadow-sm hover:shadow-md transition-all border border-[#e8d9cf] rounded-xl bg-white flex flex-col gap-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <div>
+                                    <p class="font-bold text-textdark text-base">${ticket.issue_type} - Order #${ticket.order_reference}</p>
+                                    <p class="text-xs text-textlight">Submitted on ${new Date(ticket.created_at).toLocaleString()}</p>
+                                </div>
+                                <span class="${statusClass} text-xs font-medium py-1 px-3 rounded-full">${ticket.ticket_status}</span>
+                            </div>
+                            <p class="text-sm text-textdark mb-1">${ticket.issue_description}</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="ticket-badge text-xs font-medium py-1 px-3 rounded-full">${ticket.issue_type}</span>
+                                <button class="text-primary text-sm font-medium view-details-btn" data-ticket="${ticket.ticket_id}">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                document.querySelector('.form-box.lg\\:w-96 .space-y-6').innerHTML = '<div class="text-center text-textlight">Unable to load tickets.</div>';
+            }
+        }
+        window.addEventListener('DOMContentLoaded', loadTicketHistory);
     </script>
 
 </body>

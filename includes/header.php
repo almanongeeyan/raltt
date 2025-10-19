@@ -1,376 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rich Anne Lea Tiles Trading</title>
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
-
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            light: '#EF7232',
+                            DEFAULT: '#A0522D',
+                            dark: '#8B4513',
+                        },
+                        accent: {
+                            light: '#F5F5F5',
+                            DEFAULT: '#F9F9F9',
+                            dark: '#E5E5E5',
+                        }
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'header': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'dropdown': '0 10px 25px rgba(0, 0, 0, 0.1)',
+                        'button': '0 4px 12px rgba(160, 82, 45, 0.3)',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-in-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideDown: {
+                            '0%': { transform: 'translateY(-10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            margin: 0;
             padding-top: 80px;
         }
-
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 5%;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+        
+        /* Enhanced header with gradient */
+        .header-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
         }
-
-        .header .logo {
-            display: flex;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #333;
-            text-decoration: none;
+        
+        /* Enhanced dropdown animation */
+        .dropdown-content {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
         }
-
-        .header .logo img {
-            height: 40px;
-            margin-right: 10px;
+        
+        .dropdown:hover .dropdown-content,
+        .dropdown.open .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
         }
-
-        .header .navbar {
-            display: flex;
-            gap: 2.5rem;
+        
+        /* Enhanced mobile menu animation */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
         }
-
-        .header .navbar a {
-            font-size: 1.1rem;
-            color: #555;
-            text-decoration: none;
-            padding: 0.5rem 0;
+        
+        .mobile-menu.active {
+            max-height: 500px;
+        }
+        
+        /* Enhanced login button with glow effect */
+        .login-btn {
+            background-color: #A0522D;
+            transition: all 0.3s ease;
             position: relative;
-            transition: color 0.3s ease, transform 0.3s ease;
+            overflow: hidden;
         }
-
-        .header .navbar a:hover {
-            color: #EF7232;
-            transform: translateY(-3px);
+        
+        .login-btn:hover {
+            background-color: #8B4513;
+            box-shadow: 0 6px 20px rgba(160, 82, 45, 0.4);
+            transform: translateY(-2px);
         }
-
-        .header .navbar a::after {
+        
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Ripple effect for login button */
+        .login-btn::after {
             content: '';
             position: absolute;
-            left: 0;
-            bottom: 0;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .login-btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        /* Enhanced nav link hover effect */
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
             width: 0;
             height: 2px;
+            bottom: -4px;
+            left: 0;
             background-color: #EF7232;
             transition: width 0.3s ease;
         }
-
-        .header .navbar a:hover::after {
+        
+        .nav-link:hover::after {
             width: 100%;
         }
-
-        .header .navbar .dropdown {
-            position: relative;
+        
+        /* Enhanced mobile dropdown */
+        .mobile-dropdown-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
         }
-
-        .header .navbar .dropdown .dropbtn {
-            font-size: 1.1rem;
-            color: #555;
-            text-decoration: none;
-            padding: 0.5rem 0;
-            position: relative;
-            background: none;
-            border: none;
-            cursor: pointer;
-            outline: none;
-            display: flex;
-            align-items: center;
-            transition: color 0.3s ease, transform 0.3s ease;
+        
+        .mobile-dropdown.active .mobile-dropdown-content {
+            max-height: 200px;
         }
-
-        .header .navbar .dropdown .dropbtn i {
-            margin-left: 5px;
+        
+        /* Logo hover effect */
+        .logo-hover {
             transition: transform 0.3s ease;
         }
-
-        .header .navbar .dropdown:hover .dropbtn {
-            color: #EF7232;
-            transform: translateY(-3px);
-        }
-
-        .header .navbar .dropdown:hover .dropbtn i {
-            transform: rotate(180deg);
-        }
-
-        .header .navbar .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 220px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            border-radius: 8px;
-            padding: 10px 0;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .header .navbar .dropdown:hover .dropdown-content {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .header .navbar .dropdown-content a {
-            color: #333;
-            padding: 12px 20px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            text-align: left;
-            font-size: 1rem;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .header .navbar .dropdown-content a i {
-            margin-right: 10px;
-            color: #666;
-            transition: color 0.3s ease;
-        }
-
-        .header .navbar .dropdown-content a:hover {
-            background-color: #f1f1f1;
-            color: #EF7232;
-            transform: translateX(5px);
-        }
-
-        .header .navbar .dropdown-content a:hover i {
-            color: #EF7232;
-        }
-
-        .header .login-btn {
-            background-color: #A0522D;
-            color: #fff;
-            padding: 0.7rem 1.5rem;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .header .login-btn i {
-            margin-right: 8px;
-        }
-
-        .header .login-btn:hover {
-            background-color: #8B4513;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .header .fas.fa-bars {
-            font-size: 1.8rem;
-            color: #333;
-            cursor: pointer;
-            display: none;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 991px) {
-            .header {
-                padding: 1rem 2%;
-            }
-            .header .logo img {
-                height: 32px;
-            }
-            .header .navbar {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background-color: #fff;
-                border-top: 1px solid #eee;
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 1rem 0;
-                gap: 0;
-                clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-                transition: clip-path 0.3s ease-in-out;
-                z-index: 999;
-                display: flex !important; /* Ensure navbar is always rendered */
-            }
-            .header .navbar.active {
-                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-            }
-            .header .navbar a,
-            .header .navbar .dropdown .dropbtn {
-                margin: 0.5rem 1.5rem;
-                text-align: left;
-                width: 100%;
-                display: block;
-            }
-            .header .navbar .dropdown-content {
-                position: static;
-                box-shadow: none;
-                min-width: unset;
-                padding-left: 20px;
-                transform: translateY(0);
-                opacity: 1;
-                border-radius: 0;
-                display: none;
-            }
-            .header .navbar .dropdown.open .dropdown-content {
-                display: block;
-            }
-            .header .login-btn {
-                padding: 0.7rem 1rem;
-                font-size: 0.95rem;
-            }
-            .header .fas.fa-bars {
-                display: block;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .header {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                padding: 0.7rem 2vw;
-                width: 100vw;
-                box-sizing: border-box;
-                max-width: 100vw;
-            }
-            .header .logo img {
-                max-width: 120px;
-                height: auto;
-            }
-            .header .login-bars-group {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .header .login-btn {
-                margin-top: 0;
-                width: auto;
-                justify-content: center;
-                font-size: 0.95rem;
-                padding: 0.6rem 1rem;
-            }
-            .header .fas.fa-bars {
-                display: block;
-                margin-left: 0;
-                font-size: 2rem;
-            }
-            .header .navbar {
-                position: fixed;
-                top: 60px;
-                left: 0;
-                right: 0;
-                background-color: #fff;
-                border-top: 1px solid #eee;
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 1rem 0;
-                gap: 0;
-                clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-                transition: clip-path 0.3s ease-in-out;
-                z-index: 999;
-                display: flex !important;
-                max-width: 100vw;
-                width: 100vw;
-                box-sizing: border-box;
-                overflow-x: hidden;
-            }
-            .header .navbar.active {
-                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-            }
-            .header .navbar a,
-            .header .navbar .dropdown .dropbtn {
-                font-size: 1rem;
-                padding: 0.8rem 1.5rem;
-                width: 100%;
-                box-sizing: border-box;
-            }
-            .header .navbar .dropdown-content {
-                padding-left: 20px;
-            }
+        
+        .logo-hover:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
+<body class="bg-white font-inter">
+    <!-- Enhanced Header -->
+    <header class="fixed top-0 left-0 right-0 header-gradient shadow-header z-50 border-b border-gray-100">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <!-- Enhanced Logo with hover effect -->
+                <a href="index.php" class="flex items-center logo-hover">
+                    <img src="images/newlogo.PNG" alt="RALTT Logo" class="h-10 md:h-12">
+                </a>
 
-<body>
-    <header class="header">
-        <a href="index.php" class="logo">
-            <img src="images/newlogo.PNG" alt="RALTT Logo">
-        </a>
-        <nav class="navbar">
-            <!-- 'What's New' button removed as requested -->
-            <div class="dropdown">
-                <button class="dropbtn">Features <i class="fas fa-caret-down"></i></button>
-                <div class="dropdown-content">
-                    <a href="2d_visualizer_homepage.php"><i class="fas fa-cube"></i> 3D Tile Visualizer</a>
-                    <a href="refferal.php"><i class="fas fa-users"></i> Referral Code</a>
+                <!-- Enhanced Desktop Navigation -->
+                <nav class="hidden lg:flex items-center space-x-8">
+                    <!-- Features Dropdown -->
+                    <div class="dropdown relative">
+                        <button class="flex items-center text-gray-700 hover:text-primary-light transition-colors duration-300 font-medium py-2 nav-link">
+                            Features
+                            <i class="fas fa-caret-down ml-2 text-sm transition-transform duration-300 dropdown-arrow"></i>
+                        </button>
+                        <div class="dropdown-content absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-dropdown overflow-hidden border border-gray-100 animate-slide-down">
+                            <a href="2d_visualizer_homepage.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light transition-all duration-300 border-b border-gray-100 last:border-b-0">
+                                <i class="fas fa-cube mr-3 text-primary-light"></i>
+                                <span>3D Tile Visualizer</span>
+                            </a>
+                            <a href="refferal.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light transition-all duration-300">
+                                <i class="fas fa-users mr-3 text-primary-light"></i>
+                                <span>Referral Code</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <a href="product_view_homepage.php" class="text-gray-700 hover:text-primary-light transition-colors duration-300 font-medium py-2 nav-link">Products</a>
+                    <a href="about_us.php" class="text-gray-700 hover:text-primary-light transition-colors duration-300 font-medium py-2 nav-link">About Us</a>
+                </nav>
+
+                <!-- Enhanced Login Button & Mobile Menu Toggle -->
+                <div class="flex items-center space-x-4">
+                    <a href="user_login_form.php" class="hidden md:flex items-center login-btn text-white px-5 py-2.5 rounded-lg font-medium">
+                        <i class="fas fa-user mr-2"></i>
+                        Login
+                    </a>
+                    
+                    <!-- Enhanced Mobile Login Button -->
+                    <a href="user_login_form.php" class="md:hidden flex items-center login-btn text-white px-4 py-2 rounded-lg font-medium">
+                        <i class="fas fa-user mr-2"></i>
+                        Login
+                    </a>
+                    
+                    <!-- Enhanced Mobile Menu Toggle -->
+                    <button id="mobile-menu-toggle" class="lg:hidden text-gray-700 focus:outline-none transition-transform duration-300 hover:scale-110">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
                 </div>
             </div>
-            <a href="product_view_homepage.php">Products</a>
-            <a href="about_us.php">About Us</a>
-        </nav>
-        <div class="login-bars-group">
-            <div class="fas fa-bars" id="menu"></div>
-            <a href="user_login_form.php" class="login-btn"> <i class="fas fa-user"></i> Login</a>
+            
+            <!-- Enhanced Mobile Menu -->
+            <div id="mobile-menu" class="mobile-menu lg:hidden bg-white border-t border-gray-200">
+                <div class="py-4 space-y-2">
+                    <!-- Features Dropdown for Mobile -->
+                    <div class="mobile-dropdown">
+                        <button class="mobile-dropdown-toggle flex items-center justify-between w-full px-4 py-3 text-gray-700 hover:bg-accent rounded-lg transition-colors duration-300 font-medium">
+                            <span>Features</span>
+                            <i class="fas fa-caret-down transition-transform duration-300"></i>
+                        </button>
+                        <div class="mobile-dropdown-content pl-8 pr-4 space-y-2">
+                            <a href="2d_visualizer_homepage.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light rounded-lg transition-all duration-300">
+                                <i class="fas fa-cube mr-3 text-primary-light"></i>
+                                <span>3D Tile Visualizer</span>
+                            </a>
+                            <a href="refferal.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light rounded-lg transition-all duration-300">
+                                <i class="fas fa-users mr-3 text-primary-light"></i>
+                                <span>Referral Code</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <a href="product_view_homepage.php" class="block px-4 py-3 text-gray-700 hover:bg-accent rounded-lg transition-colors duration-300 font-medium">Products</a>
+                    <a href="about_us.php" class="block px-4 py-3 text-gray-700 hover:bg-accent rounded-lg transition-colors duration-300 font-medium">About Us</a>
+                </div>
+            </div>
         </div>
     </header>
 
+    
     <script>
-        const menu = document.querySelector('#menu');
-        const navbar = document.querySelector('.header .navbar');
-
-        menu.addEventListener('click', () => {
-            navbar.classList.toggle('active');
+        // Mobile Menu Toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+            // Change icon between bars and times
+            const icon = mobileMenuToggle.querySelector('i');
+            if (mobileMenu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
         });
-
-        window.addEventListener('scroll', () => {
-            navbar.classList.remove('active');
-        });
-
-        // For mobile, toggle dropdown on click
-        document.querySelectorAll('.dropdown .dropbtn').forEach(button => {
-            button.addEventListener('click', function(event) {
-                if (window.innerWidth <= 991) {
-                    event.preventDefault();
-                    const parent = this.parentElement;
-                    parent.classList.toggle('open');
-                    event.stopPropagation();
-                }
+        
+        // Mobile Dropdown Toggle
+        document.querySelectorAll('.mobile-dropdown-toggle').forEach(button => {
+            button.addEventListener('click', function() {
+                const dropdown = this.parentElement;
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('i');
+                
+                dropdown.classList.toggle('active');
+                icon.classList.toggle('rotate-180');
+                
+                // Close other dropdowns
+                document.querySelectorAll('.mobile-dropdown').forEach(otherDropdown => {
+                    if (otherDropdown !== dropdown) {
+                        otherDropdown.classList.remove('active');
+                        otherDropdown.querySelector('.mobile-dropdown-toggle i').classList.remove('rotate-180');
+                    }
+                });
             });
         });
-
-        // Optional: Close dropdown if clicking outside (for desktop)
-        window.addEventListener('click', function(event) {
-            if (!event.target.matches('.dropbtn')) {
-                document.querySelectorAll('.dropdown').forEach(dropdown => {
-                    dropdown.classList.remove('open');
+        
+        // Desktop dropdown arrow animation
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            dropdown.addEventListener('mouseenter', function() {
+                this.querySelector('.dropdown-arrow').classList.add('rotate-180');
+            });
+            
+            dropdown.addEventListener('mouseleave', function() {
+                this.querySelector('.dropdown-arrow').classList.remove('rotate-180');
+            });
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('#mobile-menu') && !event.target.closest('#mobile-menu-toggle')) {
+                mobileMenu.classList.remove('active');
+                const icon = mobileMenuToggle.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+                
+                // Close all mobile dropdowns
+                document.querySelectorAll('.mobile-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                    dropdown.querySelector('.mobile-dropdown-toggle i').classList.remove('rotate-180');
                 });
             }
         });
+        
+        // Add ripple effect to login buttons
+        document.querySelectorAll('.login-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Create ripple element
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                ripple.classList.add('ripple-effect');
+                
+                // Add ripple styles
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.pointerEvents = 'none';
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                // Remove ripple after animation
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
     </script>
 </body>
-
 </html>

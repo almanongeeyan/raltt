@@ -38,7 +38,7 @@
                                 <option value="">All Branches</option>
                                 <option value="Brixton">Brixton</option>
                                 <option value="Vanguard">Vanguard</option>
-                                <option value="Kiko">Kiko</option>
+                                <option value="Phase 1">Phase 1</option>
                                 <option value="Deparo">Deparo</option>
                                 <option value="Samaria">Samaria</option>
                             </select>

@@ -1,0 +1,28 @@
+/* Custom hover effects for tabbed section */
+.tab-btn {
+	position: relative;
+	overflow: hidden;
+	z-index: 1;
+}
+.tab-btn:hover:not(.active) {
+	background: linear-gradient(90deg, #fff 60%, #ffe5d0 100%);
+	color: #b35923;
+	border-color: #b35923;
+	box-shadow: 0 4px 18px rgba(180, 89, 35, 0.10);
+	transform: translateY(-2px) scale(1.04);
+	transition: all 0.25s cubic-bezier(.4,1.4,.6,1);
+}
+
+/* Animated effect for main action buttons in tabbed section */
+.tab-content .animated-btn {
+	position: relative;
+	overflow: hidden;
+	z-index: 1;
+	transition: box-shadow 0.25s, transform 0.25s, background 0.25s;
+}
+.tab-content .animated-btn:hover {
+	background: linear-gradient(90deg, #b35923 60%, #94481b 100%);
+	color: #fff;
+	box-shadow: 0 8px 32px rgba(180, 89, 35, 0.18), 0 2px 12px rgba(0,0,0,0.10);
+	transform: translateY(-4px) scale(1.05);
+}

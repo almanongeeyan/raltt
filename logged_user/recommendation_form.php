@@ -17,6 +17,12 @@ if (isset($_SESSION['user_id'])) {
 ?>
 <?php if ($showRecommendationModal): ?>
 
+<!-- Unskippable Video Overlay -->
+</div>
+<div id="ralttVideoOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);align-items:center;justify-content:center;">
+  <video id="ralttVideoPlayer" src="../images/raltt.mp4" style="max-width:90vw;max-height:90vh;outline:none;box-shadow:0 0 40px #000;" playsinline preload="auto"></video>
+</div>
+
 <div id="recommendationModalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center hidden">
   <div id="recommendationModalBox" class="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-sm md:max-w-lg max-h-[80vh] overflow-hidden transform scale-90 opacity-0 transition-all duration-300 border-2 border-accent">
     <!-- Header -->
@@ -233,21 +239,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (xhr.readyState === 4) {
           const msgDiv = document.getElementById('recommendationSuccessMsg');
           if (xhr.status === 200) {
-            msgDiv.innerHTML = '<span style="font-size:1.2em;"><b>Preferences Saved!</b></span><br>Thank you for helping us personalize your experience.';
-            msgDiv.style.display = 'block';
-            setTimeout(() => {
-              msgDiv.style.display = 'none';
-              // Also close the modal after 4 seconds
-              if (modalOverlay && modalBox) {
-                modalBox.classList.remove('scale-100', 'opacity-100');
-                modalBox.classList.add('scale-90', 'opacity-0');
-                setTimeout(() => {
-                  modalOverlay.style.display = 'none';
-                  document.body.style.overflow = '';
-                }, 250);
-              }
-            }, 4000);
-
+            // Play the unskippable video overlay
+            showRalttVideoOverlay();
+            // Hide modal immediately
+            if (modalOverlay && modalBox) {
+              modalBox.classList.remove('scale-100', 'opacity-100');
+              modalBox.classList.add('scale-90', 'opacity-0');
+              setTimeout(() => {
+                modalOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+              }, 250);
+            }
           } else {
             msgDiv.innerHTML = '<span style="color:#b91c1c; font-weight:bold;">An error occurred. Please try again.</span>';
             msgDiv.style.display = 'block';
@@ -256,6 +258,55 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       xhr.send('categories=' + JSON.stringify(selectedCategories));
     }
+  }
+
+  // Show the unskippable video overlay
+  function showRalttVideoOverlay() {
+    const overlay = document.getElementById('ralttVideoOverlay');
+    const video = document.getElementById('ralttVideoPlayer');
+    if (!overlay || !video) return;
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    overlay.focus();
+    // Remove controls, disable right-click, pause, etc.
+    video.controls = false;
+    video.currentTime = 0;
+    video.playbackRate = 1;
+  video.muted = false; // Enable sound after user interaction
+    video.setAttribute('disablePictureInPicture', 'true');
+    video.setAttribute('controlsList', 'nodownload nofullscreen noremoteplayback');
+    video.removeEventListener('contextmenu', preventContextMenu);
+    video.addEventListener('contextmenu', preventContextMenu);
+    video.removeEventListener('seeking', preventSeeking);
+    video.addEventListener('seeking', preventSeeking);
+    video.removeEventListener('pause', preventPause);
+    video.addEventListener('pause', preventPause);
+    video.onended = function() {
+      overlay.style.display = 'none';
+      document.body.style.overflow = '';
+    };
+    overlay.tabIndex = 0;
+    overlay.onkeydown = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    };
+    // Only play when explicitly triggered after modal closes
+    video.load();
+    setTimeout(function() {
+      video.play().catch(()=>{});
+    }, 100);
+    overlay.focus();
+  }
+
+  function preventContextMenu(e) { e.preventDefault(); }
+  function preventSeeking(e) {
+    const video = e.target;
+    video.currentTime = Math.max(0, Math.min(video.currentTime, video.duration));
+  }
+  function preventPause(e) {
+    const video = e.target;
+    if (!video.ended) video.play();
   }
   
   // No close button, no outside click to close

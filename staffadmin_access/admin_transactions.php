@@ -96,7 +96,7 @@
                                 <option value="">All Branches</option>
                                 <option value="Brixton">Brixton</option>
                                 <option value="Vanguard">Vanguard</option>
-                                <option value="Kiko">Kiko</option>
+                                <option value="Phase 1">Phase 1</option>
                                 <option value="Deparo">Deparo</option>
                                 <option value="Samaria">Samaria</option>
                             </select>
@@ -268,8 +268,8 @@
             'Deparo Branch': {
                 address: '189 Deparo Road, Caloocan City',
             },
-            'Kiko Branch': {
-                address: 'Kiko, Camarin Road, Caloocan City',
+            'Phase 1 Branch': {
+                address: 'Phase 1, Camarin Road, Caloocan City',
             },
         };
         

@@ -1,5 +1,36 @@
 <?php
+// Ensure this file handles session start and user check
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+// Assume includes/headeruser.php handles the necessary header and potential security checks
 include '../includes/headeruser.php';
+
+// Database connection logic from the original code
+require_once '../connection/connection.php';
+$user_id = $_SESSION['user_id'] ?? null;
+$userData = null;
+$userPassword = null;
+
+if ($user_id) {
+    try {
+        // Fetch main user data
+        $stmt = $db_connection->prepare("SELECT full_name, house_address, full_address, phone_number, email, created_at, referral_code FROM users WHERE id = ? LIMIT 1");
+        $stmt->execute([$user_id]);
+        $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Fetch password hash to check if a password is set
+        $stmtPwd = $db_connection->prepare("SELECT password_hash FROM users WHERE id = ? LIMIT 1");
+        $stmtPwd->execute([$user_id]);
+        $userPassword = $stmtPwd->fetchColumn();
+
+    } catch (PDOException $e) {
+        // Handle database error gracefully
+        error_log("Database Error: " . $e->getMessage());
+        $userData = null; // Prevent displaying incomplete data
+        $userPassword = null;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -27,6 +58,20 @@ include '../includes/headeruser.php';
                     fontFamily: {
                         inter: ['Inter', 'sans-serif'],
                     },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'slide-down': 'slideDown 0.6s ease-out',
+                        'bounce-in': 'bounceIn 0.8s ease-out',
+                        'pulse-gentle': 'pulseGentle 2s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' }, },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' }, },
+                        slideDown: { '0%': { transform: 'translateY(-20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' }, },
+                        bounceIn: { '0%': { transform: 'scale(0.3)', opacity: '0' }, '50%': { transform: 'scale(1.05)', opacity: '0.8' }, '100%': { transform: 'scale(1)', opacity: '1' }, },
+                        pulseGentle: { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.02)' }, }
+                    }
                 }
             }
         }
@@ -34,267 +79,242 @@ include '../includes/headeruser.php';
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #ffece2 0%, #f8f5f2 60%, #e8a56a 100%);
+            background: linear-gradient(135deg, #fef8f4 0%, #f9f5f2 100%);
             min-height: 100vh;
         }
-        
+
         .page-container {
             max-width: 1200px;
             margin: 0 auto;
         }
-        
-        .back-btn {
-            background: linear-gradient(90deg, #7d310a 0%, #a34a20 100%);
-            transition: all 0.3s ease;
-        }
-        
-        .back-btn:hover {
-            background: linear-gradient(90deg, #a34a20 0%, #7d310a 100%);
-            transform: translateY(-2px);
-        }
-        
-        .form-box {
+
+        .back-btn { background: #7d310a; transition: all 0.3s ease; }
+        .back-btn:hover { background: #a34a20; transform: translateY(-1px); }
+        .form-box { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(125, 49, 10, 0.08); transition: all 0.3s ease; border: 1px solid #f0e6df; }
+        .form-box:hover { box-shadow: 0 4px 20px rgba(125, 49, 10, 0.12); }
+        .profile-header, .order-header { background: #fef8f4; border-bottom: 1px solid #f0e6df; }
+        .edit-profile-btn { background: #7d310a; transition: all 0.3s ease; }
+        .edit-profile-btn:hover { background: #a34a20; transform: translateY(-1px); }
+        .order-tabs { border-bottom: 1px solid #f0e6df; }
+        .tab { color: #777; transition: all 0.2s ease; cursor: pointer; position: relative; }
+        .tab.active { color: #7d310a; font-weight: 600; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: #7d310a; }
+        .tab:hover { color: #7d310a; }
+        .order-columns { background: #fef8f4; border-radius: 6px; }
+        .orders-drawer { background: white; border: 1px solid #f0e6df; border-radius: 8px; transition: all 0.3s ease; }
+        .orders-drawer:hover { border-color: #e8a56a; box-shadow: 0 2px 8px rgba(125, 49, 10, 0.05); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background-color: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(125, 49, 10, 0.15); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { background: #fef8f4; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 1px solid #f0e6df; }
+        .close-btn { color: #7d310a; transition: all 0.2s ease; }
+        .close-btn:hover { color: #a34a20; }
+        .form-input { border: 1px solid #e8d9cf; border-radius: 6px; transition: all 0.3s ease; }
+        .form-input:focus { border-color: #7d310a; box-shadow: 0 0 0 3px rgba(125, 49, 10, 0.1); }
+        .submit-btn { background: #7d310a; transition: all 0.3s ease; }
+        .submit-btn:hover { background: #a34a20; }
+        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-shipped { background: #dbeafe; color: #1e40af; }
+        .status-delivered { background: #dcfce7; color: #166534; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        .reward-card { background: linear-gradient(135deg, #7d310a 0%, #a34a20 100%); color: white; }
+        .coins-badge { background: #fef3c7; color: #92400e; border: 2px solid #f59e0b; }
+        .feature-card { background: #fef8f4; border: 1px solid #f0e6df; transition: all 0.3s ease; }
+        .feature-card:hover { border-color: #e8a56a; transform: translateY(-2px); }
+
+        /* Sidebar Styles */
+        .sidebar {
             background: white;
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(125, 49, 10, 0.10);
+            border: 1.5px solid #e8a56a;
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+            padding-top: 0.5rem;
         }
-        
-        .form-box:hover {
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-            transform: translateY(-2px);
+
+        .sidebar-section {
+            padding: 1.5rem 1rem 1.5rem 1rem;
+            border-bottom: 1.5px solid #f0e6df;
         }
-        
-        .profile-header, .address-header, .order-header {
-            background: linear-gradient(90deg, #f9f5f2 0%, #f0e6df 100%);
-            border-bottom: 1px solid #e8d9cf;
+
+        .sidebar-section:last-child {
+            border-bottom: none;
         }
-        
-        .edit-profile-btn, .add-btn {
-            background: linear-gradient(90deg, #7d310a 0%, #a34a20 100%);
-            transition: all 0.3s ease;
-        }
-        
-        .edit-profile-btn:hover, .add-btn:hover {
-            background: linear-gradient(90deg, #a34a20 0%, #7d310a 100%);
-            transform: translateY(-2px);
-        }
-        
-        .address-drawer {
-            border: 1px solid #e8d9cf;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .address-drawer:hover {
-            border-color: #cf8756;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        
-        .default {
-            background: linear-gradient(90deg, #7d310a 0%, #a34a20 100%);
-        }
-        
-        .edit-address-btn {
+
+        .sidebar-title {
             color: #7d310a;
-            transition: all 0.2s ease;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.15rem;
+            letter-spacing: 0.5px;
+            padding-left: 0.5rem;
         }
-        
-        .edit-address-btn:hover {
-            color: #5a2207;
-            transform: translateY(-1px);
-        }
-        
-        .delete-btn {
-            color: #ef4444;
-            transition: all 0.2s ease;
-        }
-        
-        .delete-btn:hover {
-            color: #dc2626;
-            transform: translateY(-1px);
-        }
-        
-        .order-tabs {
-            border-bottom: 1px solid #e8d9cf;
-        }
-        
-        .tab {
-            color: #777;
-            transition: all 0.2s ease;
+
+        /* Combined style for all navigable sidebar items for consistency */
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1.2rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
             cursor: pointer;
-            position: relative;
-        }
-        
-        .tab.active {
+            transition: all 0.18s cubic-bezier(.4,0,.2,1);
             color: #7d310a;
+            background: #f9f5f2;
+            font-weight: 500;
+            border: 1.5px solid transparent;
+            box-shadow: 0 1px 4px rgba(125,49,10,0.04);
+            /* Reset subitem specific font size for consistency */
+            font-size: 1rem;
+        }
+
+        .sidebar-nav-item:hover {
+            background: #e8a56a;
+            color: #fff;
+            border-color: #cf8756;
+            box-shadow: 0 2px 8px rgba(125,49,10,0.10);
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .sidebar-nav-item.active {
+            background: #cf8756;
+            color: #fff;
+            font-weight: 700;
+            border-color: #e8a56a;
+            box-shadow: 0 2px 12px rgba(125,49,10,0.12);
+            transform: scale(1.04);
+        }
+
+        .sidebar-nav-item i {
+            width: 22px;
+            text-align: center;
+            font-size: 1.15rem;
+            margin-right: 0.85rem;
+        }
+
+        .sidebar-nav-item span {
+            flex: 1;
+            text-align: left;
+        }
+
+        /* Profile Info Styles */
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            color: #777;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 1rem;
             font-weight: 600;
         }
-        
-        .tab.active::after {
-            content: '';
+
+        /* Disabled Section Styles */
+        .disabled-section {
+            position: relative;
+        }
+
+        .disabled-overlay {
             position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #7d310a;
-            border-radius: 2px 2px 0 0;
-        }
-        
-        .tab:hover {
-            color: #7d310a;
-        }
-        
-        .order-columns {
-            background: #f9f5f2;
-            border-radius: 8px;
-        }
-        
-        .orders-drawer {
-            background: white;
-            border: 1px solid #e8d9cf;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .orders-drawer:hover {
-            border-color: #cf8756;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        
-        .action-btn {
-            background: linear-gradient(90deg, #7d310a 0%, #a34a20 100%);
-            transition: all 0.3s ease;
-        }
-        
-        .action-btn:hover {
-            background: linear-gradient(90deg, #a34a20 0%, #7d310a 100%);
-            transform: translateY(-2px);
-        }
-        
-        .info-btn {
-            background: linear-gradient(90deg, #f9f5f2 0%, #f0e6df 100%);
-            color: #7d310a;
-            transition: all 0.3s ease;
-        }
-        
-        .info-btn:hover {
-            background: linear-gradient(90deg, #f0e6df 0%, #e8d9cf 100%);
-            transform: translateY(-2px);
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            z-index: 10;
+            padding: 2rem;
+            text-align: center;
         }
-        
-        .modal-content {
-            background-color: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            background: linear-gradient(90deg, #f9f5f2 0%, #f0e6df 100%);
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-        }
-        
-        .close-btn {
+
+        .disabled-icon {
             color: #7d310a;
-            transition: all 0.2s ease;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
-        
-        .close-btn:hover {
-            color: #5a2207;
-            transform: scale(1.1);
-        }
-        
-        .form-input {
-            border: 1px solid #e8d9cf;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .form-input:focus {
-            border-color: #7d310a;
-            box-shadow: 0 0 0 2px rgba(125, 49, 10, 0.2);
-        }
-        
-        .submit-btn {
-            background: linear-gradient(90deg, #7d310a 0%, #a34a20 100%);
-            transition: all 0.3s ease;
-        }
-        
-        .submit-btn:hover {
-            background: linear-gradient(90deg, #a34a20 0%, #7d310a 100%);
-            transform: translateY(-2px);
-        }
-        
-        .branch-badge {
-            background: linear-gradient(90deg, #f9f5f2 0%, #f0e6df 100%);
+
+        .disabled-text {
             color: #7d310a;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
         }
-        
-        .scrollable {
-            max-height: 400px;
-            overflow-y: auto;
+
+        .disabled-subtext {
+            color: #777;
+            font-size: 0.875rem;
         }
-        
-        .scrollable::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .scrollable::-webkit-scrollbar-track {
-            background: #f1e8e0;
-            border-radius: 3px;
-        }
-        
-        .scrollable::-webkit-scrollbar-thumb {
-            background: #cf8756;
-            border-radius: 3px;
-        }
-        
-        .scrollable::-webkit-scrollbar-thumb:hover {
-            background: #7d310a;
-        }
-        
+
         @media (max-width: 768px) {
-            .forms-row {
-                flex-direction: column;
+            .forms-row { flex-direction: column; }
+            .order-columns { display: none; }
+            .orders-drawer { grid-template-columns: 1fr; gap: 12px; }
+            .sidebar {
+                position: static;
+                margin-bottom: 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(125,49,10,0.08);
+                border: 1px solid #f0e6df;
+                padding-top: 0;
             }
-            
-            .order-columns {
-                display: none;
-            }
-            
-            .orders-drawer {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .orders-drawer > div {
-                margin-bottom: 10px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                gap: 10px;
-            }
+            .profile-info-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (min-width: 1024px) {
+            .profile-info-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Animation classes */
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+        .animate-slide-up { animation: slideUp 0.6s ease-out; }
+        .animate-slide-down { animation: slideDown 0.6s ease-out; }
+        .animate-bounce-in { animation: bounceIn 0.8s ease-out; }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* Content Section */
+        .content-section {
+            /* Keep initial state hidden until JS runs, except default */
+            display: none;
         }
     </style>
 </head>
@@ -302,206 +322,519 @@ include '../includes/headeruser.php';
 <body class="min-h-screen pt-24">
     <div class="container mx-auto px-4 py-8">
         <div class="page-container">
-            <!-- Page Header with Back Button -->
-            <div class="mb-6">
-                <button class="back-btn text-white font-bold py-3 px-6 rounded-xl flex items-center" onclick="window.history.back();">
+            <div class="mb-6 animate-slide-down">
+                <button class="back-btn text-white font-medium py-2 px-4 rounded-lg flex items-center" onclick="window.history.back();">
                     <i class="fa-solid fa-arrow-left mr-2"></i>
                     <span>Back</span>
                 </button>
             </div>
-
-            <!-- Profile and Address Forms -->
-            <div class="forms-row flex flex-col lg:flex-row gap-6 mb-8">
-                <!-- Profile Box -->
-                <div class="form-box profile-box flex-grow">
-                    <form id="profileForm" class="p-6">
-                        <div class="profile-header flex justify-between items-center mb-6 pb-4">
-                            <div class="profile-title flex items-center text-primary font-black text-xl">
-                                <i class="fa-solid fa-user mr-3"></i>
-                                <span>Profile Information</span>
-                            </div>
-                            <button type="button" class="edit-profile-btn text-white font-bold py-2 px-4 rounded-lg flex items-center" onclick="openEditProfileModal()">
-                                <i class="fa-solid fa-pen mr-2"></i>
-                                Edit Profile
-                            </button>
-                        </div>
-                        <div class="profile-body">
-                            <div class="profile-info space-y-4">
-                                <div>
-                                    <p class="label text-textlight text-sm mb-1">Full Name</p>
-                                    <p class="value text-textdark font-medium">Cholene Jane Aberin</p>
-                                </div>
-                                <div>
-                                    <p class="label text-textlight text-sm mb-1">Contact Number</p>
-                                    <p class="value text-textdark font-medium">+63 912 345 6789</p>
-                                </div>
-                                <div>
-                                    <p class="label text-textlight text-sm mb-1">Email Address</p>
-                                    <p class="value text-textdark font-medium">cholene.doe@email.com</p>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Address Box -->
-                <div class="form-box address-box flex-grow">
-                    <form id="addressForm" class="p-6">
-                        <div class="address-header flex justify-between items-center mb-6 pb-4">
-                            <div class="address-title flex items-center text-primary font-black text-xl">
-                                <i class="fa-solid fa-location-dot mr-3"></i>
-                                <span>Address Book</span>
-                            </div>
-                            <button type="button" class="add-btn text-white font-bold py-2 px-4 rounded-lg flex items-center" onclick="openAddAddressModal()">
-                                <i class="fa-solid fa-plus mr-2"></i>
-                                Add Address
-                            </button>
-                        </div>
-                        <div class="drawer-container">
-                            <div class="address-drawer p-4 mb-4">
-                                <div class="drawer-content flex flex-col md:flex-row md:justify-between md:items-center">
-                                    <div class="drawer-info flex-grow mb-3 md:mb-0">
-                                        <p class="line1 text-textdark font-medium mb-1">
-                                            Cholene Jane | +63 912 345 6789 
-                                            <span class="default text-white text-xs py-1 px-2 rounded-full ml-2">Default</span>
-                                        </p>
-                                        <p class="line2 text-textlight text-sm">Blk 15 Lot 3 Phase 4 Long Street Name, Barangay San Antonio, Quezon City, Metro Manila 1105</p>
-                                    </div>
-                                    <div class="drawer-actions flex space-x-3">
-                                        <button type="button" class="edit-address-btn font-medium py-1 px-3 rounded-lg flex items-center" onclick="openEditAddressModal()">
-                                            <i class="fa-solid fa-pen mr-1"></i> Edit
-                                        </button>
-                                        <button type="button" class="delete-btn font-medium py-1 px-3 rounded-lg flex items-center">
-                                            <i class="fa-solid fa-trash mr-1"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+    <!-- Cancel Modal -->
+    <?php
+    // Count cancelled orders for this user
+    $cancelCount = 0;
+    if ($user_id) {
+        $stmtCancel = $db_connection->prepare("SELECT COUNT(*) FROM orders WHERE user_id = ? AND order_status = 'cancelled' AND cancelled_by_user = 1");
+        $stmtCancel->execute([$user_id]);
+        $cancelCount = $stmtCancel->fetchColumn();
+    }
+    ?>
+    <div id="cancelModal" class="modal" style="display:none;">
+        <div class="modal-content animate-bounce-in" style="max-width:400px;">
+            <div class="modal-header p-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-primary">Cancel Order</h3>
+                <button class="close-btn text-xl" onclick="closeModal('cancelModal')">&times;</button>
             </div>
+            <div class="p-4">
+                <?php if ($cancelCount >= 3) { ?>
+                    <div class="text-center text-red-600 font-semibold mb-4">You have reached the maximum of 3 cancellations.</div>
+                <?php } ?>
+                <div class="text-center text-primary font-semibold mb-2">Remaining cancel attempts: <?php echo max(0, 3 - $cancelCount); ?> / 3</div>
+                <form id="cancelOrderForm">
+                    <input type="hidden" name="order_reference" id="cancelOrderReference">
+                    <label class="block text-textdark font-medium mb-2 text-sm">Reason for cancellation</label>
+                    <select name="cancel_reason" id="cancelReason" class="form-input w-full p-2 mb-4 text-sm text-gray-800 bg-white" style="color:#333;" <?php echo ($cancelCount >= 3) ? 'disabled' : ''; ?>>
+                        <option value="" style="color:#777;">Select reason...</option>
+                        <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                        <option value="Ordered by mistake">Ordered by mistake</option>
+                        <option value="Change of mind">Change of mind</option>
+                        <option value="Shipping is too slow">Shipping is too slow</option>
+                        <option value="Product is not as described">Product is not as described</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <div id="otherReasonBox" style="display:none;">
+                        <label class="block text-textdark font-medium mb-2 text-sm">Please specify your reason</label>
+                        <input type="text" id="otherReasonInput" name="other_reason" class="form-input w-full p-2 mb-4 text-sm text-gray-800 bg-white" maxlength="200" placeholder="Type your reason here...">
+                    </div>
+                    <button type="submit" id="confirmCancelBtn" class="submit-btn w-full text-white font-medium py-2 rounded mt-2 text-sm bg-red-500 hover:bg-red-600" <?php echo ($cancelCount >= 3) ? 'disabled' : ''; ?>>Confirm Cancel</button>
+                </form>
+                <div class="text-xs text-gray-500 mt-2 text-center">You can only cancel up to 3 orders.</div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Orders Section -->
-            <div class="order-container form-box p-6">
-                <div class="order-header flex items-center text-primary font-black text-xl mb-6 pb-4">
-                    <i class="fa-solid fa-box mr-3"></i>
-                    <span>Order History</span>
+            <div class="flex flex-col lg:flex-row gap-8">
+                <div class="sidebar w-full lg:w-1/4 animate-slide-up">
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">My Account</h3>
+                        <div class="sidebar-nav-item active" data-section="profile">
+                            <i class="fa-solid fa-user"></i>
+                            <span>Profile</span>
+                        </div>
+                        <div class="sidebar-nav-item" data-section="change-password">
+                            <i class="fa-solid fa-lock"></i>
+                            <span>Change Password</span>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">My Orders</h3>
+                        <div class="sidebar-nav-item" data-section="purchases">
+                            <i class="fa-solid fa-box"></i>
+                            <span>Purchases</span>
+                        </div>
+                        <div class="sidebar-nav-item" data-section="to-review">
+                            <i class="fa-solid fa-star"></i>
+                            <span>To Review</span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Order Tabs -->
-                <div class="order-tabs flex flex-wrap gap-4 md:gap-6 mb-6">
-                    <div class="tab active py-2 px-1" data-tab="all-orders">All Orders</div>
-                    <div class="tab py-2 px-1" data-tab="to-ship">Shipped</div>
-                    <div class="tab py-2 px-1" data-tab="to-receive">Received</div>
-                    <div class="tab py-2 px-1" data-tab="to-rate">To Rate</div>
-                    <div class="tab py-2 px-1" data-tab="cancelled">Cancelled</div>
-                    <div class="tab py-2 px-1" data-tab="returned">Return/Refund</div>
-                </div>
-
-                <hr class="order-line border-gray-200 mb-6">
-
-                <!-- Order Columns (Desktop) -->
-                <div class="order-columns hidden md:grid grid-cols-12 gap-4 text-textlight font-semibold mb-4 pb-3">
-                    <div class="col product-col col-span-4">Product</div>
-                    <div class="col qty-col col-span-1 text-center">Qty</div>
-                    <div class="col price-col col-span-2 text-center">Price</div>
-                    <div class="col status-col col-span-2 text-center">Status</div>
-                    <div class="col branch-col col-span-2 text-center">Branch</div>
-                    <div class="col action-col col-span-1 text-center">Action</div>
-                </div>
-
-                <!-- Order Content -->
-                <div class="orders-tab-content-container">
-                    <?php
-                    $orders = [
-                        'all-orders' => [
-                            ['name' => 'Arte Ceramiche Matte Floor Tile', 'desc' => 'Premium Tiles • 30x30 cm', 'qty' => 1, 'price' => 500, 'status' => 'Pending', 'img' => 'https://placehold.co/64x64/f9f5f2/7d310a?text=AT', 'branch' => 'Deparo Branch'],
-                            ['name' => 'Porcelain Wood-Look Tile', 'desc' => 'Wood Series • 15x60 cm', 'qty' => 2, 'price' => 1200, 'status' => 'Shipped', 'img' => 'https://placehold.co/64x64/f9f5f2/7d310a?text=PW', 'branch' => 'Brixton Branch']
-                        ],
-                        'to-ship' => [],
-                        'to-receive' => [
-                            ['name' => 'Marble Effect Wall Tile', 'desc' => 'Luxury Collection • 30x60 cm', 'qty' => 1, 'price' => 700, 'status' => 'Shipped', 'img' => 'https://placehold.co/64x64/f9f5f2/7d310a?text=MW', 'branch' => 'Vanguard Branch']
-                        ],
-                        'to-rate' => [
-                            ['name' => 'Mosaic Bathroom Tile', 'desc' => 'Aqua Series • 10x10 cm', 'qty' => 3, 'price' => 900, 'status' => 'Delivered', 'img' => 'https://placehold.co/64x64/f9f5f2/7d310a?text=MB', 'branch' => 'Samaria Branch'],
-                            ['name' => 'Classic Subway Tile', 'desc' => 'Heritage Collection • 7.5x15 cm', 'qty' => 5, 'price' => 1250, 'status' => 'Delivered', 'img' => 'https://placehold.co/64x64/f9f5f2/7d310a?text=CS', 'branch' => 'Ph1 Branch']
-                        ],
-                        'returned' => [],
-                        'cancelled' => []
-                    ];
-
-                    foreach ($orders as $tab => $tabOrders) {
-                        if (!empty($tabOrders)) {
-                            echo '<div class="orders-tab-content flex flex-col gap-4" id="' . $tab . '" style="' . ($tab === 'all-orders' ? 'display:flex' : 'display:none') . '">';
-                            foreach ($tabOrders as $order) {
-                                $canCancel = in_array($order['status'], ['Pending', 'Shipped']);
-                                
-                                echo '<div class="orders-drawer p-4 grid grid-cols-1 md:grid-cols-12 md:gap-4 items-center">
-                                    <div class="product-info flex items-center col-span-4 mb-3 md:mb-0">
-                                        <img src="' . $order['img'] . '" alt="Product" class="w-16 h-16 rounded-lg object-cover mr-4">
-                                        <div class="product-text flex flex-col">
-                                            <span class="title font-bold text-textdark">' . $order['name'] . '</span>
-                                            <span class="subtitle text-sm text-textlight">' . $order['desc'] . '</span>
+                <div class="main-content w-full lg:w-3/4">
+                    
+                    <div id="profile-section" class="content-section">
+                        <div class="forms-row flex flex-col gap-6 mb-8">
+                            <div class="form-box profile-box w-full animate-slide-up" style="animation-delay: 0.1s">
+                                <form id="profileForm" class="p-6">
+                                    <div class="profile-header flex justify-between items-center mb-6 pb-4">
+                                        <div class="profile-title flex items-center text-primary font-semibold text-lg">
+                                            <i class="fa-solid fa-user mr-3"></i>
+                                            <span>Profile Information</span>
                                         </div>
-                                    </div>
-                                    <div class="qty text-textdark font-medium text-center col-span-1 mb-2 md:mb-0">' . $order['qty'] . '</div>
-                                    <div class="price text-primary font-black text-center col-span-2 mb-2 md:mb-0">₱' . $order['price'] . '</div>
-                                    <div class="status text-textdark font-medium text-center col-span-2 mb-2 md:mb-0">' . $order['status'] . '</div>
-                                    <div class="branch text-center col-span-2 mb-2 md:mb-0">
-                                        <span class="branch-badge text-xs font-medium py-1 px-2 rounded-full">' . $order['branch'] . '</span>
-                                    </div>
-                                    <div class="action text-center col-span-1">
-                                        <div class="action-buttons flex flex-col md:flex-row gap-2 justify-center">';
-                                        
-                                        if ($canCancel) {
-                                            echo '<button class="action-btn text-white text-xs font-medium py-2 px-3 rounded-lg flex items-center justify-center" onclick="openCancelOrderModal()">
-                                                <i class="fa-solid fa-xmark mr-1"></i> Cancel
-                                            </button>';
-                                        }
-                                        
-                                        echo '<button class="info-btn text-xs font-medium py-2 px-3 rounded-lg flex items-center justify-center" onclick="openOrderInfoModal()">
-                                            <i class="fa-solid fa-info mr-1"></i> Info
+                                        <button type="button" class="edit-profile-btn text-white font-medium py-2 px-4 rounded-lg flex items-center" onclick="openEditProfileModal()">
+                                            <i class="fa-solid fa-pen mr-2"></i>
+                                            Edit Profile
                                         </button>
+                                    </div>
+                                    <div class="profile-body">
+                                        <div class="profile-info-grid">
+                                            <div class="info-item">
+                                                <p class="info-label">Full Name</p>
+                                                <p class="info-value"><?php echo $userData && $userData['full_name'] ? htmlspecialchars($userData['full_name']) : 'No data'; ?></p>
+                                            </div>
+                                            <div class="info-item">
+                                                <p class="info-label">House Address</p>
+                                                <p class="info-value"><?php echo $userData && $userData['house_address'] ? htmlspecialchars($userData['house_address']) : 'No data'; ?></p>
+                                            </div>
+                                            <div class="info-item">
+                                                <p class="info-label">Pin Point Address</p>
+                                                <p class="info-value"><?php echo $userData && $userData['full_address'] ? htmlspecialchars($userData['full_address']) : 'No data'; ?></p>
+                                            </div>
+                                            <div class="info-item">
+                                                <p class="info-label">Contact Number</p>
+                                                <p class="info-value"><?php echo $userData && $userData['phone_number'] ? htmlspecialchars($userData['phone_number']) : 'No data'; ?></p>
+                                            </div>
+                                            <div class="info-item">
+                                                <p class="info-label">Email Address</p>
+                                                <p class="info-value"><?php echo $userData && $userData['email'] ? htmlspecialchars($userData['email']) : 'No data'; ?></p>
+                                            </div>
+                                            <div class="info-item">
+                                                <p class="info-label">Account Creation Date</p>
+                                                <p class="info-value"><?php echo $userData && $userData['created_at'] ? htmlspecialchars(date('F j, Y', strtotime($userData['created_at']))) : 'No data'; ?></p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>';
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="form-box activity-box mb-8 animate-slide-up" style="animation-delay: 0.3s">
+                            <div class="p-6">
+                                <div class="profile-header flex items-center mb-6 pb-4">
+                                    <div class="profile-title flex items-center text-primary font-semibold text-lg">
+                                        <i class="fa-solid fa-clock-rotate-left mr-3"></i>
+                                        <span>Recent Activity</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg animate-fade-in" style="animation-delay: 0.4s">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center mr-3">
+                                                <i class="fa-solid fa-cart-shopping text-white text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-textdark">Order Placed</p>
+                                                <p class="text-xs text-textlight">2 days ago</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-primary font-medium text-sm">Products: 2</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg animate-fade-in" style="animation-delay: 0.5s">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                                                <i class="fa-solid fa-star text-white text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-textdark">Product Review</p>
+                                                <p class="text-xs text-textlight">1 week ago</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-primary font-medium text-sm">Products: 1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 animate-fade-in">
+                            <div class="min-referral-box" style="background: #faf9f7; border: 1px solid #ececec; border-radius: 12px; padding: 1.7rem 1.2rem 1.2rem 1.2rem; text-align: center; box-shadow: 0 2px 12px rgba(125,49,10,0.07); position: relative;">
+                                <div style="position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); background: #fff; border-radius: 50%; box-shadow: 0 1px 6px rgba(125,49,10,0.08); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #ececec;">
+                                    <i class="fa-solid fa-gift" style="color: #cf8756; font-size: 1.3rem;"></i>
+                                </div>
+                                <div style="width: 100%; height: 3px; background: linear-gradient(90deg, #cf8756 0%, #ececec 100%); border-radius: 2px; margin: 0.7rem 0 1.2rem 0;"></div>
+                                <div class="mb-2 text-base font-semibold text-gray-700">Referral Code</div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <?php
+                                    $referralCode = $userData && $userData['referral_code'] ? $userData['referral_code'] : null;
+                                    ?>
+                                    <span id="referralCode" style="font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: 600; letter-spacing: 1.5px; color: #333; background: #f5f5f5; border-radius: 6px; padding: 0.5rem 1.2rem; border: 1px dashed #e0e0e0;">
+                                        <?php echo $referralCode ? htmlspecialchars($referralCode) : 'No data'; ?>
+                                    </span>
+                                    <?php if ($referralCode) { ?>
+                                    <button id="copyButton" style="background: #f5f5f5; border: 1px solid #e0e0e0; color: #333; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.95rem; font-weight: 500; transition: background 0.2s; cursor: pointer;" type="button">
+                                        <i class="fa-regular fa-copy" style="margin-right: 6px;"></i>Copy
+                                    </button>
+                                    <?php } ?>
+                                </div>
+                                <div class="mt-2 text-xs text-gray-500">Share this code to earn rewards</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="change-password-section" class="content-section">
+                        <div class="form-box p-6 animate-slide-up <?php echo (!$user_id || empty($userPassword)) ? 'disabled-section' : ''; ?>">
+                            <?php if (!$user_id || empty($userPassword)) { ?>
+                                <div class="disabled-overlay">
+                                    <i class="fa-solid fa-lock disabled-icon"></i>
+                                    <div class="disabled-text">Change Password Unavailable</div>
+                                    <div class="disabled-subtext">
+                                        <?php 
+                                        if (!$user_id) {
+                                            echo "You are not logged in.";
+                                        } else {
+                                            echo "Password is not set for your account.";
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                            <?php } ?>
+                            <div class="profile-header flex items-center mb-6 pb-4">
+                                <div class="profile-title flex items-center text-primary font-semibold text-lg">
+                                    <i class="fa-solid fa-lock mr-3"></i>
+                                    <span>Change Password</span>
+                                </div>
+                            </div>
+                            <form id="changePasswordForm" class="space-y-4 max-w-md">
+                                <div style="position:relative;">
+                                    <label class="block text-textdark font-medium mb-2 text-sm">Current Password</label>
+                                    <input type="password" name="current_password" id="current_password" class="form-input w-full p-3 text-sm password-input" placeholder="Enter current password" <?php echo (!$user_id || empty($userPassword)) ? 'disabled' : ''; ?> required style="color:#333;">
+                                    <span class="toggle-eye" onclick="togglePassword('current_password', this)" style="position:absolute; top:38px; right:16px; cursor:pointer; color:#7d310a;"><i class="fa-regular fa-eye"></i></span>
+                                </div>
+                                <div style="position:relative;">
+                                    <label class="block text-textdark font-medium mb-2 text-sm">New Password</label>
+                                    <input type="password" name="new_password" id="new_password" class="form-input w-full p-3 text-sm password-input" placeholder="Enter new password (min 8 chars)" <?php echo (!$user_id || empty($userPassword)) ? 'disabled' : ''; ?> required minlength="8" style="color:#333;">
+                                    <span class="toggle-eye" onclick="togglePassword('new_password', this)" style="position:absolute; top:38px; right:16px; cursor:pointer; color:#7d310a;"><i class="fa-regular fa-eye"></i></span>
+                                </div>
+                                <div style="position:relative;">
+                                    <label class="block text-textdark font-medium mb-2 text-sm">Confirm New Password</label>
+                                    <input type="password" name="confirm_password" id="confirm_password" class="form-input w-full p-3 text-sm password-input" placeholder="Confirm new password" <?php echo (!$user_id || empty($userPassword)) ? 'disabled' : ''; ?> required style="color:#333;">
+                                    <span class="toggle-eye" onclick="togglePassword('confirm_password', this)" style="position:absolute; top:38px; right:16px; cursor:pointer; color:#7d310a;"><i class="fa-regular fa-eye"></i></span>
+                                </div>
+                                <div id="passwordError" class="text-red-600 text-sm font-medium" style="display:none;"></div>
+                                <button type="submit" id="updatePasswordBtn" class="submit-btn text-white font-medium py-3 px-6 rounded mt-4 text-sm" <?php echo (!$user_id || empty($userPassword)) ? 'disabled' : ''; ?>>
+                                    Update Password
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="purchases-section" class="content-section">
+                        <div class="order-container form-box p-6 animate-slide-up">
+                            <div class="order-header flex items-center text-primary font-semibold text-lg mb-6 pb-4">
+                                <i class="fa-solid fa-box mr-3"></i>
+                                <span>Order History</span>
+                            </div>
+
+                            <div class="order-tabs flex flex-wrap gap-4 md:gap-6 mb-6">
+                                <div class="tab active py-2 px-1" data-tab="all-orders">All Orders</div>
+                                <div class="tab py-2 px-1" data-tab="to-ship">To Ship</div>
+                                <div class="tab py-2 px-1" data-tab="to-receive">To Receive</div>
+                                <div class="tab py-2 px-1" data-tab="completed">Completed</div>
+                                <div class="tab py-2 px-1" data-tab="cancelled">Cancelled</div>
+                            </div>
+
+                            <hr class="order-line border-gray-200 mb-6">
+
+                            <div class="order-columns hidden md:grid grid-cols-8 gap-4 text-textlight font-medium text-sm mb-4 pb-3 px-4">
+                                <div class="col product-col col-span-4">Product</div>
+                                <div class="col qty-col col-span-1 text-center">Qty</div>
+                                <div class="col price-col col-span-2 text-center">Total</div>
+                                <div class="col status-col col-span-1 text-center">Status</div>
+                            </div>
+
+                            <div class="orders-tab-content-container">
+                                <?php
+                                // Helper function for status badge class
+                                function getStatusClass($status) {
+                                    switch ($status) {
+                                        case 'pending':
+                                        case 'processing': return 'status-pending';
+                                        case 'paid': return 'status-shipped';
+                                        case 'ready_for_pickup': return 'status-shipped';
+                                        case 'completed': return 'status-delivered';
+                                        case 'cancelled': return 'status-cancelled';
+                                        default: return 'status-pending';
+                                    }
+                                }
+
+                                $orderTabs = [
+                                    'all-orders' => '',
+                                    'to-ship' => "order_status IN ('pending','processing','paid','ready_for_pickup')",
+                                    'to-receive' => "order_status IN ('paid','ready_for_pickup')",
+                                    'completed' => "order_status = 'completed'",
+                                    'cancelled' => "order_status = 'cancelled'"
+                                ];
+
+                                foreach ($orderTabs as $tab => $where) {
+                                    $displayStyle = ($tab === 'all-orders' ? 'display:flex' : 'display:none');
+                                    $ordersList = [];
+                                    if ($user_id) {
+                                        $query = "SELECT o.*, oi.order_item_id, oi.product_id, oi.quantity, oi.unit_price, p.product_name, p.product_image, b.branch_name
+                                            FROM orders o
+                                            JOIN order_items oi ON o.order_id = oi.order_id
+                                            JOIN products p ON oi.product_id = p.product_id
+                                            JOIN branches b ON o.branch_id = b.branch_id
+                                            WHERE o.user_id = ?";
+                                        if ($where) {
+                                            $query .= " AND $where";
+                                        }
+                                        $query .= " ORDER BY o.order_date DESC, oi.order_item_id ASC";
+                                        $stmt = $db_connection->prepare($query);
+                                        $stmt->execute([$user_id]);
+                                        $ordersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                    }
+
+                                    // Group items by order
+                                    $groupedOrders = [];
+                                    foreach ($ordersList as $row) {
+                                        $oid = $row['order_id'];
+                                        if (!isset($groupedOrders[$oid])) {
+                                            $groupedOrders[$oid] = [
+                                                'order_reference' => $row['order_reference'],
+                                                'order_date' => $row['order_date'],
+                                                'order_status' => $row['order_status'],
+                                                'total_amount' => $row['total_amount'],
+                                                'branch_name' => $row['branch_name'],
+                                                'items' => []
+                                            ];
+                                        }
+                                        $groupedOrders[$oid]['items'][] = [
+                                            'product_name' => $row['product_name'],
+                                            'product_image' => $row['product_image'],
+                                            'quantity' => $row['quantity'],
+                                            'unit_price' => $row['unit_price']
+                                        ];
+                                    }
+
+                                    $flexClass = (!empty($groupedOrders) ? 'flex-col gap-4' : 'justify-center items-center py-12');
+                                    echo '<div class="orders-tab-content flex ' . $flexClass . '" id="' . $tab . '" style="' . $displayStyle . '">';
+                                    if (!empty($groupedOrders)) {
+                                        foreach ($groupedOrders as $order) {
+                                            echo '<div class="orders-drawer p-4 mb-4 rounded-lg border border-gray-200 shadow-sm animate-fade-in">';
+                                            echo '<div class="flex flex-wrap justify-between items-center mb-3">';
+                                            echo '<span class="order-ref font-semibold text-xs text-primary">Order Ref: ' . htmlspecialchars($order['order_reference']) . '</span>';
+                                            echo '<span class="date text-xs text-textlight">' . date('F j, Y', strtotime($order['order_date'])) . '</span>';
+                                            echo '</div>';
+                                            // Items list
+                                            foreach ($order['items'] as $item) {
+                                                $productTotal = $item['unit_price'] * $item['quantity'];
+                                                echo '<div class="grid grid-cols-1 md:grid-cols-8 md:gap-4 items-center py-2">';
+                                                    echo '<div class="product-info flex items-center col-span-4 mb-3 md:mb-0">';
+                                                        if (!empty($item['product_image'])) {
+                                                            $imgSrc = "data:image/jpeg;base64," . base64_encode($item['product_image']);
+                                                        } else {
+                                                            $imgSrc = "https://placehold.co/64x64/f9f5f2/7d310a?text=IMG";
+                                                        }
+                                                        echo '<img src="' . $imgSrc . '" alt="Product" class="w-12 h-12 rounded-lg object-cover mr-4">';
+                                                        echo '<div class="product-text flex flex-col">';
+                                                            echo '<span class="title font-semibold text-textdark text-sm">' . htmlspecialchars($item['product_name']) . '</span>';
+                                                        echo '</div>';
+                                                    echo '</div>';
+                                                    echo '<div class="qty text-textdark font-medium text-center col-span-1 mb-2 md:mb-0 text-sm">' . $item['quantity'] . '</div>';
+                                                    echo '<div class="price text-primary font-semibold text-center col-span-2 mb-2 md:mb-0 text-sm">₱' . number_format($productTotal, 2) . '</div>';
+                                                    echo '<div class="status text-center col-span-1 mb-2 md:mb-0">';
+                                                        echo '<span class="status-badge ' . getStatusClass($order['order_status']) . '">' . ucfirst($order['order_status']) . '</span>';
+                                                    echo '</div>';
+                                                    // Cancel button for to-ship only
+                                                    if ($tab === "to-ship") {
+                                                        echo '<div class="col-span-8 flex justify-end mt-2">';
+                                                        if ($cancelCount >= 3) {
+                                                            echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-gray-400 text-white text-xs font-semibold shadow cursor-not-allowed" disabled>Cancel</button>';
+                                                        } else {
+                                                            echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-red-500 text-white text-xs font-semibold shadow hover:bg-red-600 transition" onclick="openCancelModal(' . htmlspecialchars(json_encode($order['order_reference'])) . ')">Cancel</button>';
+                                                        }
+                                                        echo '</div>';
+                                                    }
+                                                echo '</div>';
+                                            }
+                                            echo '</div>';
+                                            // Modal and JS moved outside PHP
+                                        }
+                                    } else {
+                                        echo '<div class="text-center">';
+                                        echo '<i class="fa-solid fa-box-open text-4xl text-textlight mb-4"></i>';
+                                        echo '<p class="text-textlight text-lg">No orders found</p>';
+                                        echo '<p class="text-textlight text-sm mt-2">Your ' . str_replace('-', ' ', $tab) . ' will appear here</p>';
+                                        echo '</div>';
+                                    }
+                                    echo '</div>';
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="to-review-section" class="content-section">
+                        <div class="form-box p-6 animate-slide-up">
+                            <div class="profile-header flex items-center mb-6 pb-4">
+                                <div class="profile-title flex items-center text-primary font-semibold text-lg">
+                                    <i class="fa-solid fa-star mr-3"></i>
+                                    <span>Products to Review</span>
+                                </div>
+                            </div>
+                            <?php
+                            // Fetch completed orders that have not been reviewed
+                            $toReviewList = [];
+                            if ($user_id) {
+                                $query = "SELECT o.*, oi.order_item_id, oi.product_id, oi.quantity, oi.unit_price, p.product_name, p.product_image, b.branch_name
+                                    FROM orders o
+                                    JOIN order_items oi ON o.order_id = oi.order_id
+                                    JOIN products p ON oi.product_id = p.product_id
+                                    JOIN branches b ON o.branch_id = b.branch_id
+                                    WHERE o.user_id = ? AND o.order_status = 'completed'
+                                    AND oi.product_id NOT IN (SELECT product_id FROM product_reviews WHERE user_id = ?)";
+                                $query .= " ORDER BY o.order_date DESC, oi.order_item_id ASC";
+                                $stmt = $db_connection->prepare($query);
+                                $stmt->execute([$user_id, $user_id]);
+                                $toReviewList = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             }
-                            echo '</div>';
-                        } else {
-                            echo '<div class="orders-tab-content flex justify-center items-center py-12" id="' . $tab . '" style="display:none">
-                                <p class="text-textlight text-lg">No orders to show</p>
-                            </div>';
-                        }
-                    }
-                    ?>
+
+                            // Group by order
+                            $groupedToReview = [];
+                            foreach ($toReviewList as $row) {
+                                $oid = $row['order_id'];
+                                if (!isset($groupedToReview[$oid])) {
+                                    $groupedToReview[$oid] = [
+                                        'order_reference' => $row['order_reference'],
+                                        'order_date' => $row['order_date'],
+                                        'items' => []
+                                    ];
+                                }
+                                $groupedToReview[$oid]['items'][] = [
+                                    'order_item_id' => $row['order_item_id'],
+                                    'product_id' => $row['product_id'],
+                                    'product_name' => $row['product_name'],
+                                    'product_image' => $row['product_image'],
+                                    'quantity' => $row['quantity'],
+                                    'unit_price' => $row['unit_price'],
+                                    'branch_name' => $row['branch_name'],
+                                    'order_date' => $row['order_date']
+                                ];
+                            }
+
+                            if (!empty($groupedToReview)) {
+                                foreach ($groupedToReview as $order) {
+                                    echo '<div class="orders-drawer p-4 mb-4 rounded-lg border border-gray-200 shadow-sm animate-fade-in">';
+                                    echo '<div class="flex flex-wrap justify-between items-center mb-3">';
+                                    echo '<span class="order-ref font-semibold text-xs text-primary">Order Ref: ' . htmlspecialchars($order['order_reference']) . '</span>';
+                                    echo '<span class="date text-xs text-textlight">' . date('F j, Y', strtotime($order['order_date'])) . '</span>';
+                                    echo '</div>';
+                                    foreach ($order['items'] as $item) {
+                                        echo '<div class="review-item p-4 border border-gray-200 rounded-lg mb-2">';
+                                        echo '<div class="flex items-center mb-4">';
+                                        if (!empty($item['product_image'])) {
+                                            $imgSrc = "data:image/jpeg;base64," . base64_encode($item['product_image']);
+                                        } else {
+                                            $imgSrc = "https://placehold.co/64x64/f9f5f2/7d310a?text=IMG";
+                                        }
+                                        echo '<img src="' . $imgSrc . '" alt="Product" class="w-16 h-16 rounded-lg object-cover mr-4">';
+                                        echo '<div>';
+                                        echo '<h3 class="font-medium text-textdark">' . htmlspecialchars($item['product_name']) . '</h3>';
+                                        echo '<p class="text-textlight text-sm">Delivered on ' . date('F j, Y', strtotime($item['order_date'])) . '</p>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                        // Review form
+                                        echo '<form class="flex flex-col md:flex-row md:items-center gap-2 review-ajax-form" method="post" action="submit_review.php" data-item-id="' . $item['order_item_id'] . '">';
+                                        echo '<input type="hidden" name="order_item_id" value="' . $item['order_item_id'] . '">';
+                                        echo '<input type="hidden" name="product_id" value="' . $item['product_id'] . '">';
+                                        $starName = 'rating_' . $item['order_item_id'];
+                                        echo '<div class="flex items-center gap-1 star-rating-group" data-group="' . $item['order_item_id'] . '">';
+                                        echo '<span class="text-sm text-textlight mr-2">Rate:</span>';
+                                        for ($star = 1; $star <= 5; $star++) {
+                                            echo '<input type="radio" id="star' . $star . '_' . $item['order_item_id'] . '" name="rating" value="' . $star . '" style="display:none">';
+                                            echo '<label for="star' . $star . '_' . $item['order_item_id'] . '" class="star-label" data-star="' . $star . '" data-group="' . $item['order_item_id'] . '"><i class="fa fa-star text-xl text-gray-300 cursor-pointer"></i></label>';
+                                        }
+                                        echo '</div>';
+                                        echo '<div class="feedback-btns mt-2 flex flex-wrap gap-2" id="feedback-btns-' . $item['order_item_id'] . '"></div>';
+                                        echo '<button type="submit" class="submit-btn text-white font-bold py-2 px-4 rounded-md shadow text-sm mt-2 transition-all duration-200 hover:bg-accent hover:scale-105" style="display:none" id="submit-btn-' . $item['order_item_id'] . '">Submit Review</button>';
+                                        echo '<input type="hidden" name="feedback" id="feedback-input-' . $item['order_item_id'] . '" value="">';
+                                        echo '</form>';
+                                        echo '</div>';
+                                    }
+                                    echo '</div>';
+                                }
+                            } else {
+                                echo '<div class="text-center">';
+                                echo '<i class="fa-solid fa-box-open text-4xl text-textlight mb-4"></i>';
+                                echo '<p class="text-textlight text-lg">No products to review</p>';
+                                echo '<p class="text-textlight text-sm mt-2">Your completed orders will appear here for review</p>';
+                                echo '</div>';
+                            }
+                            ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit Profile Modal -->
     <div id="editProfileModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content animate-bounce-in">
             <div class="modal-header p-6 flex justify-between items-center">
-                <h3 class="text-xl font-black text-primary">Edit Profile</h3>
-                <button class="close-btn text-2xl" onclick="closeModal('editProfileModal')">&times;</button>
+                <h3 class="text-lg font-semibold text-primary">Edit Profile</h3>
+                <button class="close-btn text-xl" onclick="closeModal('editProfileModal')">&times;</button>
             </div>
             <div class="p-6">
                 <form class="space-y-4">
                     <div>
-                        <label class="block text-textdark font-medium mb-2">Full Name</label>
-                        <input type="text" class="form-input w-full p-3" value="Cholene Jane Aberin">
+                        <label class="block text-textdark font-medium mb-2 text-sm">Full Name</label>
+                        <input type="text" class="form-input w-full p-3 text-sm" value="Cholene Jane Aberin">
                     </div>
                     <div>
-                        <label class="block text-textdark font-medium mb-2">Contact Number</label>
-                        <input type="tel" class="form-input w-full p-3" value="+63 912 345 6789">
+                        <label class="block text-textdark font-medium mb-2 text-sm">House Address</label>
+                        <input type="text" class="form-input w-full p-3 text-sm" value="123 Main Street, Barangay San Antonio">
                     </div>
                     <div>
-                        <label class="block text-textdark font-medium mb-2">Email Address</label>
-                        <input type="email" class="form-input w-full p-3" value="cholene.doe@email.com">
+                        <label class="block text-textdark font-medium mb-2 text-sm">Pin Point Address</label>
+                        <input type="text" class="form-input w-full p-3 text-sm" value="Near San Antonio Church, beside 7-Eleven">
                     </div>
-                    <button type="button" class="submit-btn w-full text-white font-bold py-3 rounded-lg mt-4">
+                    <div>
+                        <label class="block text-textdark font-medium mb-2 text-sm">Contact Number</label>
+                        <input type="tel" class="form-input w-full p-3 text-sm" value="+63 912 345 6789">
+                    </div>
+                    <div>
+                        <label class="block text-textdark font-medium mb-2 text-sm">Email Address</label>
+                        <input type="email" class="form-input w-full p-3 text-sm" value="cholene.aberin@email.com">
+                    </div>
+                    <button type="button" class="submit-btn w-full text-white font-medium py-3 rounded mt-4 text-sm">
                         Save Changes
                     </button>
                 </form>
@@ -509,186 +842,382 @@ include '../includes/headeruser.php';
         </div>
     </div>
 
-    <!-- Add Address Modal -->
-    <div id="addAddressModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header p-6 flex justify-between items-center">
-                <h3 class="text-xl font-black text-primary">Add New Address</h3>
-                <button class="close-btn text-2xl" onclick="closeModal('addAddressModal')">&times;</button>
-            </div>
-            <div class="p-6">
-                <form class="space-y-4">
-                    <div>
-                        <label class="block text-textdark font-medium mb-2">Full Name</label>
-                        <input type="text" class="form-input w-full p-3" placeholder="Enter your full name">
-                    </div>
-                    <div>
-                        <label class="block text-textdark font-medium mb-2">Contact Number</label>
-                        <input type="tel" class="form-input w-full p-3" placeholder="Enter your phone number">
-                    </div>
-                    <div>
-                        <label class="block text-textdark font-medium mb-2">Complete Address</label>
-                        <textarea class="form-input w-full p-3" rows="3" placeholder="Enter your complete address"></textarea>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="setDefault" class="mr-2">
-                        <label for="setDefault" class="text-textdark">Set as default address</label>
-                    </div>
-                    <button type="button" class="submit-btn w-full text-white font-bold py-3 rounded-lg mt-4">
-                        Save Address
-                    </button>
-                </form>
-            </div>
-        </div>
+    <div id="copyToast" class="toast">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>Referral code copied successfully!</span>
     </div>
 
-    <!-- Edit Address Modal -->
-    <div id="editAddressModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header p-6 flex justify-between items-center">
-                <h3 class="text-xl font-black text-primary">Edit Address</h3>
-                <button class="close-btn text-2xl" onclick="closeModal('editAddressModal')">&times;</button>
-            </div>
-            <div class="p-6">
-                <form class="space-y-4">
-                    <div>
-                        <label class="block text-textdark font-medium mb-2">Full Name</label>
-                        <input type="text" class="form-input w-full p-3" value="Cholene Jane">
-                    </div>
-                    <div>
-                        <label class="block text-textdark font-medium mb-2">Contact Number</label>
-                        <input type="tel" class="form-input w-full p-3" value="+63 912 345 6789">
-                    </div>
-                    <div>
-                        <label class="block text-textdark font-medium mb-2">Complete Address</label>
-                        <textarea class="form-input w-full p-3" rows="3">Blk 15 Lot 3 Phase 4 Long Street Name, Barangay San Antonio, Quezon City, Metro Manila 1105</textarea>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="editDefault" class="mr-2" checked>
-                        <label for="editDefault" class="text-textdark">Set as default address</label>
-                    </div>
-                    <button type="button" class="submit-btn w-full text-white font-bold py-3 rounded-lg mt-4">
-                        Update Address
-                    </button>
-                </form>
-            </div>
-        </div>
+    <div id="cancelToast" class="toast" style="display:none; background:#10b981; top:2rem; right:2rem;">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>Order cancelled successfully!</span>
     </div>
-
-    <!-- Cancel Order Modal -->
-    <div id="cancelOrderModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header p-6 flex justify-between items-center">
-                <h3 class="text-xl font-black text-primary">Cancel Order</h3>
-                <button class="close-btn text-2xl" onclick="closeModal('cancelOrderModal')">&times;</button>
-            </div>
-            <div class="p-6">
-                <p class="text-textdark mb-4">Are you sure you want to cancel this order? This action cannot be undone.</p>
-                <div class="mb-4">
-                    <label class="block text-textdark font-medium mb-2">Reason for cancellation</label>
-                    <select class="form-input w-full p-3">
-                        <option value="">Select a reason</option>
-                        <option value="change-mind">Changed my mind</option>
-                        <option value="wrong-item">Ordered wrong item</option>
-                        <option value="duplicate">Duplicate order</option>
-                        <option value="shipping">Shipping takes too long</option>
-                        <option value="other">Other reason</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-textdark font-medium mb-2">Additional notes (optional)</label>
-                    <textarea class="form-input w-full p-3" rows="3" placeholder="Provide additional details"></textarea>
-                </div>
-                <div class="flex gap-4">
-                    <button type="button" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-lg" onclick="closeModal('cancelOrderModal')">
-                        Go Back
-                    </button>
-                    <button type="button" class="flex-1 bg-red-600 text-white font-bold py-3 rounded-lg">
-                        Confirm Cancellation
-                    </button>
-                </div>
-            </div>
-        </div>
+    <div id="reviewToast" class="toast" style="display:none; top:5rem; right:2rem;">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>Product review successfully submitted!</span>
     </div>
-
-    <!-- Order Info Modal -->
-    <div id="orderInfoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header p-6 flex justify-between items-center">
-                <h3 class="text-xl font-black text-primary">Order Information</h3>
-                <button class="close-btn text-2xl" onclick="closeModal('orderInfoModal')">&times;</button>
-            </div>
-            <div class="p-6">
-                <div class="mb-6">
-                    <h4 class="font-bold text-textdark mb-3">Order Details</h4>
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <div class="flex justify-between mb-2">
-                            <span class="text-textlight">Order ID:</span>
-                            <span class="text-textdark font-medium">#ORD-123456</span>
-                        </div>
-                        <div class="flex justify-between mb-2">
-                            <span class="text-textlight">Order Date:</span>
-                            <span class="text-textdark font-medium">Nov 15, 2023</span>
-                        </div>
-                        <div class="flex justify-between mb-2">
-                            <span class="text-textlight">Status:</span>
-                            <span class="text-primary font-medium">Pending</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-textlight">Branch:</span>
-                            <span class="text-textdark font-medium">Deparo Branch</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-6">
-                    <h4 class="font-bold text-textdark mb-3">Product Information</h4>
-                    <div class="flex items-center mb-4">
-                        <img src="https://placehold.co/64x64/f9f5f2/7d310a?text=AT" alt="Product" class="w-16 h-16 rounded-lg object-cover mr-4">
-                        <div>
-                            <p class="font-bold text-textdark">Arte Ceramiche Matte Floor Tile</p>
-                            <p class="text-sm text-textlight">Premium Tiles • 30x30 cm</p>
-                            <p class="text-primary font-black">₱500 × 1</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-6">
-                    <h4 class="font-bold text-textdark mb-3">Shipping Information</h4>
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <p class="text-textdark font-medium">Cholene Jane Aberin</p>
-                        <p class="text-textlight">+63 912 345 6789</p>
-                        <p class="text-textlight mt-1">Blk 15 Lot 3 Phase 4 Long Street Name, Barangay San Antonio, Quezon City, Metro Manila 1105</p>
-                    </div>
-                </div>
-                
-                <button type="button" class="submit-btn w-full text-white font-bold py-3 rounded-lg">
-                    Close
-                </button>
-            </div>
-        </div>
+    <div id="passwordToast" class="toast" style="display:none; background:#10b981; top:7rem; right:2rem;">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>Password updated successfully!</span>
+    </div>
+    <style>
+        #reviewToast.toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            min-width: 220px;
+            box-shadow: 0 2px 12px rgba(16,185,129,0.12);
+            background: #10b981;
+            border-radius: 8px;
+            border: 1px solid #059669;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            color: #fff;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        #reviewToast.toast.show {
+            transform: translateX(0);
+        }
+    </style>
     </div>
 
     <script>
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // AJAX review form submission
+            document.querySelectorAll('.review-ajax-form').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', form.action, true);
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            // Hide the review item
+                            const reviewItem = form.closest('.review-item');
+                            if (reviewItem) reviewItem.style.display = 'none';
+                            // If all review-items in the order are hidden, hide the order card
+                            const orderDrawer = form.closest('.orders-drawer');
+                            if (orderDrawer && orderDrawer.querySelectorAll('.review-item:not([style*="display: none"])').length === 0) {
+                                orderDrawer.style.display = 'none';
+                            }
+                            // Show toast with animation
+                            const toast = document.getElementById('reviewToast');
+                            if (toast) {
+                                toast.style.display = 'flex';
+                                toast.classList.add('show');
+                                setTimeout(() => {
+                                    toast.classList.remove('show');
+                                    toast.style.display = 'none';
+                                }, 3000);
+                            }
+                            // If no more review items, show 'No products to review' message
+                            const reviewSection = document.querySelector('#to-review-section .form-box');
+                            if (reviewSection && reviewSection.querySelectorAll('.review-item:not([style*="display: none"])').length === 0 && reviewSection.querySelectorAll('.orders-drawer:not([style*="display: none"])').length === 0) {
+                                reviewSection.innerHTML = '<div class="text-center"><i class="fa-solid fa-box-open text-4xl text-textlight mb-4"></i><p class="text-textlight text-lg">No products to review</p><p class="text-textlight text-sm mt-2">Your completed orders will appear here for review</p></div>';
+                            }
+                        }
+                    };
+                    xhr.send(formData);
+                });
+            });
+            // Show review toast if review was submitted
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('reviewed') === '1') {
+                const toast = document.getElementById('reviewToast');
+                if (toast) {
+                    toast.classList.add('show');
+                    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+                }
+            }
+            // Initialize sidebar navigation
+            initSidebarNavigation();
+
+            // Initialize copy button
+            initCopyButton();
+
+            // Initialize order tabs
+            initOrderTabs();
+
+            // Set initial content section and sidebar active state
+            const defaultSection = document.querySelector('.sidebar-nav-item.active').getAttribute('data-section');
+            showSection(defaultSection);
+
+            // Add fade-in animation to body
+            document.body.classList.add('animate-fade-in');
+
+            // Star rating hover, click, and feedback logic
+            document.querySelectorAll('.star-rating-group').forEach(function(group) {
+                const groupId = group.getAttribute('data-group');
+                const stars = group.querySelectorAll('.star-label');
+                const radios = group.querySelectorAll('input[type="radio"]');
+                let selected = 0;
+                let feedbackBtns = document.getElementById('feedback-btns-' + groupId);
+                let submitBtn = document.getElementById('submit-btn-' + groupId);
+                let feedbackInput = document.getElementById('feedback-input-' + groupId);
+
+                // Feedback options
+                const awfulFeedback = [
+                    'Awful quality',
+                    'Very disappointed',
+                    'Not as described',
+                    'Would not recommend',
+                    'Terrible packaging',
+                    'Late delivery'
+                ];
+                const okayFeedback = [
+                    'It’s okay',
+                    'Average experience',
+                    'Could be better',
+                    'Met expectations',
+                    'Neutral packaging'
+                ];
+                const perfectFeedback = [
+                    'Perfect quality',
+                    'Highly recommend',
+                    'Exactly as described',
+                    'Fast delivery',
+                    'Excellent packaging',
+                    'Great value'
+                ];
+
+                function renderFeedbackButtons(type) {
+                    feedbackBtns.innerHTML = '';
+                    let options = [];
+                    if (type === 'awful') options = awfulFeedback;
+                    else if (type === 'okay') options = okayFeedback;
+                    else if (type === 'perfect') options = perfectFeedback;
+                    options.forEach(function(text) {
+                        let btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'px-3 py-1 rounded border border-gray-300 text-xs font-medium bg-white text-textdark hover:bg-primary hover:text-white transition';
+                        btn.textContent = text;
+                        btn.setAttribute('data-selected', '0');
+                        btn.onclick = function() {
+                            let selectedBtns = feedbackBtns.querySelectorAll('button[data-selected="1"]');
+                            if (btn.getAttribute('data-selected') === '1') {
+                                btn.setAttribute('data-selected', '0');
+                                btn.classList.remove('bg-primary', 'text-white');
+                                btn.classList.add('text-textdark');
+                            } else if (selectedBtns.length < 3) {
+                                btn.setAttribute('data-selected', '1');
+                                btn.classList.add('bg-primary', 'text-white');
+                                btn.classList.remove('text-textdark');
+                            }
+                            // Update hidden input with all selected feedbacks (comma separated)
+                            let selectedTexts = Array.from(feedbackBtns.querySelectorAll('button[data-selected="1"]')).map(b => b.textContent);
+                            feedbackInput.value = selectedTexts.join(', ');
+                            submitBtn.style.display = selectedTexts.length > 0 ? 'inline-block' : 'none';
+                        };
+                        feedbackBtns.appendChild(btn);
+                    });
+                    feedbackBtns.style.display = 'flex';
+                }
+
+                stars.forEach(function(star, idx) {
+                    star.addEventListener('mouseenter', function() {
+                        for (let i = 0; i <= idx; i++) {
+                            stars[i].querySelector('i').classList.remove('text-gray-300');
+                            stars[i].querySelector('i').classList.add('text-yellow-400');
+                        }
+                        for (let i = idx + 1; i < stars.length; i++) {
+                            stars[i].querySelector('i').classList.remove('text-yellow-400');
+                            stars[i].querySelector('i').classList.add('text-gray-300');
+                        }
+                    });
+                    star.addEventListener('mouseleave', function() {
+                        for (let i = 0; i < stars.length; i++) {
+                            if (i < selected) {
+                                stars[i].querySelector('i').classList.remove('text-gray-300');
+                                stars[i].querySelector('i').classList.add('text-yellow-400');
+                            } else {
+                                stars[i].querySelector('i').classList.remove('text-yellow-400');
+                                stars[i].querySelector('i').classList.add('text-gray-300');
+                            }
+                        }
+                    });
+                    star.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        selected = idx + 1;
+                        radios[idx].checked = true;
+                        for (let i = 0; i < stars.length; i++) {
+                            if (i <= idx) {
+                                stars[i].querySelector('i').classList.remove('text-gray-300');
+                                stars[i].querySelector('i').classList.add('text-yellow-400');
+                            } else {
+                                stars[i].querySelector('i').classList.remove('text-yellow-400');
+                                stars[i].querySelector('i').classList.add('text-gray-300');
+                            }
+                        }
+                        // Show feedback buttons based on rating range
+                        if (selected <= 2) {
+                            renderFeedbackButtons('awful');
+                        } else if (selected === 3) {
+                            renderFeedbackButtons('okay');
+                        } else if (selected >= 4) {
+                            renderFeedbackButtons('perfect');
+                        }
+                        submitBtn.style.display = 'none';
+                        feedbackInput.value = '';
+                    });
+                });
+            });
+        });
+
+        // Sidebar Navigation - Consolidated and simplified
+        function initSidebarNavigation() {
+            const allSidebar = document.querySelectorAll('.sidebar-nav-item'); // Use the unified class
+
+            allSidebar.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionName = this.getAttribute('data-section');
+                    const sectionId = sectionName + '-section'; // Consistent ID pattern
+
+                    // Remove active class from all items
+                    allSidebar.forEach(i => i.classList.remove('active'));
+                    
+                    // Add active class only to clicked item
+                    this.classList.add('active');
+                    
+                    // Show the selected section
+                    showSection(sectionId);
+
+                    // Special case: If purchases section is selected, activate the 'all-orders' tab
+                    if (sectionName === 'purchases') {
+                        activateDefaultOrderTab();
+                    }
+                });
+            });
+        }
+
+        // Show section function (Refactored)
+        function showSection(sectionId) {
+            // Hide all sections
+            const contentSections = document.querySelectorAll('.content-section');
+            contentSections.forEach(section => {
+                section.style.display = 'none'; // Use style to override CSS rule
+            });
+            
+            // Show the selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            } else {
+                console.error('Section not found:', sectionId);
+            }
+        }
+
+        // Order Tabs
+        function initOrderTabs() {
+            const tabs = document.querySelectorAll('.order-tabs .tab');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all content containers
+                    const contents = document.querySelectorAll('.orders-tab-content-container > div');
+                    contents.forEach(content => content.style.display = 'none');
+                    
+                    // Show selected content
+                    const selected = document.getElementById(tabId);
+                    if (selected) {
+                        selected.style.display = 'flex'; // Use flex to maintain layout for non-empty lists or center alignment for empty
+                    }
+                });
+            });
+        }
+
+        function activateDefaultOrderTab() {
+            const defaultTab = document.querySelector('.order-tabs .tab[data-tab="all-orders"]');
+            if (defaultTab) {
+                defaultTab.click();
+            }
+        }
+
+
+        // Copy Button Functionality
+        function initCopyButton() {
+            const copyButton = document.getElementById('copyButton');
+            if (copyButton) {
+                copyButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    copyReferralCode();
+                });
+            }
+        }
+
+        // Copy Referral Code function
+        function copyReferralCode() {
+            const codeElem = document.getElementById('referralCode');
+            const referralCode = codeElem ? codeElem.textContent.trim() : '';
+            
+            if (!referralCode || referralCode === 'No data') {
+                return;
+            }
+            
+            // Try modern clipboard API first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(referralCode).then(showCopyToast).catch(err => {
+                    console.error('Failed to copy using clipboard API:', err);
+                    fallbackCopy(referralCode);
+                });
+            } else {
+                // Fallback for older browsers
+                fallbackCopy(referralCode);
+            }
+        }
+
+        // Fallback copy method
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                    showCopyToast();
+                } else {
+                    console.error('Fallback copy failed');
+                }
+            } catch (err) {
+                console.error('Fallback copy error:', err);
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // Show copy success toast
+        function showCopyToast() {
+            const toast = document.getElementById('copyToast');
+            if (toast) {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        }
+
         // Modal functions
         function openEditProfileModal() {
             document.getElementById('editProfileModal').style.display = 'flex';
-        }
-        
-        function openAddAddressModal() {
-            document.getElementById('addAddressModal').style.display = 'flex';
-        }
-        
-        function openEditAddressModal() {
-            document.getElementById('editAddressModal').style.display = 'flex';
-        }
-        
-        function openCancelOrderModal() {
-            document.getElementById('cancelOrderModal').style.display = 'flex';
-        }
-        
-        function openOrderInfoModal() {
-            document.getElementById('orderInfoModal').style.display = 'flex';
         }
         
         function closeModal(modalId) {
@@ -704,26 +1233,208 @@ include '../includes/headeruser.php';
                 }
             }
         }
-        
-        // Orders Tabs
-        const tabs = document.querySelectorAll('.order-tabs .tab');
-        const contents = document.querySelectorAll('.orders-tab-content');
-        
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const allowedTabs = ['all-orders', 'to-ship', 'to-receive', 'to-rate', 'cancelled', 'returned'];
-                if (!allowedTabs.includes(tab.dataset.tab)) return;
-                
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                contents.forEach(content => content.style.display = 'none');
-                const selected = document.getElementById(tab.dataset.tab);
-                if (selected) selected.style.display = 'flex';
+    </script>
+    <script>
+    // Toggle password visibility
+    function togglePassword(fieldId, iconElem) {
+        var input = document.getElementById(fieldId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            iconElem.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+        } else {
+            input.type = 'password';
+            iconElem.innerHTML = '<i class="fa-regular fa-eye"></i>';
+        }
+    }
+
+    // Change Password AJAX
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('changePasswordForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var current = document.getElementById('current_password').value;
+                var newPwd = document.getElementById('new_password').value;
+                var confirm = document.getElementById('confirm_password').value;
+                var errorBox = document.getElementById('passwordError');
+                errorBox.style.display = 'none';
+                errorBox.textContent = '';
+                if (newPwd.length < 8) {
+                    errorBox.textContent = 'New password must be at least 8 characters.';
+                    errorBox.style.display = 'block';
+                    return;
+                }
+                if (newPwd !== confirm) {
+                    errorBox.textContent = 'Passwords do not match.';
+                    errorBox.style.display = 'block';
+                    return;
+                }
+                var btn = document.getElementById('updatePasswordBtn');
+                btn.disabled = true;
+                var formData = new FormData(form);
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'update_password.php', true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        btn.disabled = false;
+                        var res = {};
+                        try { res = JSON.parse(xhr.responseText); } catch(e) {}
+                        if (xhr.status === 200 && res.success) {
+                            errorBox.style.display = 'none';
+                            form.reset();
+                            showPasswordToast();
+                        } else {
+                            errorBox.textContent = res.error || 'Failed to update password.';
+                            errorBox.style.display = 'block';
+                        }
+                    }
+                };
+                xhr.send(formData);
             });
-        });
+        }
+    });
+
+    // Show toast for password update
+    function showPasswordToast() {
+        var toast = document.getElementById('passwordToast');
+        if (toast) {
+            toast.style.display = 'flex';
+            toast.classList.add('show');
+            setTimeout(function() {
+                toast.classList.remove('show');
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    }
     </script>
 
 </body>
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:9999; align-items:center; justify-content:center;">
+        <div class="modal-content animate-bounce-in bg-white rounded-lg shadow-lg" style="max-width:400px; margin:auto;">
+            <div class="modal-header p-4 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-primary">Cancel Order</h3>
+                <button class="close-btn text-xl" onclick="closeModal('cancelModal')">&times;</button>
+            </div>
+            <div class="p-4">
+                <form id="cancelOrderForm">
+                    <input type="hidden" name="order_reference" id="cancelOrderReference">
+                    <label class="block text-textdark font-medium mb-2 text-sm">Reason for cancellation</label>
+                    <select name="cancel_reason" id="cancelReason" class="form-input w-full p-2 mb-4 text-sm">
+                        <option value="">Select reason...</option>
+                        <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                        <option value="Ordered by mistake">Ordered by mistake</option>
+                        <option value="Change of mind">Change of mind</option>
+                        <option value="Shipping is too slow">Shipping is too slow</option>
+                        <option value="Product is not as described">Product is not as described</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <button type="submit" class="submit-btn w-full text-white font-medium py-2 rounded mt-2 text-sm bg-red-500 hover:bg-red-600">Confirm Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openCancelModal(orderRef) {
+            document.getElementById('cancelOrderReference').value = orderRef.replace(/"/g, '');
+            document.getElementById('cancelModal').style.display = 'flex';
+        }
+        // Cancel modal logic
+        var cancelReasonSelect = document.getElementById('cancelReason');
+        var otherReasonBox = document.getElementById('otherReasonBox');
+        var otherReasonInput = document.getElementById('otherReasonInput');
+        var confirmCancelBtn = document.getElementById('confirmCancelBtn');
+
+        function validateCancelForm() {
+            var reason = cancelReasonSelect.value;
+            if (!reason) return false;
+            if (reason === 'Other') {
+                if (!otherReasonInput.value.trim()) return false;
+            }
+            return true;
+        }
+
+        cancelReasonSelect.addEventListener('change', function() {
+            if (this.value === 'Other') {
+                otherReasonBox.style.display = 'block';
+            } else {
+                otherReasonBox.style.display = 'none';
+                otherReasonInput.value = '';
+            }
+            confirmCancelBtn.disabled = !validateCancelForm();
+        });
+        if (otherReasonInput) {
+            otherReasonInput.addEventListener('input', function() {
+                confirmCancelBtn.disabled = !validateCancelForm();
+            });
+        }
+        document.getElementById('cancelOrderForm').addEventListener('input', function() {
+            confirmCancelBtn.disabled = !validateCancelForm();
+        });
+        document.getElementById('cancelOrderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!validateCancelForm()) {
+                confirmCancelBtn.disabled = true;
+                return;
+            }
+            var formData = new FormData(this);
+            // If 'Other', send the custom reason
+            if (cancelReasonSelect.value === 'Other') {
+                formData.set('cancel_reason', otherReasonInput.value.trim());
+            }
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '../connection/cancel_order.php', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    var res = {};
+                    try { res = JSON.parse(xhr.responseText); } catch(e) {}
+                    if (xhr.status === 200 && res.success) {
+                        closeModal('cancelModal');
+                        showCancelToast();
+                        refreshOrderTabs();
+                    } else {
+                        alert(res.error || 'Failed to cancel order.');
+                    }
+                }
+            };
+            xhr.send(formData);
+        });
+
+        // AJAX function to refresh order tabs after cancel
+        function refreshOrderTabs() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'myProfile.php?ajax=orders', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(xhr.responseText, 'text/html');
+                    var newTabs = doc.querySelector('.orders-tab-content-container');
+                    if (newTabs) {
+                        var container = document.querySelector('.orders-tab-content-container');
+                        container.innerHTML = newTabs.innerHTML;
+                        // If current tab is empty, show 'No orders found'
+                        var activeTab = document.querySelector('.order-tabs .tab.active').getAttribute('data-tab');
+                        var tabContent = document.getElementById(activeTab);
+                        if (tabContent && tabContent.querySelectorAll('.orders-drawer').length === 0) {
+                            tabContent.innerHTML = '<div class="text-center"><i class="fa-solid fa-box-open text-4xl text-textlight mb-4"></i><p class="text-textlight text-lg">No orders found</p><p class="text-textlight text-sm mt-2">Your ' + activeTab.replace('-', ' ') + ' will appear here</p></div>';
+                        }
+                    }
+                }
+            };
+            xhr.send();
+        }
+        function showCancelToast() {
+            var toast = document.getElementById('cancelToast');
+            if (toast) {
+                toast.style.display = 'flex';
+                toast.classList.add('show');
+                setTimeout(function() {
+                    toast.classList.remove('show');
+                    toast.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
 
 </html>

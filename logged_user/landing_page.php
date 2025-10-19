@@ -1,22 +1,12 @@
 <?php
-// Enforce session and cache control to prevent back navigation after logout
-session_start();
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
 
-// Additional security headers
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');
-header('X-XSS-Protection: 1; mode=block');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header('Content-Security-Policy: default-src \'self\' https: data: \'unsafe-inline\' \'unsafe-eval\'; img-src \'self\' https: data:; style-src \'self\' https: \'unsafe-inline\'; script-src \'self\' https: \'unsafe-inline\' \'unsafe-eval\';');
+
+include '../includes/headeruser.php';
 
 if (!isset($_SESSION['logged_in'])) {
     header('Location: ../connection/tresspass.php');
     exit();
 }
-
 
 include 'referral_form.php';
 include 'recommendation_form.php'; 
@@ -55,15 +45,22 @@ if (isset($_SESSION['user_id'])) {
   }
 }
 
-include '../includes/headeruser.php';
 
-$branches = [
-  [ 'id' => 1, 'name' => 'Deparo',   'lat' => 14.752338, 'lng' => 121.017677 ],
-  [ 'id' => 2, 'name' => 'Vanguard', 'lat' => 14.759202, 'lng' => 121.062861 ],
-  [ 'id' => 3, 'name' => 'Brixton',  'lat' => 14.583121, 'lng' => 120.979313 ],
-  [ 'id' => 4, 'name' => 'Samaria',  'lat' => 14.757048, 'lng' => 121.033621 ],
-  [ 'id' => 5, 'name' => 'Kiko',     'lat' => 14.607425, 'lng' => 121.011685 ],
-];
+require_once '../connection/connection.php';
+$branches = [];
+try {
+  $stmt = $conn->query("SELECT branch_id AS id, branch_name AS name, latitude AS lat, longitude AS lng FROM branches ORDER BY branch_id ASC");
+  $branches = $stmt->fetchAll();
+} catch (Exception $e) {
+  // fallback to static if DB fails
+  $branches = [
+    [ 'id' => 1, 'name' => 'Deparo',   'lat' => 14.75243153, 'lng' => 121.01763335 ],
+    [ 'id' => 2, 'name' => 'Vanguard', 'lat' => 14.75920200, 'lng' => 121.06286101 ],
+    [ 'id' => 3, 'name' => 'Brixton',  'lat' => 14.76724928, 'lng' => 121.04104486 ],
+    [ 'id' => 4, 'name' => 'Samaria',  'lat' => 14.76580311, 'lng' => 121.06563606 ],
+    [ 'id' => 5, 'name' => 'Phase 1',  'lat' => 14.77682717, 'lng' => 121.04841432 ],
+  ];
+}
 $user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
 $user_branch = null;
 foreach ($branches as $b) {
@@ -443,7 +440,9 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         exit();
     }
     ?>
-    <script>
+  <script>
+  // Expose current branch ID for cart logic
+  window.currentBranchId = <?php echo isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 'null'; ?>;
       // Detect browser back navigation and force check for session
       window.addEventListener('pageshow', function (event) {
         if (
@@ -459,21 +458,108 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       });
     </script>
     
-    <!-- Hero Section -->
-    <section class="relative w-full min-h-screen flex items-center justify-between overflow-hidden pt-16 px-4 md:px-[5vw] bg-[linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.7)),url('../images/user/landingpagebackground.PNG')] bg-center bg-cover">
-      <div class="relative z-10 flex flex-1 items-center justify-start gap-6 md:gap-[3vw] flex-col md:flex-row max-md:justify-center max-md:pt-24 max-md:pb-12">
-        <img
-          src="../images/user/landingpagetile1.png"
-          alt="Landing Tile"
-          class="max-w-full max-h-[45vh] md:max-h-[80vh] w-[280px] md:w-[700px] h-auto rotate-[25deg] md:rotate-[40deg] drop-shadow-[0_4px_15px_rgba(0,0,0,0.5)] animate-[float_6s_ease-in-out_infinite] mt-8 md:mt-0"
-          style="animation-name: float;"
-        />
-        <div class="flex-1 text-left md:text-left pointer-events-auto max-md:text-center max-md:px-4">
-          <div class="text-white text-base md:text-[1.2rem] font-semibold tracking-wider drop-shadow-md">STYLE IN YOUR EVERY STEP.</div>
-          <div class="text-secondary text-3xl md:text-[3rem] font-black drop-shadow-lg leading-tight my-2" style="text-shadow:2px 2px 8px #000;">CHOOSE YOUR<br />TILES NOW.</div>
-          <div class="text-white text-sm md:text-[1.1rem] mt-5 max-w-full md:max-w-[500px] leading-relaxed">Discover our premium collection of tiles that combine elegance, durability, and style to transform any space into a masterpiece.</div>
+    <!-- Branch Banner Carousel Section -->
+    <?php
+    // Fetch branch banners for the user's branch
+    $branchBanners = [];
+    if (isset($user_branch_id)) {
+      try {
+        $stmt = $conn->prepare('SELECT banner_id, banner_image, display_order FROM branch_banners WHERE branch_id = ? AND is_active = 1 ORDER BY display_order ASC, banner_id ASC');
+        $stmt->execute([$user_branch_id]);
+        $branchBanners = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Convert images to base64
+        foreach ($branchBanners as &$banner) {
+          if (!empty($banner['banner_image'])) {
+            $banner['banner_image'] = 'data:image/jpeg;base64,' . base64_encode($banner['banner_image']);
+          } else {
+            $banner['banner_image'] = null;
+          }
+        }
+        unset($banner);
+      } catch (Exception $e) {
+        $branchBanners = [];
+      }
+    }
+    ?>
+    <section class="relative w-full min-h-screen h-screen flex items-center justify-center overflow-hidden p-0 m-0 bg-gradient-to-br from-primary/90 to-secondary/80">
+      <div class="absolute inset-0 w-full h-full z-0">
+        <div id="branchBannerCarousel" class="relative w-full h-full min-h-screen min-w-full overflow-hidden group">
+          
+          <?php if (!empty($branchBanners)): ?>
+            <?php foreach ($branchBanners as $i => $banner): ?>
+              <div class="carousel-slide absolute inset-0 transition-opacity duration-700 ease-in-out <?php echo $i === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'; ?>" data-slide="<?php echo $i; ?>">
+                <?php if ($banner['banner_image']): ?>
+                  <img src="<?php echo htmlspecialchars($banner['banner_image']); ?>" alt="Branch Banner <?php echo $i+1; ?>" class="w-full h-full object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-1000" style="min-height:100vh;min-width:100vw;" />
+                <?php else: ?>
+                  <div class="w-full h-full flex items-center justify-center bg-gray-300 text-gray-500 text-2xl font-bold">No Image</div>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="w-full h-full flex items-center justify-center bg-gray-300 text-gray-500 text-2xl font-bold">No Banners Available</div>
+          <?php endif; ?>
+          <!-- Carousel Controls -->
+          <?php if (count($branchBanners) > 1): ?>
+          <button id="carouselPrev" class="absolute left-8 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-primary text-primary hover:text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-all z-30 border-2 border-primary/30">
+            <i class="fas fa-chevron-left text-2xl"></i>
+          </button>
+          <button id="carouselNext" class="absolute right-8 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-primary text-primary hover:text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-all z-30 border-2 border-primary/30">
+            <i class="fas fa-chevron-right text-2xl"></i>
+          </button>
+          <?php endif; ?>
+          <!-- Carousel Dots -->
+          <?php if (count($branchBanners) > 1): ?>
+          <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-30">
+            <?php foreach ($branchBanners as $i => $banner): ?>
+              <span class="carousel-dot w-5 h-5 rounded-full bg-white border-2 border-primary cursor-pointer transition-all <?php echo $i === 0 ? 'bg-primary' : 'bg-white'; ?>" data-dot="<?php echo $i; ?>"></span>
+            <?php endforeach; ?>
+          </div>
+          <?php endif; ?>
         </div>
       </div>
+      <style>
+        @keyframes fadein-slow { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fadein-slow { animation: fadein-slow 1.5s ease; }
+        @keyframes slideup { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slideup { animation: slideup 1.2s cubic-bezier(0.4,0,0.2,1); }
+      </style>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const slides = document.querySelectorAll('#branchBannerCarousel .carousel-slide');
+          const dots = document.querySelectorAll('#branchBannerCarousel .carousel-dot');
+          let current = 0;
+          let timer = null;
+          function showSlide(idx) {
+            slides.forEach((slide, i) => {
+              slide.classList.toggle('opacity-100', i === idx);
+              slide.classList.toggle('z-10', i === idx);
+              slide.classList.toggle('opacity-0', i !== idx);
+              slide.classList.toggle('z-0', i !== idx);
+            });
+            dots.forEach((dot, i) => {
+              dot.classList.toggle('bg-primary', i === idx);
+              dot.classList.toggle('bg-white', i !== idx);
+            });
+            current = idx;
+          }
+          function nextSlide() {
+            showSlide((current + 1) % slides.length);
+          }
+          function prevSlide() {
+            showSlide((current - 1 + slides.length) % slides.length);
+          }
+          if (slides.length > 1) {
+            document.getElementById('carouselNext').onclick = nextSlide;
+            document.getElementById('carouselPrev').onclick = prevSlide;
+            dots.forEach((dot, i) => {
+              dot.onclick = () => showSlide(i);
+            });
+            timer = setInterval(nextSlide, 5000);
+            document.getElementById('branchBannerCarousel').addEventListener('mouseenter', () => clearInterval(timer));
+            document.getElementById('branchBannerCarousel').addEventListener('mouseleave', () => { timer = setInterval(nextSlide, 5000); });
+          }
+        });
+      </script>
     </section>
 
     <!-- Recommendation Items Section -->
@@ -709,8 +795,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                   <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">${product.product_name}</h3>
                   <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱${parseInt(product.product_price).toLocaleString()}</div>
                   <div class="flex flex-col justify-center gap-2 w-full mt-2">
-                    <button class="add-to-cart-btn w-full py-3 bg-primary text-white rounded-lg text-base font-bold transition-all hover:bg-secondary hover:-translate-y-1 shadow flex items-center justify-center gap-2"><i class="fa fa-shopping-cart text-base"></i> Add to Cart</button>
-                    <button class="view-3d-btn w-full py-3 bg-[#2B3241] text-[#EF7232] rounded-lg text-base font-bold transition-all hover:bg-[#EF7232] hover:text-[#2B3241] hover:-translate-y-1 shadow flex items-center justify-center gap-2"><i class="fa fa-cube text-base"></i> 3D View</button>
+                    <button class="view-product-btn w-full py-3 bg-primary text-white rounded-lg text-base font-bold transition-all hover:bg-secondary hover:-translate-y-1 shadow flex items-center justify-center gap-2"><i class="fa fa-eye text-base"></i> View Product</button>
                   </div>
                   <!-- No tile design badges -->
                 </div>
@@ -773,8 +858,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <div class="text-base md:text-[1.05rem] font-extrabold text-primary mb-1 text-center tracking-wide">${item.title}</div>
               <div class="text-md md:text-[1.1rem] font-extrabold text-secondary mb-3 text-center">${item.price}</div>
               <div class="flex flex-col justify-center gap-2 w-full mt-1">
-                <button class="add-to-cart-btn w-full py-3 bg-primary text-white rounded-lg text-base font-bold transition-all hover:bg-secondary hover:-translate-y-1 shadow flex items-center justify-center gap-2" data-idx="${index}"><i class="fa fa-shopping-cart text-base"></i> Add to Cart</button>
-                <button class="view-3d-btn w-full py-3 bg-[#2B3241] text-[#EF7232] rounded-lg text-base font-bold transition-all hover:bg-[#EF7232] hover:text-[#2B3241] hover:-translate-y-1 shadow flex items-center justify-center gap-2" data-idx="${index}"><i class="fa fa-cube text-base"></i> 3D View</button>
+                <button class="view-product-btn w-full py-3 bg-primary text-white rounded-lg text-base font-bold transition-all hover:bg-secondary hover:-translate-y-1 shadow flex items-center justify-center gap-2" data-idx="${index}"><i class="fa fa-eye text-base"></i> View Product</button>
               </div>
             </div>
           `;
@@ -891,343 +975,41 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         });
           });
           
-          // Add event listeners for Add to Cart and 3D View buttons in both premium grid and carousel
+          // Add event listeners for View Product buttons in both premium grid and carousel
           document.body.addEventListener('click', function(e) {
-            // 3D View button
-            if (e.target.closest('.view-3d-btn')) {
+            // View Product button
+            if (e.target.closest('.view-product-btn')) {
               e.preventDefault();
-              const btn = e.target.closest('.view-3d-btn');
-              let prod = null;
-              let fetchUrl = null;
+              const btn = e.target.closest('.view-product-btn');
+              let productId = null;
+              
               if (btn.hasAttribute('data-idx')) {
                 // Carousel
                 const idx = parseInt(btn.getAttribute('data-idx'));
-                prod = window.recommendedProducts && window.recommendedProducts[idx] ? window.recommendedProducts[idx] : null;
+                const prod = window.recommendedProducts && window.recommendedProducts[idx] ? window.recommendedProducts[idx] : null;
                 if (prod && prod.product_id) {
-                  fetchUrl = 'processes/get_product_details.php?id=' + encodeURIComponent(prod.product_id);
-                } else if (prod && prod.sku) {
-                  fetchUrl = 'processes/get_product_details.php?sku=' + encodeURIComponent(prod.sku);
-                } else if (prod && prod.product_name) {
-                  fetchUrl = 'processes/get_product_details.php?sku=' + encodeURIComponent(prod.product_name);
+                  productId = prod.product_id;
                 }
               } else {
                 // Premium grid
                 const card = btn.closest('.bg-white');
                 if (card) {
-                  // Try to get product_id from a data attribute if available
-                  let productId = card.getAttribute('data-product-id');
-                  let sku = card.getAttribute('data-sku');
-                  if (!productId && card.querySelector('[data-product-id]')) productId = card.querySelector('[data-product-id]').getAttribute('data-product-id');
-                  if (!sku && card.querySelector('[data-sku]')) sku = card.querySelector('[data-sku]').getAttribute('data-sku');
-                  if (productId) {
-                    fetchUrl = 'processes/get_product_details.php?id=' + encodeURIComponent(productId);
-                  } else if (sku) {
-                    fetchUrl = 'processes/get_product_details.php?sku=' + encodeURIComponent(sku);
-                  } else {
-                    const name = card.querySelector('h3') ? card.querySelector('h3').textContent : '';
-                    fetchUrl = 'processes/get_product_details.php?sku=' + encodeURIComponent(name);
-                  }
+                  productId = card.getAttribute('data-product-id');
                 }
               }
-              if (fetchUrl) {
-                fetch(fetchUrl)
-                  .then(r => r.json())
-                  .then(data => {
-                    if (data && !data.error) openProductModal(data);
-                    else openProductModal(prod || {name: '', description: 'No details found.'});
-                  });
-              } else if (prod) {
-                openProductModal(prod);
-              }
-              return;
-            }
-            // Add to Cart button
-            if (e.target.closest('.add-to-cart-btn')) {
-              e.preventDefault();
-              const btn = e.target.closest('.add-to-cart-btn');
-              let prod = null;
-              if (btn.hasAttribute('data-idx')) {
-                // Carousel
-                const idx = parseInt(btn.getAttribute('data-idx'));
-                prod = window.recommendedProducts && window.recommendedProducts[idx] ? window.recommendedProducts[idx] : null;
-              } else {
-                // Premium grid
-                const card = btn.closest('.bg-white');
-                if (card) {
-                  const name = card.querySelector('h3') ? card.querySelector('h3').textContent : '';
-                  const price = card.querySelector('.text-secondary') ? card.querySelector('.text-secondary').textContent : '';
-                  prod = { product_name: name, product_price: price };
-                }
-              }
-              if (prod) {
-                Swal.fire({
-                  title: 'Added to Cart!',
-                  html: `<strong>${prod.product_name}</strong><br>${prod.product_price ? prod.product_price : ''}`,
-                  icon: 'success',
-                  confirmButtonColor: '#7d310a',
-                  confirmButtonText: 'Continue Shopping'
-                });
+              
+              if (productId) {
+                // Redirect to product detail page
+                window.location.href = 'product_detail.php?id=' + encodeURIComponent(productId);
               }
               return;
             }
           });
           
           // Apply filters button
-          const applyFiltersBtn = document.querySelector('.bg-white button:not(:has(.fa-shopping-cart))');
+          const applyFiltersBtn = document.querySelector('.bg-white button:not(:has(.fa-eye))');
         // Removed filter confirmation popup
       });
-    </script>
-
-    <!-- Product Modal for 360° View -->
-
-
-    <style>
-      @media (max-width: 900px) {
-        #productModalBox { width: 98vw !important; min-width: 0 !important; }
-        #productModal3D { width: 160px !important; height: 160px !important; }
-      }
-      @media (max-width: 700px) {
-        #productModalBox { flex-direction: column !important; height: 98vh !important; min-width: 0 !important; }
-        #productModalBox > div[style*='display:flex;flex-direction:row'] { flex-direction: column !important; }
-        #productModal3D { width: 120px !important; height: 120px !important; margin: 0 auto !important; }
-        #productModalCategories, #productModalDesc { padding-left: 0 !important; padding-right: 0 !important; }
-      }
-    </style>
-    <div id="productModalOverlay" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:rgba(30,30,30,0.75);align-items:center;justify-content:center;backdrop-filter:blur(2px);">
-      <div id="productModalBox" style="background:linear-gradient(120deg,#fff 60%,#e8a56a 100%);border-radius:28px;max-width:99vw;width:900px;min-width:340px;height:600px;box-shadow:0 16px 56px 0 rgba(0,0,0,0.32);padding:0;position:relative;overflow:hidden;animation:modalPopIn .25s cubic-bezier(.6,1.5,.6,1) 1;display:flex;flex-direction:column;">
-        <!-- Tile Name at the top (styled header) -->
-        <div id="productModalNameHeader" style="background:#7d310a;padding:16px 0 10px 0;text-align:center;border-radius:28px 28px 0 0;box-shadow:0 2px 16px #e8a56a33;min-height:28px;">
-          <span id="productModalNameHeaderText" style="color:#fff;font-size:1.35rem;font-weight:800;letter-spacing:0.01em;display:block;text-shadow:0 2px 12px #0003;text-transform:capitalize;"></span>
-        </div>
-        <div style="display:flex;flex-direction:row;gap:0;padding:0 0 0 0;align-items:stretch;background:linear-gradient(120deg,#fff 70%,#e8a56a22 100%);flex:1;min-height:0;">
-          <!-- 3D view left -->
-          <div style="flex:0 0 320px;display:flex;align-items:center;justify-content:center;padding:38px 0 28px 38px;">
-            <div id="productModal3D" style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 60% 40%, #fff 60%, #f7f3ef 100%);border-radius:28px;box-shadow:0 8px 32px 0 #cf875655,0 1.5px 0 #fff;"></div>
-          </div>
-          <!-- Description and attributes right -->
-          <div style="flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;min-width:0;padding:38px 38px 28px 28px;">
-            <div id="productModalCategories" style="width:100%;margin-bottom:18px;">
-              <!-- Tile attributes will be rendered here -->
-            </div>
-            <div id="productModalDesc" style="font-size:clamp(1.08rem,2vw,1.22rem);color:#222;font-weight:600;line-height:1.7;text-align:left;letter-spacing:0.01em;max-width:100%;text-shadow:0 1px 0 #fff,0 2px 8px #e8a56a11;background:rgba(255,255,255,0.8);padding:18px 18px 18px 18px;border-radius:18px;box-shadow:0 2px 12px #e8a56a22;overflow:auto;max-height:140px;word-break:break-word;min-width:180px;margin-bottom:10px;"></div>
-            <div style="flex:1;"></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:24px;justify-content:center;align-items:center;padding:22px 0 24px 0;background:linear-gradient(90deg,#fff 80%,#e8a56a22 100%);border-radius:0 0 28px 28px;">
-          <button id="closeProductModal" style="min-width:120px;padding:12px 0;font-size:1.13rem;font-weight:700;background:#cf8756;color:#fff;border:none;border-radius:14px;box-shadow:0 2px 8px #cf875633;cursor:pointer;transition:background .2s;">Close</button>
-          <button id="addToCartProductModal" style="min-width:160px;padding:12px 0;font-size:1.13rem;font-weight:700;background:#7d310a;color:#fff;border:none;border-radius:14px;box-shadow:0 2px 8px #cf875633;cursor:pointer;transition:background .2s;"><i class="fa fa-shopping-cart" style="margin-right:9px;"></i>Add to Cart</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Three.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
-    <script>
-    // Helper: open/close modal
-    let currentProductForModal = null;
-    function openProductModal(product) {
-      currentProductForModal = product;
-      // Set tile name in the header
-      const nameHeader = document.getElementById('productModalNameHeaderText');
-      if (nameHeader) {
-        nameHeader.textContent = product.name || product.product_name || '';
-      }
-      // Set all tile attributes in a modern card layout
-      const catDiv = document.getElementById('productModalCategories');
-      let html = '';
-      // Helper to render a row of badges
-      function renderBadges(label, arr, color) {
-        if (!arr || arr.length === 0) return '';
-        // Capitalize each word in label
-        const capLabel = label.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
-        return `<div style="margin-bottom:8px;"><span style="font-weight:700;color:#7d310a;font-size:1.01em;">${capLabel}:</span> ` +
-          arr.map(val => `<span style="display:inline-block;background:${color};color:#fff;font-size:0.98rem;font-weight:600;padding:4px 14px;border-radius:12px;box-shadow:0 1px 4px #cf875622;margin-right:6px;margin-bottom:3px;letter-spacing:0.01em;">${val}</span>`).join('') + '</div>';
-      }
-  html += renderBadges('Tile Design', product.designs, '#cf8756');
-  html += renderBadges('Tile Size', product.sizes, '#7d310a');
-  html += renderBadges('Tile Finishes', product.finishes, '#e8a56a');
-  html += renderBadges('Tile Classification', product.classifications, '#2B3241');
-  html += renderBadges('Best For', product.best_for, '#4CAF50');
-      catDiv.innerHTML = html;
-      // Set description
-      let desc = product.description || product.product_description || '';
-      desc = desc ? `<span style='display:block;font-size:0.98em;color:#7d310a;font-weight:600;margin-bottom:0.2em;'>Product Description</span><span style='display:block;margin-bottom:0.5em;'>${desc}</span>` : '';
-      document.getElementById('productModalDesc').innerHTML = desc;
-      document.getElementById('productModalOverlay').style.display = 'flex';
-      // Disable scroll on body
-      document.body.style.overflow = 'hidden';
-      renderProduct3D(product.image_path || product.product_image);
-    }
-    function closeProductModal() {
-      document.getElementById('productModalOverlay').style.display = 'none';
-      const viewer = document.getElementById('productModal3D');
-      viewer.innerHTML = '';
-      currentProductForModal = null;
-      // Re-enable scroll on body
-      document.body.style.overflow = '';
-    }
-    document.getElementById('closeProductModal').onclick = closeProductModal;
-    // Remove click-to-close on overlay
-
-    // Add to Cart button logic
-    document.getElementById('addToCartProductModal').onclick = function() {
-      if (!currentProductForModal) return;
-      Swal.fire({
-        title: 'Added to Cart!',
-        html: `<strong>${currentProductForModal.name || currentProductForModal.product_name || ''}</strong>`,
-        icon: 'success',
-        confirmButtonColor: '#7d310a',
-        confirmButtonText: 'Continue Shopping'
-      });
-      closeProductModal();
-    };
-
-    // 3D viewer using Three.js: show image as texture on a centered square (cube) with a contrasting background
-    function renderProduct3D(imageUrl) {
-      const container = document.getElementById('productModal3D');
-      container.innerHTML = '';
-      const width = container.clientWidth, height = container.clientHeight;
-      const renderer = new THREE.WebGLRenderer({antialias:true,alpha:true});
-      renderer.setClearColor(0xf7f3ef, 1);
-      renderer.setSize(width, height);
-      renderer.shadowMap.enabled = true;
-      container.appendChild(renderer.domElement);
-      const scene = new THREE.Scene();
-      // Add a soft shadow plane for realism
-      const shadowGeo = new THREE.PlaneGeometry(2.8, 0.9);
-      const shadowMat = new THREE.ShadowMaterial({opacity:0.28});
-      const shadow = new THREE.Mesh(shadowGeo, shadowMat);
-      shadow.position.y = -0.45;
-      shadow.receiveShadow = true;
-      scene.add(shadow);
-      // Camera
-      const camera = new THREE.PerspectiveCamera(30, width/height, 0.1, 1000);
-      camera.position.set(0, 0.12, 2.7);
-      // Lighting
-      const ambient = new THREE.AmbientLight(0xffffff, 1.08);
-      scene.add(ambient);
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
-      dirLight.position.set(2, 3, 4);
-      dirLight.castShadow = true;
-      dirLight.shadow.mapSize.width = 2048;
-      dirLight.shadow.mapSize.height = 2048;
-      dirLight.shadow.blurSamples = 16;
-      scene.add(dirLight);
-      // Cube geometry for square tile (smaller)
-      const geometry = new THREE.BoxGeometry(1.05, 1.05, 0.07); // Smaller tile
-      const loader = new THREE.TextureLoader();
-      loader.load(imageUrl, function(texture) {
-        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        texture.minFilter = THREE.LinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.wrapS = THREE.ClampToEdgeWrapping;
-        texture.wrapT = THREE.ClampToEdgeWrapping;
-        // Only show image on front face, rest are subtle off-white
-        const materials = [
-          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13}), // right
-          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13}), // left
-          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13}), // top
-          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13}), // bottom
-          new THREE.MeshStandardMaterial({map:texture, roughness:0.16, metalness:0.18}),    // front (main image)
-          new THREE.MeshStandardMaterial({color:0xf9f5f2, roughness:0.32, metalness:0.13})  // back
-        ];
-        const cube = new THREE.Mesh(geometry, materials);
-        cube.castShadow = true;
-        cube.receiveShadow = false;
-        // Center the tile in the 3D view
-        cube.position.y = 0.18;
-        scene.add(cube);
-        // Animation
-        let isDragging = false, prevX = 0, prevY = 0, rotationY = Math.PI/8, rotationX = -Math.PI/16;
-        renderer.domElement.addEventListener('mousedown', function(e) {
-          isDragging = true; prevX = e.clientX; prevY = e.clientY;
-        });
-        window.addEventListener('mouseup', function() { isDragging = false; });
-        window.addEventListener('mousemove', function(e) {
-          if (isDragging) {
-            const dx = e.clientX - prevX;
-            const dy = e.clientY - prevY;
-            rotationY += dx * 0.012;
-            rotationX += dy * 0.012;
-            rotationX = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, rotationX));
-            prevX = e.clientX;
-            prevY = e.clientY;
-          }
-        });
-        // Touch support
-        renderer.domElement.addEventListener('touchstart', function(e) {
-          if (e.touches.length === 1) {
-            isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
-          }
-        });
-        window.addEventListener('touchend', function() { isDragging = false; });
-        window.addEventListener('touchmove', function(e) {
-          if (isDragging && e.touches.length === 1) {
-            const dx = e.touches[0].clientX - prevX;
-            const dy = e.touches[0].clientY - prevY;
-            rotationY += dx * 0.012;
-            rotationX += dy * 0.012;
-            rotationX = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, rotationX));
-            prevX = e.touches[0].clientX;
-            prevY = e.touches[0].clientY;
-          }
-        });
-        function animate() {
-          requestAnimationFrame(animate);
-          cube.rotation.y = rotationY;
-          cube.rotation.x = rotationX;
-          renderer.render(scene, camera);
-        }
-        animate();
-      }, undefined, function() {
-        // On error, fallback to plain image
-        container.innerHTML = '<img src="'+imageUrl+'" alt="Tile" style="width:100%;height:100%;object-fit:contain;border-radius:16px;background:#f7f3ef;">';
-      });
-    }
-    // Modal pop-in animation
-    const style = document.createElement('style');
-    style.innerHTML = `@keyframes modalPopIn{0%{transform:scale(0.85) translateY(40px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}`;
-    document.head.appendChild(style);
-
-    // Make product tiles clickable (for both recommended and selection tiles)
-    document.addEventListener('DOMContentLoaded', function() {
-      // For tile selection section (static tiles)
-      document.querySelectorAll('.tile-selection .bg-white').forEach(function(card) {
-        // Remove card clickability
-        card.style.cursor = 'default';
-        card.onclick = null;
-        // Make only the Explore Now button clickable
-        const btn = card.querySelector('button');
-        if (btn) {
-          btn.style.cursor = 'pointer';
-          btn.onclick = function(e) {
-            e.stopPropagation();
-            const name = card.querySelector('h3') ? card.querySelector('h3').textContent.trim().toLowerCase() : '';
-            // Only redirect for the specified designs, do not open 3D modal
-            const allowed = [
-              'minimalist',
-              'floral',
-              'black and white',
-              'modern',
-              'rustic',
-              'geometric'
-            ];
-            if (allowed.includes(name)) {
-              // Convert to filename format
-              let file = name.replace(/ /g, '_').replace(/&/g, 'and') + '_products.php';
-              window.location.href = file;
-              return;
-            }
-            // For any other tile, fallback to modal (if any in future)
-            fetch('processes/get_product_details.php?sku='+encodeURIComponent(name))
-              .then(r=>r.json()).then(data=>{
-                if (data && !data.error) openProductModal(data);
-                else openProductModal({name:name, sku:'', description:'No details found.', image_path:card.querySelector('img').src});
-              });
-          };
-        }
-      });
-    });
     </script>
   </body>
 </html>

@@ -90,7 +90,7 @@ include '../includes/sidebar.php';
                         ['name' => 'Samaria Branch', 'icon' => 'fa-store', 'orders' => 9],
                         ['name' => 'Vanguard Branch', 'icon' => 'fa-store', 'orders' => 7],
                         ['name' => 'Deparo Branch', 'icon' => 'fa-store', 'orders' => 6],
-                        ['name' => 'Kiko Branch', 'icon' => 'fa-store', 'orders' => 5],
+                        ['name' => 'Phase 1 Branch', 'icon' => 'fa-store', 'orders' => 5],
                     ];
                     foreach ($branches as $i => $branch): ?>
                     <div class="branch-card bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between items-center border border-blue-100 relative mx-auto max-w-xs">
@@ -107,7 +107,7 @@ include '../includes/sidebar.php';
                                 2 => 'Vanguard Branch',
                                 3 => 'Brixton Branch',
                                 4 => 'Samaria Branch',
-                                5 => 'Kiko Branch',
+                                5 => 'Phase 1 Branch',
                             ];
                             $user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : 0;
                             $user_branch_name = isset($branch_names[$user_branch_id]) ? $branch_names[$user_branch_id] : '';
@@ -155,7 +155,7 @@ const ordersData = {
     'Deparo Branch': [
         { id: 4001, customer: 'Charlie Black', address: '654 Maple Ave, City', payment: 'Cash on Delivery', product: 'Leafy Rose Tiles', qty: 7, total: 800, status: 'Pending', date: '2023-10-22' },
     ],
-    'Kiko Branch': [
+    'Phase 1 Branch': [
         { id: 5001, customer: 'Daisy Green', address: '987 Cedar Rd, City', payment: 'Paymongo', product: 'Marble White Tiles', qty: 15, total: 1800, status: 'Completed', date: '2023-10-17' },
     ],
 };
@@ -275,8 +275,8 @@ function showReceiptModal(order) {
         'Deparo Branch': {
             address: '189 Deparo Road, Caloocan City',
         },
-        'Kiko Branch': {
-            address: 'Kiko, Camarin Road, Caloocan City',
+        'Phase 1 Branch': {
+            address: 'Phase 1, Camarin Road, Caloocan City',
         },
     };
     // Find branch name from order (fallback to empty if not found)

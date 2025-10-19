@@ -28,9 +28,9 @@ try {
             exit(); // Stop execution if format is invalid
         }
 
-        // Prepare a SQL statement to count existing phone numbers in 'manual_accounts' table
+        // Prepare a SQL statement to count existing phone numbers in 'users' table
         // Using 'phone_number' as the column name, and a named parameter ':phone'
-        $stmt = $db_connection->prepare("SELECT COUNT(*) as count FROM manual_accounts WHERE phone_number = :phone");
+        $stmt = $db_connection->prepare("SELECT COUNT(*) as count FROM users WHERE phone_number = :phone");
         
         // Bind the phone number parameter to the prepared statement
         // PDO::PARAM_STR ensures the value is treated as a string

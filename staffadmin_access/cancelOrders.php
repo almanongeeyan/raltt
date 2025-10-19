@@ -150,7 +150,7 @@ include '../includes/sidebar.php';
                                     <option value="Samaria Branch">Samaria Branch</option>
                                     <option value="Vanguard Branch">Vanguard Branch</option>
                                     <option value="Deparo Branch">Deparo Branch</option>
-                                    <option value="Kiko Branch">Kiko Branch</option>
+                                    <option value="Phase 1 Branch">Phase 1 Branch</option>
                                 </select>
                             </div>
                         </div>
@@ -219,7 +219,7 @@ include '../includes/sidebar.php';
                 'Samaria Branch': { address: 'St. Vincent Ferrer Ave. Samaria Corner, Tala, Caloocan City' },
                 'Vanguard Branch': { address: 'Phase 6, Vanguard, Camarin, North Caloocan' },
                 'Deparo Branch': { address: '189 Deparo Road, Caloocan City' },
-                'Kiko Branch': { address: 'Kiko, Camarin Road, Caloocan City' },
+                'Phase 1 Branch': { address: 'Phase 1, Camarin Road, Caloocan City' },
             };
             const branchAddress = branchInfo[request.branch] ? branchInfo[request.branch].address : 'N/A';
             const shippingFee = request.total > 1000 ? 0 : 150;

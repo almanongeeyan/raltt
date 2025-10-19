@@ -7,7 +7,7 @@ $branch_names = [
     2 => 'Vanguard Branch',
     3 => 'Brixton Branch',
     4 => 'Samaria Branch',
-    5 => 'Kiko Branch',
+    5 => 'Phase 1 Branch',
 ];
 $user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : 0;
 $user_branch_name = isset($branch_names[$user_branch_id]) ? $branch_names[$user_branch_id] : '';
@@ -47,7 +47,7 @@ $user_branch_name = isset($branch_names[$user_branch_id]) ? $branch_names[$user_
                         4 => 'Samaria Branch',
                         2 => 'Vanguard Branch',
                         1 => 'Deparo Branch',
-                        5 => 'Kiko Branch',
+                        5 => 'Phase 1 Branch',
                     ];
                     foreach ($branches as $branch_id => $branch_name):
                         $isUserBranch = ($user_branch_name === $branch_name);

@@ -354,7 +354,7 @@
             const branchChart = new Chart(branchCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Deparo', 'Vanguard', 'Brixton', 'Samaria', 'Kiko'],
+                    labels: ['Deparo', 'Vanguard', 'Brixton', 'Samaria', 'Phase 1'],
                     datasets: [{
                         label: 'Sales (₱)',
                         data: [325000, 285000, 275000, 215000, 148750],

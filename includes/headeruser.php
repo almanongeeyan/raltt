@@ -9,647 +9,348 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
 }
 
 // Generate Chatbase hash
-    $chatbaseSecret = '60sp90gtn7uvp2l2xlpe8u05kt4z4lt4';
-    $chatbaseUserId = $_SESSION['user_id'] ?? session_id();
-    $chatbaseHash = hash_hmac('sha256', $chatbaseUserId, $chatbaseSecret);
-    ?>
-    
-    <meta name="chatbase-user-id" content="<?php echo htmlspecialchars($chatbaseUserId); ?>">
-    <meta name="chatbase-hash" content="<?php echo htmlspecialchars($chatbaseHash); ?>">
-
-
-
-
+$chatbaseSecret = '60sp90gtn7uvp2l2xlpe8u05kt4z4lt4';
+$chatbaseUserId = $_SESSION['user_id'] ?? session_id();
+$chatbaseHash = hash_hmac('sha256', $chatbaseUserId, $chatbaseSecret);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php if (isset($_SESSION['branch_id'])): ?>
-    <meta name="user-branch-id" content="<?php echo htmlspecialchars($_SESSION['branch_id']); ?>">
-    <?php endif; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RALTT Shop</title>
+    <link rel="icon" type="image/png" href="../images/userlogo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         body {
-            /* Removed forced black background to allow page-specific backgrounds */
-            color: #fff;
-            margin: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-weight: 500;
-        }
-
-        .raltt-header {
-            width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 100;
-            background: rgba(10,10,10,0.85);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
-            height: 72px;
-            box-sizing: border-box;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            transition: background 0.3s;
-        }
-
-        .raltt-header .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            max-width: 140px;
-            flex: 0 0 auto;
-            margin-right: 12px;
-            z-index: 200;
-            height: 100%;
-            background: none !important;
-            box-shadow: none !important;
-        }
-
-        .raltt-header .logo-img {
-            width: 110px;
-            height: 48px;
-            object-fit: contain;
-            display: block;
-            margin: 0;
-            padding: 0;
-            background: none !important;
-            box-shadow: none !important;
-            /* If logo image file has a background, replace it with a transparent PNG */
-        }
-
-        .raltt-header .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.1;
-        }
-
-        .raltt-header .brand-main {
-            color: #fff;
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-        }
-
-        .raltt-header .brand-sub {
-            color: #b88b4a;
-            font-size: 0.95rem;
-            font-weight: 400;
-            margin-top: -2px;
-            letter-spacing: 0.2px;
-        }
-
-        .raltt-header .nav-and-user {
-            display: flex;
-            flex: 1;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            min-width: 0;
-            margin-left: auto;
-            margin-right: auto;
-            max-width: 1200px;
+            font-family: 'Inter', sans-serif;
         }
         
-        .raltt-header .nav-and-user.search-active .nav,
-        .raltt-header .nav-and-user.search-active .user-dropdown {
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0s, opacity 0.3s linear;
+        .glass-effect {
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-
-        .raltt-header .nav-and-user.search-active .search-bar {
-            display: flex;
-            visibility: visible;
+        
+        .gradient-primary {
+            background: linear-gradient(135deg, #7d310a 0%, #cf8756 50%, #e8a56a 100%);
+        }
+        
+        .gradient-gold {
+            background: linear-gradient(135deg, #b88b4a 0%, #d4af37 50%, #f4e4b8 100%);
+        }
+        
+        .text-gold {
+            color: #cf8756;
+        }
+        
+        .border-gold {
+            border-color: #cf8756;
+        }
+        
+        .burger-line {
+            transition: all 0.3s ease;
+        }
+        
+        .burger.open .burger-line:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        
+        .burger.open .burger-line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .burger.open .burger-line:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+        
+        .dropdown-enter {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .dropdown-enter-active {
             opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.2s, transform 0.2s;
         }
 
-
-        .raltt-header nav {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-            flex: 1 1 0%;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.10);
-            border-radius: 32px;
-            padding: 8px 22px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
-            margin: 0 18px;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        
-        .raltt-header nav a {
-            color: #fff;
-            font-size: 1.02rem;
-            font-weight: 600;
-            text-decoration: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            transition: background 0.18s, color 0.18s;
-            position: relative;
-        }
-
-        .raltt-header nav a:hover,
-        .raltt-header nav .active {
-            background: rgba(255, 255, 255, 0.12);
-            color: #ff7a22;
-        }
-
-        .raltt-header .dropdown {
-            position: relative;
-        }
-
-        .raltt-header .dropdown-content {
-            display: none;
-            position: absolute;
-            top: 32px;
-            left: 0;
-            background: rgba(34, 34, 34, 0.98);
-            min-width: 160px;
-            border-radius: 6px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-            z-index: 10;
-            flex-direction: column;
-            padding: 8px 0;
-        }
-
-        .raltt-header .dropdown:hover .dropdown-content,
-        .raltt-header .dropdown:focus-within .dropdown-content {
-            display: flex;
-        }
-
-        .raltt-header .dropdown-content a {
-            color: #fff;
-            padding: 8px 20px;
-            font-size: 1rem;
-            border-radius: 0;
-            background: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            font-weight: 700;
-        }
-
-        .raltt-header .dropdown-content a:hover {
-            background: #ff7a22;
-            color: #fff;
-        }
-        
-        .raltt-header .user-area {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 0 0 auto;
-            margin-left: 12px;
-            position: relative;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        
-        .raltt-header .search-icon {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            color: #fff;
-            margin-right: 6px;
-            transition: color 0.18s;
-            z-index: 200;
-        }
-        .raltt-header .search-icon:hover {
-            color: #ff7a22;
-        }
-
-        .raltt-header .search-bar {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(34,34,34,0.98);
-            border-radius: 32px;
-            padding: 6px 18px;
-            z-index: 300;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-            min-width: 220px;
-            max-width: 400px;
-            width: 100%;
-            transition: all 0.3s;
-            align-items: center;
-            visibility: hidden;
+        /* Search bar animations */
+        .search-bar-enter {
             opacity: 0;
-        }
-
-        .raltt-header .search-bar input {
-            border: none;
-            background: transparent;
-            color: #fff;
-            font-size: 1.1rem;
-            outline: none;
-            width: 80%;
-            padding: 6px 0;
-        }
-        .raltt-header .search-bar button {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-        .raltt-header .search-bar #raltt-search-close {
-            margin-left: 10px;
-            cursor: pointer;
-            font-size: 1.3rem;
-        }
-
-        /* Customer support icon */
-        .raltt-header .support-icon {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            color: #fff;
-            margin-right: 12px;
-            transition: color 0.18s;
-            z-index: 200;
-        }
-        .raltt-header .support-icon:hover {
-            color: #ff7a22;
-        }
-
-        /* Mobile search icon and bar */
-        .raltt-header .search-icon-mobile {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.7rem;
-            color: #fff;
-            margin-left: 10px;
-            transition: color 0.18s;
-        }
-        .raltt-header .search-icon-mobile:hover {
-            color: #ff7a22;
-        }
-        .raltt-header .search-bar-mobile {
-            display: none;
-            position: relative;
-            background: rgba(34,34,34,0.98);
-            border-radius: 32px;
-            padding: 6px 18px;
-            margin: 10px 0 0 0;
-            z-index: 300;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-            min-width: 180px;
-            max-width: 95vw;
-            width: 90vw;
-            transition: all 0.3s;
-            align-self: center;
-            align-items: center;
-        }
-        .raltt-header .search-bar-mobile input {
-            border: none;
-            background: transparent;
-            color: #fff;
-            font-size: 1.1rem;
-            outline: none;
-            width: 70vw;
-            max-width: 80vw;
-            padding: 6px 0;
-        }
-        .raltt-header .search-bar-mobile button {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-        .raltt-header .search-bar-mobile #raltt-search-close-mobile {
-            margin-left: 10px;
-            cursor: pointer;
-            font-size: 1.3rem;
-        }
-
-        .raltt-header .user-dropdown {
-            position: relative;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-
-        .raltt-header .user-dropdown-content {
-            display: none;
-            position: absolute;
-            top: 38px;
-            right: 0;
-            background: rgba(34, 34, 34, 0.98);
-            min-width: 160px;
-            border-radius: 6px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-            z-index: 10;
-            flex-direction: column;
-            padding: 8px 0;
-        }
-
-        .raltt-header .user-dropdown:hover .user-dropdown-content,
-        .raltt-header .user-dropdown:focus-within .user-dropdown-content {
-            display: flex;
+            transform: translateY(-10px);
+            max-height: 0;
         }
         
-        .raltt-header .user-dropdown-content a {
-            color: #fff;
-            padding: 8px 20px;
-            font-size: 1rem;
-            border-radius: 0;
-            background: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            font-weight: 700;
-        }
-
-        .raltt-header .user-dropdown-content a:hover {
-            background: #ff7a22;
-            color: #fff;
+        .search-bar-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 100px;
+            transition: all 0.3s ease-out;
         }
         
-        .raltt-header .user-icon {
-            font-size: 1.4rem;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        /* Mobile specific styles */
-        .raltt-header .burger,
-        .raltt-header .mobile-menu {
-            display: none;
-        }
-
-        .raltt-header .mobile-menu.open {
-            display: flex;
-        }
-
-        @media (max-width: 900px) {
-            .raltt-header {
-                padding: 0 4vw;
-                height: 56px;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .raltt-header nav,
-            .raltt-header .user-area {
-                display: none;
-            }
-
-            .raltt-header .logo-area {
-                max-width: 90px;
-                margin-right: 0;
-                height: 100%;
-            }
-
-            .raltt-header .logo-img {
-                width: 60px;
-                height: 28px;
-            }
-
-            .raltt-header .burger {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            width: 32px;
-                height: 32px;
-                cursor: pointer;
-                z-index: 120;
-                position: relative;
-            }
-
-            .raltt-header .burger span {
-                height: 3px;
-                width: 100%;
-                background: #fff;
-                margin: 4px 0;
-                border-radius: 2px;
-                transition: 0.3s;
-                display: block;
-            }
-
-            /* Burger animation */
-            .raltt-header .burger.open span:nth-child(1) {
-                transform: rotate(-45deg) translate(-5px, 6px);
-            }
-
-            .raltt-header .burger.open span:nth-child(2) {
-                opacity: 0;
-            }
-
-            .raltt-header .burger.open span:nth-child(3) {
-                transform: rotate(45deg) translate(-5px, -6px);
-            }
-
-            .raltt-header .mobile-menu {
-                display: none;
-                flex-direction: column;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(34, 34, 34, 0.98);
-                z-index: 200;
-                padding-top: 56px;
-                align-items: center;
-                gap: 16px;
-                transition: 0.3s;
-                overflow-y: auto;
-            }
-
-            .raltt-header .mobile-menu open {
-                display: flex;
-            }
-
-            .raltt-header .mobile-menu a {
-                color: #fff;
-                font-size: 1.01rem;
-                padding: 10px 0;
-                text-decoration: none;
-                width: 100%;
-                text-align: center;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                letter-spacing: 0.02em;
-                font-weight: 600;
-            }
-
-            .raltt-header .mobile-menu .dropdown-content {
-                display: none;
-                position: static;
-                background: none;
-                box-shadow: none;
-                min-width: 0;
-                border-radius: 0;
-                padding: 0;
-                width: 100%;
-                text-align: center;
-            }
-
-            .raltt-header .mobile-menu .dropdown-content a {
-                padding-left: 0;
-                font-size: 0.92rem;
-                justify-content: center;
-                padding-top: 6px;
-                padding-bottom: 6px;
-                gap: 8px;
-                font-weight: 600;
-            }
-
-            .raltt-header .mobile-menu .dropdown-content a i {
-                font-size: 1rem;
-            }
-
-            .raltt-header .user-dropdown-mobile {
-                display: flex;
-                flex-direction: column;
-                width: 100%;
-                text-align: center;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                align-items: center;
-            }
-
-            .raltt-header .user-dropdown-mobile a {
-                padding: 10px 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                width: 100%;
-                text-align: center;
-                font-weight: 600;
-            }
-
-            /* Show search icon in mobile menu header */
-            .raltt-header .search-icon-mobile {
-                display: flex;
-            }
-            .raltt-header .search-bar-mobile {
-                display: none;
-            }
+        .search-bar-exit {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 100px;
         }
         
-        @media (max-width: 600px) {
-            .raltt-header {
-                height: 44px;
-            }
-
-            .raltt-header .logo-img {
-                width: 48px;
-                height: 22px;
-            }
-
-            .raltt-header .brand-main {
-                font-size: 1rem;
-            }
-
-            .raltt-header .brand-sub {
-                font-size: 0.78rem;
-            }
-
-            .raltt-header .mobile-menu {
-                padding-top: 44px;
-            }
-            
-            .raltt-header .mobile-menu a,
-            .raltt-header .mobile-menu .dropdown-content a {
-                font-size: 0.95rem;
-                padding: 8px 0;
-            }
+        .search-bar-exit-active {
+            opacity: 0;
+            transform: translateY(-10px);
+            max-height: 0;
+            transition: all 0.3s ease-in;
+        }
+        
+        /* Disabled branch styling */
+        .branch-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .branch-disabled:hover {
+            background-color: #f9fafb !important;
+            border-color: #d1d5db !important;
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-900 text-white" style="margin-top: 4.5rem;">
 <script>
 // Check session every 1 second
 setInterval(function() {
     fetch('../connection/check_session.php', { method: 'POST' })
         .then(response => response.text())
         .then(data => {
-            // If check_session.php returns anything except 'OK', redirect
             if (data.trim() !== 'OK') {
                 window.location.href = '../connection/tresspass.php';
             }
         })
         .catch(() => {
-            // On error, redirect as well
             window.location.href = '../connection/tresspass.php';
         });
 }, 1000);
 </script>
 
 <?php
-$branches = [
-    [ 'id' => 1, 'name' => 'Deparo',   'lat' => 14.752338, 'lng' => 121.017677 ],
-    [ 'id' => 2, 'name' => 'Vanguard', 'lat' => 14.759202, 'lng' => 121.062861 ],
-    [ 'id' => 3, 'name' => 'Brixton',  'lat' => 14.583121, 'lng' => 120.979313 ],
-    [ 'id' => 4, 'name' => 'Samaria',  'lat' => 14.757048, 'lng' => 121.033621 ],
-    [ 'id' => 5, 'name' => 'Kiko',     'lat' => 14.607425, 'lng' => 121.011685 ],
-];
+require_once __DIR__ . '/../connection/connection.php';
+$branches = [];
+try {
+    $stmt = $db_connection->query("SELECT branch_id AS id, branch_name AS name, latitude AS lat, longitude AS lng FROM branches ORDER BY branch_id ASC");
+    $branches = $stmt->fetchAll();
+} catch (Exception $e) {
+    $branches = [
+        [ 'id' => 1, 'name' => 'Deparo',   'lat' => 14.75243153, 'lng' => 121.01763335 ],
+        [ 'id' => 2, 'name' => 'Vanguard', 'lat' => 14.75920200, 'lng' => 121.06286101 ],
+        [ 'id' => 3, 'name' => 'Brixton',  'lat' => 14.76724928, 'lng' => 121.04104486 ],
+        [ 'id' => 4, 'name' => 'Samaria',  'lat' => 14.76580311, 'lng' => 121.06563606 ],
+        [ 'id' => 5, 'name' => 'Phase 1',  'lat' => 14.77682717, 'lng' => 121.04841432 ],
+    ];
+}
 $user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
 $user_branch = null;
 foreach ($branches as $b) {
     if ($b['id'] === $user_branch_id) { $user_branch = $b; break; }
 }
 echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRANCH = ' . json_encode($user_branch) . ';</script>';
-$branchOverlay = '<div id="branch-location-overlay" style="position:fixed;top:90px;left:24px;z-index:9999;background:rgba(30,30,30,0.90);color:#fff;padding:12px 22px 12px 16px;border-radius:16px;font-size:15px;box-shadow:0 2px 12px 0 rgba(0,0,0,0.13);pointer-events:auto;max-width:290px;line-height:1.5;font-family:Inter,sans-serif;backdrop-filter:blur(2px);border:1.5px solid #cf8756;opacity:0.97;display:block;cursor:move;user-select:none;">';
-$branchOverlay .= '<div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;">';
-$branchOverlay .= '<span style="display:inline-block;width:8px;height:8px;background:#cf8756;border-radius:50%;margin-right:10px;"></span>';
-$branchOverlay .= '<span style="font-weight:500;opacity:0.85;">You\'re currently browsing at</span>';
+
+// Branch overlay
+$branchOverlay = '<div id="branch-location-overlay" class="fixed top-28 left-6 z-50 glass-effect text-white p-4 rounded-2xl shadow-2xl border-gold border cursor-move select-none max-w-xs opacity-95 backdrop-blur-sm">';
+$branchOverlay .= '<div class="flex items-center gap-2 mb-1">';
+$branchOverlay .= '<span class="w-2 h-2 bg-gold rounded-full"></span>';
+$branchOverlay .= '<span class="text-sm font-medium opacity-85">You\'re currently browsing at</span>';
 $branchOverlay .= '</div>';
-$branchOverlay .= '<div style="display:flex;align-items:center;gap:6px;">';
-$branchOverlay .= '<span id="branch-current" style="font-weight:700;">';
+$branchOverlay .= '<div class="flex items-center gap-2">';
+$branchOverlay .= '<span id="branch-current" class="font-bold text-lg">';
 if ($user_branch) {
     $branchOverlay .= htmlspecialchars($user_branch['name']) . ' Branch';
 } else {
     $branchOverlay .= '<i>Locating branch...</i>';
 }
 $branchOverlay .= '</span>';
-$branchOverlay .= '<span id="branch-distance" style="font-size:12px;color:#cf8756;margin-left:4px;opacity:0.85;"></span>';
-$branchOverlay .= '<a id="branch-change-link" href="#" style="font-size:11px;color:#e8a56a;margin-left:8px;text-decoration:underline;cursor:pointer;opacity:0.85;pointer-events:auto;">Change</a>';
+$branchOverlay .= '<span id="branch-distance" class="text-xs text-gold opacity-85"></span>';
+$branchOverlay .= '<a id="branch-change-link" href="#" class="text-xs text-gold underline cursor-pointer opacity-85 ml-2">Change</a>';
 $branchOverlay .= '</div>';
 $branchOverlay .= '</div>';
 echo $branchOverlay;
+
 // Loading overlay for branch change
-echo '<div id="branch-loading-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:100000;background:rgba(30,30,30,0.85);color:#fff;align-items:center;justify-content:center;font-family:Inter,sans-serif;"><div style="margin:auto;text-align:center;"><div class="fa fa-spinner fa-spin" style="font-size:2.5rem;margin-bottom:18px;"></div><div style="font-size:1.2rem;font-weight:600;">Switching branch...</div></div></div>';
-// ...existing code...
-?><header class="raltt-header">
+echo '<div id="branch-loading-overlay" class="hidden fixed inset-0 z-[100000] bg-gray-900 bg-opacity-85 text-white flex items-center justify-center">';
+echo '<div class="text-center">';
+echo '<div class="fa fa-spinner fa-spin text-4xl mb-4"></div>';
+echo '<div class="text-xl font-semibold">Switching branch...</div>';
+echo '</div>';
+echo '</div>';
+?>
+
+<!-- Header -->
+<header class="raltt-header fixed top-0 left-0 w-full z-40 glass-effect border-b border-white border-opacity-10">
+    <div class="flex items-center justify-between px-4 lg:px-8 h-16 lg:h-20">
+        <!-- Logo -->
+        <div class="flex items-center gap-3 z-50">
+            <img src="../images/userlogo.png" alt="RALTT Shop" class="w-12 h-12 lg:w-14 lg:h-14 object-contain">
+            <div class="flex flex-col leading-tight">
+                <span class="text-white font-bold text-lg lg:text-xl tracking-tight">RALTT SHOP</span>
+                <span class="text-gold font-medium text-sm lg:text-base">Premium Tiles & More</span>
+            </div>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <div class="hidden lg:flex flex-1 items-center justify-center max-w-4xl mx-8">
+            <nav class="flex items-center gap-8 bg-black bg-opacity-20 rounded-full px-8 py-3 shadow-lg">
+                <a href="../logged_user/landing_page.php" class="flex items-center gap-2 text-white hover:text-gold transition-colors duration-200 font-semibold px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="../logged_user/landing_page.php#premium-tiles" class="flex items-center gap-2 text-white hover:text-gold transition-colors duration-200 font-semibold px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-th-large"></i>
+                    <span>Products</span>
+                </a>
+                <a href="../logged_user/3dvisualizer.php" class="flex items-center gap-2 text-white hover:text-gold transition-colors duration-200 font-semibold px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-cube"></i>
+                    <span>3D Visualizer</span>
+                </a>
+                <a href="user_my_cart.php" class="flex items-center gap-2 text-white hover:text-gold transition-colors duration-200 font-semibold px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-shopping-cart"></i>
+                    <span>My Cart</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Desktop User Area -->
+        <div class="hidden lg:flex items-center gap-6 z-50">
+            <!-- Search Icon -->
+            <button id="search-toggle" class="text-white hover:text-gold transition-colors duration-200 text-xl p-2 rounded-full hover:bg-white hover:bg-opacity-10">
+                <i class="fa fa-search"></i>
+            </button>
+
+            <!-- User Dropdown -->
+            <div class="relative group">
+                <button class="flex items-center gap-3 text-white hover:text-gold transition-colors duration-200 p-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <div class="w-10 h-10 gradient-primary rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fa fa-user text-white"></i>
+                    </div>
+                    <span class="font-semibold">Account</span>
+                    <i class="fa fa-caret-down"></i>
+                </button>
+                
+                <div class="absolute right-0 top-12 w-48 bg-gray-800 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 dropdown-enter border border-gray-600">
+                    <div class="py-2">
+                        <a href="../logged_user/myProfile.php" class="flex items-center gap-3 px-4 py-3 text-white hover:bg-gold hover:bg-opacity-20 transition-colors duration-200">
+                            <i class="fa fa-user w-5 text-center"></i>
+                            <span>My Account</span>
+                        </a>
+                        <a href="../logged_user/customer_ticket.php" class="flex items-center gap-3 px-4 py-3 text-white hover:bg-gold hover:bg-opacity-20 transition-colors duration-200">
+                            <i class="fa fa-ticket w-5 text-center"></i>
+                            <span>Customer Ticket</span>
+                        </a>
+                        <a href="../logout.php" class="flex items-center gap-3 px-4 py-3 text-white hover:bg-gold hover:bg-opacity-20 transition-colors duration-200">
+                            <i class="fa fa-sign-out w-5 text-center"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Button - Fixed z-index and visibility -->
+        <button id="mobile-menu-toggle" class="lg:hidden burger flex flex-col justify-center items-center w-10 h-10 z-[100] relative">
+            <span class="burger-line w-6 h-0.5 bg-white mb-1.5 rounded-full"></span>
+            <span class="burger-line w-6 h-0.5 bg-white mb-1.5 rounded-full"></span>
+            <span class="burger-line w-6 h-0.5 bg-white rounded-full"></span>
+        </button>
+    </div>
+
+    <!-- Desktop Search Bar -->
+    <div id="desktop-search" class="hidden lg:block search-bar-enter">
+        <div class="flex justify-center px-8 pb-4">
+            <div class="w-full max-w-2xl bg-gray-800 rounded-full px-6 py-3 flex items-center gap-4 shadow-lg border border-gray-600">
+                <i class="fa fa-search text-gray-400"></i>
+                <input type="text" placeholder="Search products, categories, brands..." class="flex-1 bg-transparent text-white placeholder-gray-400 outline-none text-lg">
+                <button id="close-search" class="text-white hover:text-gold transition-colors duration-200 text-lg p-1 rounded-full hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="lg:hidden fixed inset-0 z-30 bg-gray-900 bg-opacity-95 transform translate-x-full transition-transform duration-300">
+        <div class="flex flex-col h-full pt-20 pb-8 px-6">
+            <!-- Mobile Search -->
+            <div class="mb-6">
+                <div class="bg-gray-800 rounded-full px-4 py-3 flex items-center gap-4 border border-gray-600">
+                    <i class="fa fa-search text-gray-400"></i>
+                    <input type="text" placeholder="Search products..." class="flex-1 bg-transparent text-white placeholder-gray-400 outline-none">
+                    <button class="text-white hover:text-gold transition-colors duration-200">
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <nav class="flex flex-col space-y-2 flex-1">
+                <a href="../logged_user/landing_page.php" class="flex items-center gap-4 text-white hover:text-gold transition-colors duration-200 font-semibold text-lg py-4 px-4 rounded-xl hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-home w-6 text-center"></i>
+                    <span>Home</span>
+                </a>
+                <a href="../logged_user/landing_page.php#premium-tiles" class="flex items-center gap-4 text-white hover:text-gold transition-colors duration-200 font-semibold text-lg py-4 px-4 rounded-xl hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-th-large w-6 text-center"></i>
+                    <span>Products</span>
+                </a>
+                <a href="../logged_user/3dvisualizer.php" class="flex items-center gap-4 text-white hover:text-gold transition-colors duration-200 font-semibold text-lg py-4 px-4 rounded-xl hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-cube w-6 text-center"></i>
+                    <span>3D Visualizer</span>
+                </a>
+                <a href="user_my_cart.php" class="flex items-center gap-4 text-white hover:text-gold transition-colors duration-200 font-semibold text-lg py-4 px-4 rounded-xl hover:bg-white hover:bg-opacity-10">
+                    <i class="fa fa-shopping-cart w-6 text-center"></i>
+                    <span>My Cart</span>
+                </a>
+                
+                <!-- Mobile Account Links -->
+                <div class="pt-6 border-t border-gray-700 mt-4">
+                    <div class="text-xs uppercase text-gray-400 font-semibold px-4 mb-3">Account</div>
+                    <a href="../logged_user/myProfile.php" class="flex items-center gap-4 text-white hover:text-gold transition-colors duration-200 font-semibold text-lg py-4 px-4 rounded-xl hover:bg-white hover:bg-opacity-10">
+                        <i class="fa fa-user w-6 text-center"></i>
+                        <span>My Account</span>
+                    </a>
+                    <a href="../logged_user/customer_ticket.php" class="flex items-center gap-4 text-white hover:text-gold transition-colors duration-200 font-semibold text-lg py-4 px-4 rounded-xl hover:bg-white hover:bg-opacity-10">
+                        <i class="fa fa-ticket w-6 text-center"></i>
+                        <span>Customer Ticket</span>
+                    </a>
+                    <a href="../logout.php" class="flex items-center gap-4 text-white hover:text-gold transition-colors duration-200 font-semibold text-lg py-4 px-4 rounded-xl hover:bg-white hover:bg-opacity-10">
+                        <i class="fa fa-sign-out w-6 text-center"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<!-- Branch Location Scripts -->
 <script>
 // --- Make branch overlay draggable ---
 document.addEventListener('DOMContentLoaded', function() {
     const overlay = document.getElementById('branch-location-overlay');
     if (!overlay) return;
+    
     let isDragging = false, startX = 0, startY = 0, origX = 0, origY = 0;
+    
     overlay.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
         isDragging = true;
         startX = e.clientX;
         startY = e.clientY;
-        // Get current position
         const rect = overlay.getBoundingClientRect();
         origX = rect.left;
         origY = rect.top;
         overlay.style.transition = 'none';
-        document.body.style.userSelect = 'none';
+        document.body.classList.add('select-none', 'overflow-hidden');
     });
+
     document.addEventListener('mousemove', function(e) {
         if (!isDragging) return;
         const dx = e.clientX - startX;
@@ -657,13 +358,15 @@ document.addEventListener('DOMContentLoaded', function() {
         overlay.style.left = (origX + dx) + 'px';
         overlay.style.top = (origY + dy) + 'px';
     });
+
     document.addEventListener('mouseup', function() {
         if (isDragging) {
             isDragging = false;
             overlay.style.transition = '';
-            document.body.style.userSelect = '';
+            document.body.classList.remove('select-none', 'overflow-hidden');
         }
     });
+
     // Touch support
     overlay.addEventListener('touchstart', function(e) {
         if (e.touches.length !== 1) return;
@@ -674,41 +377,47 @@ document.addEventListener('DOMContentLoaded', function() {
         origX = rect.left;
         origY = rect.top;
         overlay.style.transition = 'none';
+        document.body.classList.add('select-none', 'overflow-hidden');
     });
+
     document.addEventListener('touchmove', function(e) {
         if (!isDragging || e.touches.length !== 1) return;
+        e.preventDefault();
         const dx = e.touches[0].clientX - startX;
         const dy = e.touches[0].clientY - startY;
         overlay.style.left = (origX + dx) + 'px';
         overlay.style.top = (origY + dy) + 'px';
-    }, {passive:false});
+    }, {passive: false});
+
     document.addEventListener('touchend', function() {
         if (isDragging) {
             isDragging = false;
             overlay.style.transition = '';
+            document.body.classList.remove('select-none', 'overflow-hidden');
         }
     });
 });
-</script>
-<script>
+
 // --- Branch overlay logic ---
 function haversine(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                        Math.sin(dLon/2) * Math.sin(dLon/2);
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
 }
+
 function showNearestBranch(userLat, userLng) {
     if (!window.BRANCHES) return;
     let minDist = Infinity, nearest = null;
     window.BRANCHES.forEach(b => {
-            const dist = haversine(userLat, userLng, b.lat, b.lng);
-            if (dist < minDist) { minDist = dist; nearest = b; }
-        });
+        const dist = haversine(userLat, userLng, b.lat, b.lng);
+        if (dist < minDist) { minDist = dist; nearest = b; }
+    });
+    
     if (nearest) {
         const el = document.getElementById('branch-current');
         if (el) {
@@ -729,9 +438,35 @@ function showNearestBranch(userLat, userLng) {
         }
     }
 }
+
+// Global variable to track geolocation status
+window.geolocationEnabled = false;
+
+// Function to check geolocation status
+function checkGeolocationStatus() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve(false);
+            return;
+        }
+        
+        navigator.geolocation.getCurrentPosition(
+            () => resolve(true),
+            () => resolve(false),
+            { timeout: 3000 }
+        );
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize geolocation status
+    checkGeolocationStatus().then(enabled => {
+        window.geolocationEnabled = enabled;
+    });
+    
+    // Real-time branch overlay update if geolocation is enabled
     if (window.USER_BRANCH && window.USER_BRANCH.id && navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(pos) {
+        navigator.geolocation.watchPosition(function(pos) {
             const userLat = pos.coords.latitude, userLng = pos.coords.longitude;
             const branch = window.BRANCHES.find(b=>b.id===window.USER_BRANCH.id);
             if (branch) {
@@ -739,67 +474,97 @@ document.addEventListener('DOMContentLoaded', function() {
                 const distEl = document.getElementById('branch-distance');
                 if (distEl) distEl.innerHTML = '(' + dist.toFixed(2) + ' km)';
             }
-        });
+        }, function() {}, {enableHighAccuracy:true, maximumAge:10000, timeout:5000});
     }
+
     const changeLink = document.getElementById('branch-change-link');
     if (changeLink) {
         changeLink.onclick = function(e) {
             e.preventDefault();
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    openBranchChangeModal(pos.coords.latitude, pos.coords.longitude);
-                }, function() {
-                    openBranchChangeModal();
-                }, {timeout:5000});
-            } else {
-                openBranchChangeModal();
-            }
+            openBranchChangeModal();
         };
     }
 });
-function openBranchChangeModal(userLat, userLng) {
+
+function openBranchChangeModal() {
     if (!window.BRANCHES) return;
+    
+    // Remove existing modal if any
     let modal = document.getElementById('branch-change-modal');
     if (modal) modal.remove();
+    
+    // Create new modal
     modal = document.createElement('div');
     modal.id = 'branch-change-modal';
-    modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;display:flex;align-items:center;justify-content:center;';
-    let html = `<div style="background:#fff;color:#222;padding:0;border-radius:22px;min-width:290px;max-width:95vw;box-shadow:0 8px 40px 0 rgba(0,0,0,0.18);font-family:Inter,sans-serif;position:relative;overflow:hidden;">
-        <div style="background:linear-gradient(90deg,#7d310a 0%,#cf8756 100%);padding:22px 28px 16px 28px;text-align:center;">
-            <button id='close-branch-modal' style='position:absolute;top:18px;right:22px;font-size:22px;background:none;border:none;color:#fff;cursor:pointer;transition:color .2s;' onmouseover="this.style.color='#f9f5f2'" onmouseout="this.style.color='#fff'">&times;</button>
-            <div style="font-size:22px;font-weight:900;letter-spacing:0.5px;color:#fff;">Select Branch</div>
-            <div style="margin-top:6px;font-size:13px;opacity:0.92;color:#fff;">Choose a branch to display. Distance is shown if location is available.</div>
+    modal.className = 'fixed inset-0 z-[99999] bg-black bg-opacity-35 flex items-center justify-center p-4';
+    
+    let html = `<div class="bg-white text-gray-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+        <div class="gradient-primary p-6 text-center text-white relative">
+            <button id='close-branch-modal' class='absolute top-4 right-4 text-2xl text-white hover:text-gray-200 transition-colors duration-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-20'>&times;</button>
+            <div class="text-2xl font-black tracking-wide">Select Branch</div>
+            <div class="mt-2 text-sm opacity-90">Choose your preferred branch location</div>
         </div>
-        <div style='padding:22px 28px 18px 28px;display:flex;flex-direction:column;gap:10px;'>`;
+        <div class='p-6 space-y-3 max-h-96 overflow-y-auto'>`;
+    
+    // Check if geolocation is available and enabled
+    const hasGeolocation = navigator.geolocation;
+    let locationAvailable = false;
+    let userLat = null;
+    let userLng = null;
+    
+    // Try to get current position if geolocation is available
+    if (hasGeolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                locationAvailable = true;
+                userLat = pos.coords.latitude;
+                userLng = pos.coords.longitude;
+                
+                // Update the modal with distances
+                updateBranchDistances(userLat, userLng);
+            },
+            function(error) {
+                locationAvailable = false;
+                // Show warning but still allow branch selection
+                showLocationWarning();
+            },
+            { timeout: 5000 }
+        );
+    } else {
+        locationAvailable = false;
+        showLocationWarning();
+    }
+    
+    // Generate branch list
     window.BRANCHES.forEach(b => {
-            let dist = '';
-            if (typeof userLat === 'number' && typeof userLng === 'number') {
-                dist = ' (' + haversine(userLat, userLng, b.lat, b.lng).toFixed(2) + ' km)';
-            }
-            const isSelected = window.USER_BRANCH && window.USER_BRANCH.id === b.id;
-            if (isSelected) {
-                html += `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;font-size:16px;font-weight:600;border:none;outline:none;cursor:default;border-radius:12px;box-shadow:0 2px 12px 0 rgba(207,135,86,0.10);background:linear-gradient(90deg,#7d310a 0%,#cf8756 100%);color:#fff;gap:10px;opacity:1;position:relative;">
-                    <span><i class="fa fa-map-marker-alt" style="margin-right:7px;color:#fff;"></i>${b.name} Branch</span>
-                    <span style='font-size:13px;color:#fff;background:rgba(207,135,86,0.95);padding:2px 10px 2px 10px;border-radius:8px;${dist?'':'opacity:0.5;'}'>${dist}</span>
-                    <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#fff;font-size:18px;"><i class='fa fa-check-circle'></i></span>
-                </div>`;
-            } else {
-                html += `<button data-branch="${b.id}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;font-size:16px;font-weight:600;border:none;outline:none;cursor:pointer;border-radius:12px;transition:background .18s,color .18s,box-shadow .18s;margin:0;background:#f9f5f2;color:#7d310a;gap:10px;" onmouseover="this.style.background='linear-gradient(90deg,#cf8756 0%,#e8a56a 100%)';this.style.color='#fff'" onmouseout="this.style.background='#f9f5f2';this.style.color='#7d310a'">
-                    <span><i class="fa fa-map-marker-alt" style="margin-right:7px;color:#cf8756;"></i>${b.name} Branch</span>
-                    <span style='font-size:13px;color:#fff;background:rgba(207,135,86,0.95);padding:2px 10px 2px 10px;border-radius:8px;${dist?'':'opacity:0.5;'}'>${dist}</span>
-                </button>`;
-            }
+        let dist = '';
+        let isSelected = window.USER_BRANCH && window.USER_BRANCH.id === b.id;
+        
+        if (isSelected) {
+            html += `<div class="flex items-center justify-between w-full p-4 text-base font-semibold rounded-xl gradient-primary text-white shadow-lg border-2 border-gold">
+                <span><i class="fa fa-map-marker-alt mr-2"></i>${b.name} Branch${dist}</span>
+                <span class='text-xs bg-white bg-opacity-20 px-3 py-1 rounded-full'>Current</span>
+                <i class='fa fa-check-circle ml-2'></i>
+            </div>`;
+        } else {
+            html += `<button data-branch="${b.id}" class="branch-select-btn flex items-center justify-between w-full p-4 text-base font-semibold rounded-xl bg-gray-50 text-gray-900 hover:bg-gray-100 transition-colors duration-200 border border-gray-200 hover:border-gold group">
+                <span><i class="fa fa-map-marker-alt mr-2 text-gold"></i>${b.name} Branch</span>
+                <span class='distance-badge text-xs bg-gold text-white px-3 py-1 rounded-full opacity-50'>Calculating...</span>
+            </button>`;
+        }
     });
-    html += `</div>
-    </div>`;
+    
+    html += `</div></div>`;
     modal.innerHTML = html;
     document.body.appendChild(modal);
-    modal.querySelectorAll('button[data-branch]').forEach(btn => {
+
+    // Add event listeners to branch buttons
+    modal.querySelectorAll('.branch-select-btn').forEach(btn => {
         btn.onclick = function() {
             const branchId = this.getAttribute('data-branch');
-                // Show loading overlay
-                var loadingOverlay = document.getElementById('branch-loading-overlay');
-                if (loadingOverlay) loadingOverlay.style.display = 'flex';
+            const loadingOverlay = document.getElementById('branch-loading-overlay');
+            if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+            
             fetch('set_branch.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -807,343 +572,157 @@ function openBranchChangeModal(userLat, userLng) {
             }).then(() => {
                 window.USER_BRANCH = window.BRANCHES.find(b=>b.id==branchId);
                 document.body.removeChild(modal);
-                    // Hide loading overlay after reload
                 location.reload();
+            }).catch(error => {
+                console.error('Error switching branch:', error);
+                if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                alert('Error switching branch. Please try again.');
             });
         };
     });
+
+    // Close modal handlers
     document.getElementById('close-branch-modal').onclick = function() {
         document.body.removeChild(modal);
     };
-}
-</script>
-    <div class="logo-area">
-        <img src="../images/userlogo.png" alt="Logo" class="logo-img">
-    </div>
-    <div class="nav-and-user">
-        <nav class="nav">
-            <a href="../logged_user/landing_page.php">Home</a>
-            <div class="dropdown" tabindex="0">
-                <a href="#" id="productsDropdownToggle">Products <i class="fa fa-caret-down"></i></a>
-                <div class="dropdown-content" id="productsDropdownContent">
-                    <a href="#" id="floorTilesLink"><i class="fa fa-th-large"></i> Floor Tiles</a>
-                    <a href="../logged_user/other_products.php" id="otherProductsLink"><i class="fa fa-cube"></i> Other Products</a>
-                </div>
-            </div>
-            <a href="../logged_user/3dvisualizer.php">3D Visualizer</a>
-            <a href="user_my_cart.php">My Cart</a>
-        </nav>
-        <div class="user-area">
-            <div class="user-dropdown" tabindex="0" style="position:relative;">
-                <button id="accountIconBtn" style="background:none;border:none;outline:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:8px;">
-                    <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(120deg,#cf8756 60%,#e8a56a 100%);box-shadow:0 2px 8px #cf875633;"><i class="fa fa-user" style="font-size:1.45rem;color:#fff;"></i></span>
-                    <span style="font-weight:600;color:#fff;">Account</span>
-                    <i class="fa fa-caret-down" style="color:#fff;font-size:1.1rem;"></i>
-                </button>
-                <div class="user-dropdown-content" id="accountDropdownContent" style="right:0;top:44px;min-width:170px;">
-                    <a href="../logged_user/myProfile.php"><i class="fa fa-user"></i> Account</a>
-                    <a href="../logged_user/customer_ticket.php"><i class="fa fa-ticket"></i> Customer Ticket</a>
-                    <a href="../logout.php"><i class="fa fa-sign-out"></i> Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="burger" id="raltt-burger" aria-label="Open menu" tabindex="0">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-    <div class="mobile-menu" id="raltt-mobile-menu">
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 12px 0 0;">
-            <button id="raltt-back-btn" style="background:none;border:none;color:#fff;font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:8px;padding:12px 0 12px 12px;width:auto;text-align:left;cursor:pointer;"><i class="fa fa-arrow-left"></i> Back</button>
-            <div class="search-icon-mobile" id="raltt-search-icon-mobile" tabindex="0" style="cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.7rem;color:#fff;margin-left:10px;">
-                <i class="fa fa-search"></i>
-            </div>
-        </div>
-        <form class="search-bar-mobile" id="raltt-search-bar-mobile">
-            <input type="text" placeholder="Search...">
-            <button type="submit"><i class="fa fa-search"></i></button>
-            <span id="raltt-search-close-mobile">&times;</span>
-        </form>
-        <a href="/index.php">Home</a>
-        <div class="dropdown" tabindex="0" style="width:100%;">
-            <a href="#">Products <i class="fa fa-caret-down"></i></a>
-            <div class="dropdown-content">
-                <a href="#"><i class="fa fa-th-large"></i> Floor Tiles</a>
-                <a href="../logged_user/other_products.php"><i class="fa fa-cube"></i> Other Products</a>
-            </div>
-        </div>
-        <a href="/feature-2d-visualizer.php">2D Visualizer</a>
-        <a href="#">My Favourite</a>
-        <a href="#">My Cart</a>
-    <!-- ...existing code... -->
-        <div class="user-dropdown-mobile" tabindex="0">
-            <a href="../logged_user/myProfile.php">Account <i class="fa fa-caret-down"></i></a>
-            <div class="dropdown-content">
-                <a href="../logged_user/myProfile.php"><i class="fa fa-user"></i> My Account</a>
-                <a href="../logout.php"><i class="fa fa-sign-out"></i> Logout</a>
-            </div>
-        </div>
-    </div>
-</header>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const burger = document.getElementById('raltt-burger');
-        const mobileMenu = document.getElementById('raltt-mobile-menu');
-        const backBtn = document.getElementById('raltt-back-btn');
-        const body = document.body;
-        
-        const navAndUser = document.querySelector('.nav-and-user');
-        const searchIcon = document.getElementById('raltt-search-icon');
-        const searchBar = document.getElementById('raltt-search-bar');
-        const searchClose = document.getElementById('raltt-search-close');
-        
-        const searchIconMobile = document.getElementById('raltt-search-icon-mobile');
-        const searchBarMobile = document.getElementById('raltt-search-bar-mobile');
-        const searchCloseMobile = document.getElementById('raltt-search-close-mobile');
 
-        // Customer support icon functionality
-        const supportIcon = document.getElementById('support-icon');
-        if (supportIcon) {
-            supportIcon.addEventListener('click', () => {
-                window.location.href = '../logged_user/customer_ticket.php';
-            });
-        }
-
-        // Function to toggle the desktop search bar
-        function toggleDesktopSearch(show) {
-            if (show) {
-                navAndUser.classList.add('search-active');
-            } else {
-                navAndUser.classList.remove('search-active');
-            }
-        }
-
-        // Desktop search icon click handler
-        if (searchIcon && searchBar && searchClose) {
-            searchIcon.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleDesktopSearch(true);
-                searchBar.querySelector('input').focus();
-            });
-            searchClose.addEventListener('click', () => {
-                toggleDesktopSearch(false);
-            });
-            document.addEventListener('click', (e) => {
-                if (!searchBar.contains(e.target) && !searchIcon.contains(e.target)) {
-                    toggleDesktopSearch(false);
-                }
-            });
-        }
-
-        // Mobile menu functionality
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                mobileMenu.classList.remove('open');
-                burger.classList.remove('open');
-                body.style.overflow = '';
-            });
-        }
-
-        const mobileDropdowns = document.querySelectorAll('.mobile-menu .dropdown');
-        const mobileUserDropdown = document.querySelector('.mobile-menu .user-dropdown-mobile');
-
-        function toggleMobileMenu() {
-            const isOpen = mobileMenu.classList.toggle('open');
-            burger.classList.toggle('open', isOpen);
-            body.style.overflow = isOpen ? 'hidden' : '';
-        }
-
-        burger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleMobileMenu();
-        });
-
-        mobileDropdowns.forEach(dropdown => {
-            const dropdownToggle = dropdown.querySelector('a');
-            const dropdownContent = dropdown.querySelector('.dropdown-content');
-
-            dropdownToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                dropdownContent.style.display = dropdownContent.style.display === 'flex' ? 'none' : 'flex';
-            });
-        });
-        
-        if (mobileUserDropdown) {
-            const userDropdownToggle = mobileUserDropdown.querySelector('a');
-            const userDropdownContent = mobileUserDropdown.querySelector('.dropdown-content');
-
-            userDropdownToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                userDropdownContent.style.display = userDropdownContent.style.display === 'flex' ? 'none' : 'flex';
-            });
-        }
-
-        mobileMenu.querySelectorAll('a').forEach(link => {
-            const parentDropdown = link.closest('.dropdown, .user-dropdown-mobile');
-            const isDropdownToggle = parentDropdown && parentDropdown.querySelector('a') === link;
-
-            if (!isDropdownToggle) {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.remove('open');
-                    burger.classList.remove('open');
-                    body.style.overflow = '';
-                });
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 900) {
-                mobileMenu.classList.remove('open');
-                burger.classList.remove('open');
-                body.style.overflow = '';
-                if (searchBarMobile) searchBarMobile.style.display = 'none';
-                toggleDesktopSearch(false); // Hide search on resize
-            }
-        });
-
-        // Mobile search icon handlers
-        if (searchIconMobile && searchBarMobile && searchCloseMobile) {
-            searchIconMobile.addEventListener('click', (e) => {
-                e.stopPropagation();
-                searchBarMobile.style.display = 'flex';
-                searchBarMobile.querySelector('input').focus();
-            });
-            searchCloseMobile.addEventListener('click', () => {
-                searchBarMobile.style.display = 'none';
-            });
-            document.addEventListener('click', (e) => {
-                if (!searchBarMobile.contains(e.target) && !searchIconMobile.contains(e.target)) {
-                    searchBarMobile.style.display = 'none';
-                }
-            });
-        }
-        // --- Custom dropdown expand/collapse for Products (desktop) ---
-        const productsDropdownToggle = document.getElementById('productsDropdownToggle');
-        const productsDropdownContent = document.getElementById('productsDropdownContent');
-        if (productsDropdownToggle && productsDropdownContent) {
-            productsDropdownToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                // Toggle dropdown
-                if (productsDropdownContent.style.display === 'flex' || productsDropdownContent.style.display === 'block') {
-                    productsDropdownContent.style.display = 'none';
-                } else {
-                    productsDropdownContent.style.display = 'flex';
-                }
-            });
-            // Prevent dropdown links from navigating
-            productsDropdownContent.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                });
-            });
-        }
-        // --- Floor Tiles link scroll to Premium Tiles section ---
-        const floorTilesLink = document.getElementById('floorTilesLink');
-        if (floorTilesLink) {
-            floorTilesLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.href = '../logged_user/landing_page.php#premium-tiles';
-            });
-        }
-        // --- Other Products link navigation (desktop) ---
-        const otherProductsLink = document.getElementById('otherProductsLink');
-        if (otherProductsLink) {
-            otherProductsLink.addEventListener('click', function(e) {
-                // Allow default navigation
-            });
-        }
-        // --- Account icon dropdown expand/collapse ---
-        const accountIconBtn = document.getElementById('accountIconBtn');
-        const accountDropdownContent = document.getElementById('accountDropdownContent');
-        if (accountIconBtn && accountDropdownContent) {
-            accountDropdownContent.style.display = 'none';
-            accountIconBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                accountDropdownContent.style.display = accountDropdownContent.style.display === 'flex' ? 'none' : 'flex';
-            });
-            document.addEventListener('click', function(e) {
-                if (!accountIconBtn.contains(e.target) && !accountDropdownContent.contains(e.target)) {
-                    accountDropdownContent.style.display = 'none';
-                }
-            });
-        }
-    }); // This was the missing closing brace and parenthesis
-
-// --- Geolocation enforcement (polling every second) ---
-function showGeolocationRequired() {
-    document.body.innerHTML = '';
-    document.body.style.background = '#1a1a1a';
-    var div = document.createElement('div');
-    div.id = 'geo-required-message';
-    div.style = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#fff;font-family:Inter,sans-serif;text-align:center;';
-    div.innerHTML = '<h1 style="font-size:2.2rem;margin-bottom:18px;">Geolocation Required</h1>' +
-        '<p style="font-size:1.1rem;max-width:400px;">You must allow location access to use this website. Please enable geolocation in your browser settings and reload the page.</p>';
-    document.body.appendChild(div);
-}
-function showGeolocationNotSupported() {
-    document.body.innerHTML = '';
-    document.body.style.background = '#1a1a1a';
-    var div = document.createElement('div');
-    div.style = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#fff;font-family:Inter,sans-serif;text-align:center;';
-    div.innerHTML = '<h1 style="font-size:2.2rem;margin-bottom:18px;">Geolocation Not Supported</h1>' +
-        '<p style="font-size:1.1rem;max-width:400px;">Your browser does not support geolocation. Please use a compatible browser.</p>';
-    document.body.appendChild(div);
-}
-document.addEventListener('DOMContentLoaded', function() {
-    if (!navigator.geolocation) {
-        showGeolocationNotSupported();
-        return;
-    }
-    let geoOk = false;
-    let wasDenied = false;
-    let geoInterval = null;
-
-    function checkGeo() {
-        navigator.geolocation.getCurrentPosition(function(pos) {
-            if (!geoOk && wasDenied) {
-                // Only reload if permission changed from denied to allowed
-                location.reload();
-            }
-            geoOk = true;
-            wasDenied = false;
-        }, function(error) {
-            if (geoOk || error.code === error.PERMISSION_DENIED || error.code === error.POSITION_UNAVAILABLE) {
-                showGeolocationRequired();
-                wasDenied = true;
-            }
-            geoOk = false;
-        }, {timeout: 5000});
-    }
-
-    function startGeoCheck() {
-        if (!geoInterval) {
-            checkGeo();
-            geoInterval = setInterval(checkGeo, 1000);
-        }
-    }
-    function stopGeoCheck() {
-        if (geoInterval) {
-            clearInterval(geoInterval);
-            geoInterval = null;
-        }
-    }
-
-    document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible') {
-            startGeoCheck();
-        } else {
-            stopGeoCheck();
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
         }
     });
-    // Start checking only when tab is visible
-    if (document.visibilityState === 'visible') {
-        startGeoCheck();
-    }
-});
 
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('branch-change-modal')) {
+            document.body.removeChild(modal);
+        }
+    });
+    
+    // Helper function to update distances
+    function updateBranchDistances(lat, lng) {
+        window.BRANCHES.forEach(b => {
+            const dist = haversine(lat, lng, b.lat, b.lng);
+            const badge = modal.querySelector(`button[data-branch="${b.id}"] .distance-badge`);
+            if (badge) {
+                badge.textContent = dist.toFixed(2) + ' km';
+                badge.classList.remove('opacity-50');
+            }
+        });
+    }
+    
+    // Helper function to show location warning
+    function showLocationWarning() {
+        const warningHtml = `<div class='bg-yellow-50 text-yellow-700 p-3 rounded-lg text-sm text-center border border-yellow-200 mb-3'>
+            <i class='fa fa-exclamation-circle mr-2'></i>
+            Location access is limited. Distances may not be accurate.
+        </div>`;
+        modal.querySelector('.p-6').insertAdjacentHTML('afterbegin', warningHtml);
+        
+        // Set default distances for all branches
+        window.BRANCHES.forEach(b => {
+            const badge = modal.querySelector(`button[data-branch="${b.id}"] .distance-badge`);
+            if (badge) {
+                badge.textContent = 'Select';
+                badge.classList.remove('opacity-50');
+            }
+        });
+    }
+}
+
+// Enhanced Mobile menu and Search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const burger = document.getElementById('mobile-menu-toggle');
+    
+    // Search functionality
+    const searchToggle = document.getElementById('search-toggle');
+    const desktopSearch = document.getElementById('desktop-search');
+    const closeSearch = document.getElementById('close-search');
+    
+    // Mobile menu toggle
+    if (mobileMenuToggle && mobileMenu) {
+        mobileMenuToggle.addEventListener('click', function() {
+            mobileMenu.classList.toggle('translate-x-full');
+            burger.classList.toggle('open');
+            document.body.style.overflow = burger.classList.contains('open') ? 'hidden' : '';
+        });
+        
+        // Close mobile menu when clicking on links
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenu.classList.add('translate-x-full');
+                burger.classList.remove('open');
+                document.body.style.overflow = '';
+            });
+        });
+    }
+    
+    // Enhanced Search toggle with animations
+    if (searchToggle && desktopSearch && closeSearch) {
+        let isSearchOpen = false;
+        
+        searchToggle.addEventListener('click', function() {
+            if (!isSearchOpen) {
+                // Open search
+                desktopSearch.classList.remove('hidden');
+                // Force reflow
+                desktopSearch.offsetHeight;
+                desktopSearch.classList.remove('search-bar-enter');
+                desktopSearch.classList.add('search-bar-enter-active');
+                isSearchOpen = true;
+                
+                // Focus input
+                const searchInput = desktopSearch.querySelector('input');
+                if (searchInput) {
+                    setTimeout(() => searchInput.focus(), 300);
+                }
+            }
+        });
+        
+        closeSearch.addEventListener('click', function() {
+            if (isSearchOpen) {
+                desktopSearch.classList.remove('search-bar-enter-active');
+                desktopSearch.classList.add('search-bar-exit-active');
+                
+                setTimeout(() => {
+                    desktopSearch.classList.add('hidden');
+                    desktopSearch.classList.remove('search-bar-exit-active');
+                    desktopSearch.classList.add('search-bar-enter');
+                    isSearchOpen = false;
+                }, 300);
+            }
+        });
+        
+        // Close search when clicking outside
+        document.addEventListener('click', function(e) {
+            if (isSearchOpen && 
+                !desktopSearch.contains(e.target) && 
+                !searchToggle.contains(e.target)) {
+                closeSearch.click();
+            }
+        });
+        
+        // Close search on escape key
+        document.addEventListener('keydown', function(e) {
+            if (isSearchOpen && e.key === 'Escape') {
+                closeSearch.click();
+            }
+        });
+    }
+    
+    // Close mobile menu on window resize to desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 1024) {
+            mobileMenu.classList.add('translate-x-full');
+            burger.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+    });
+});
 </script>
+
+<!-- Chatbase Script -->
 <script>
 (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="-vAdaLts54qAK1OtQj9SL";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
 </script>
