@@ -525,8 +525,8 @@ if ($user_id > 0) {
                             <button onclick="printReceipt()" class="print-btn action-btn w-full py-3 rounded-xl font-semibold text-white text-base flex items-center justify-center">
                                 <i class="fas fa-print mr-2"></i> Print Receipt
                             </button>
-                            <a href="products.php" class="continue-btn action-btn w-full py-3 rounded-xl font-semibold text-white text-base flex items-center justify-center">
-                                <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
+                            <a href="myProfile.php" class="continue-btn action-btn w-full py-3 rounded-xl font-semibold text-white text-base flex items-center justify-center">
+                                <i class="fas fa-shopping-bag mr-2"></i> Go to My Profile
                             </a>
                         </div>
                         
