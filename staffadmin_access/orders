@@ -1,0 +1,810 @@
+<?php
+include '../includes/sidebar.php';
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Orders Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-wrapper {
+            flex: 1;
+            padding-left: 0;
+            transition: padding-left 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .main-content-wrapper {
+                padding-left: 250px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending { background-color: #fffaeb; color: #dc6803; border: 1px solid #fedf89; }
+        .status-processing { background-color: #eff8ff; color: #1570ef; border: 1px solid #b2ddff; }
+        .status-shipped { background-color: #f0f9ff; color: #0d75bc; border: 1px solid #b9e6fe; }
+        .status-delivered { background-color: #ecfdf3; color: #039855; border: 1px solid #abefc6; }
+        .status-cancelled { background-color: #fef3f2; color: #d92d20; border: 1px solid #fecdc9; }
+
+        .order-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .order-card.pending { border-left-color: #dc6803; }
+        .order-card.processing { border-left-color: #1570ef; }
+        .order-card.shipped { border-left-color: #0d75bc; }
+        .order-card.delivered { border-left-color: #039855; }
+        .order-card.cancelled { border-left-color: #d92d20; }
+
+        .stats-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .filter-btn.active {
+            background-color: #1e40af;
+            color: white;
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .table-row {
+            transition: background-color 0.2s ease;
+        }
+
+        .table-row:hover {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="main-content-wrapper">
+        <main class="min-h-screen">
+            <div class="max-w-7xl mx-auto py-8 px-4">
+                <!-- Header Section -->
+                <div class="mb-8 fade-in">
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-clipboard-list mr-3 text-blue-600"></i>Orders Dashboard
+                    </h1>
+                    <p class="text-gray-600 mt-2">Manage and track orders across all branches</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stats-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-blue-100 p-3 mr-4">
+                                <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Total Orders</p>
+                                <p class="text-2xl font-bold text-gray-800" id="total-orders">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-amber-100 p-3 mr-4">
+                                <i class="fas fa-clock text-amber-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Pending Orders</p>
+                                <p class="text-2xl font-bold text-gray-800" id="pending-orders">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-green-100 p-3 mr-4">
+                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Completed Today</p>
+                                <p class="text-2xl font-bold text-gray-800" id="completed-today">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-purple-100 p-3 mr-4">
+                                <i class="fas fa-money-bill-wave text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Revenue Today</p>
+                                <p class="text-2xl font-bold text-gray-800" id="revenue-today">₱0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Actions -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 fade-in">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition active" data-status="all">
+                                All Orders
+                            </button>
+                            <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition" data-status="pending">
+                                Pending
+                            </button>
+                            <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition" data-status="processing">
+                                Processing
+                            </button>
+                            <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition" data-status="shipped">
+                                Shipped
+                            </button>
+                            <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition" data-status="delivered">
+                                Delivered
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <input type="text" id="search-orders" placeholder="Search orders..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 w-full md:w-64">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <button id="refresh-orders" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
+                                <i class="fas fa-sync-alt mr-2"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden fade-in">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Details</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Orders will be loaded here via AJAX -->
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <i class="fas fa-shopping-cart text-4xl text-gray-300 mb-3"></i>
+                                            <p>Loading orders...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            Showing <span id="orders-start">0</span> to <span id="orders-end">0</span> of <span id="orders-total">0</span> orders
+                        </div>
+                        <div class="flex space-x-2">
+                            <button id="prev-page" class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button id="next-page" class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="order-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Order Details</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="order-modal-content" class="p-6">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPage = 1;
+        let ordersPerPage = 10;
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let allOrders = [];
+
+        // DOM elements
+        const ordersTableBody = document.getElementById('orders-table-body');
+        const orderModal = document.getElementById('order-modal');
+        const orderModalContent = document.getElementById('order-modal-content');
+        const closeModalBtn = document.getElementById('close-modal');
+        const refreshBtn = document.getElementById('refresh-orders');
+        const searchInput = document.getElementById('search-orders');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const ordersStart = document.getElementById('orders-start');
+        const ordersEnd = document.getElementById('orders-end');
+        const ordersTotal = document.getElementById('orders-total');
+        const totalOrdersEl = document.getElementById('total-orders');
+        const pendingOrdersEl = document.getElementById('pending-orders');
+        const completedTodayEl = document.getElementById('completed-today');
+        const revenueTodayEl = document.getElementById('revenue-today');
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrders();
+            setupEventListeners();
+        });
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Filter buttons
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.status;
+                    currentPage = 1;
+                    loadOrders();
+                });
+            });
+
+            // Search input
+            searchInput.addEventListener('input', function() {
+                currentSearch = this.value;
+                currentPage = 1;
+                loadOrders();
+            });
+
+            // Refresh button
+            refreshBtn.addEventListener('click', function() {
+                loadOrders();
+            });
+
+            // Pagination buttons
+            prevPageBtn.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadOrders();
+                }
+            });
+
+            nextPageBtn.addEventListener('click', function() {
+                const totalPages = Math.ceil(allOrders.length / ordersPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadOrders();
+                }
+            });
+
+            // Close modal
+            closeModalBtn.addEventListener('click', function() {
+                orderModal.classList.add('hidden');
+            });
+
+            // Close modal when clicking outside
+            orderModal.addEventListener('click', function(e) {
+                if (e.target === orderModal) {
+                    orderModal.classList.add('hidden');
+                }
+            });
+        }
+
+        // Load orders from server
+        function loadOrders() {
+            // Show loading state
+            ordersTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="loading-spinner mb-3"></div>
+                            <p>Loading orders...</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            // In a real application, this would be an AJAX call to your server
+            // For demo purposes, we're using setTimeout to simulate network delay
+            setTimeout(() => {
+                // This is mock data - replace with actual API call
+                const mockOrders = generateMockOrders();
+                
+                // Filter orders based on current filter and search
+                let filteredOrders = mockOrders;
+                
+                if (currentFilter !== 'all') {
+                    filteredOrders = filteredOrders.filter(order => 
+                        order.status.toLowerCase() === currentFilter
+                    );
+                }
+                
+                if (currentSearch) {
+                    const searchTerm = currentSearch.toLowerCase();
+                    filteredOrders = filteredOrders.filter(order => 
+                        order.id.toString().includes(searchTerm) ||
+                        order.customer.name.toLowerCase().includes(searchTerm) ||
+                        order.customer.email.toLowerCase().includes(searchTerm) ||
+                        order.products.some(p => p.name.toLowerCase().includes(searchTerm))
+                    );
+                }
+                
+                allOrders = filteredOrders;
+                renderOrders();
+                updateStats();
+            }, 800);
+        }
+
+        // Render orders in the table
+        function renderOrders() {
+            if (allOrders.length === 0) {
+                ordersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-search text-4xl text-gray-300 mb-3"></i>
+                                <p>No orders found</p>
+                                <p class="text-sm mt-1">Try adjusting your filters or search terms</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Calculate pagination
+            const startIndex = (currentPage - 1) * ordersPerPage;
+            const endIndex = Math.min(startIndex + ordersPerPage, allOrders.length);
+            const paginatedOrders = allOrders.slice(startIndex, endIndex);
+
+            // Update pagination info
+            ordersStart.textContent = startIndex + 1;
+            ordersEnd.textContent = endIndex;
+            ordersTotal.textContent = allOrders.length;
+            
+            // Enable/disable pagination buttons
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = endIndex >= allOrders.length;
+
+            // Generate table rows
+            let tableHTML = '';
+            paginatedOrders.forEach(order => {
+                const statusClass = `status-${order.status.toLowerCase().replace(' ', '-')}`;
+                const orderCardClass = `order-card ${order.status.toLowerCase().replace(' ', '-')}`;
+                
+                // Calculate total amount
+                const totalAmount = order.products.reduce((sum, product) => 
+                    sum + (product.price * product.quantity), 0
+                );
+                
+                tableHTML += `
+                    <tr class="table-row ${orderCardClass}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-shopping-bag text-blue-600"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">Order #${order.id}</div>
+                                    <div class="text-sm text-gray-500">${formatDate(order.date)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${order.customer.name}</div>
+                            <div class="text-sm text-gray-500">${order.customer.email}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">₱${totalAmount.toLocaleString()}</div>
+                            <div class="text-sm text-gray-500">${order.products.length} item(s)</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="${statusClass} status-badge">${order.status}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="view-order-btn text-blue-600 hover:text-blue-900 mr-3" data-id="${order.id}">
+                                <i class="fas fa-eye mr-1"></i> View
+                            </button>
+                            <button class="update-status-btn text-green-600 hover:text-green-900" data-id="${order.id}">
+                                <i class="fas fa-edit mr-1"></i> Update
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            ordersTableBody.innerHTML = tableHTML;
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.view-order-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = this.dataset.id;
+                    viewOrderDetails(orderId);
+                });
+            });
+            
+            document.querySelectorAll('.update-status-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = this.dataset.id;
+                    updateOrderStatus(orderId);
+                });
+            });
+        }
+
+        // Update dashboard statistics
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            const totalOrders = allOrders.length;
+            const pendingOrders = allOrders.filter(order => order.status === 'Pending').length;
+            const completedToday = allOrders.filter(order => 
+                order.status === 'Delivered' && order.date === today
+            ).length;
+            
+            const revenueToday = allOrders
+                .filter(order => order.status === 'Delivered' && order.date === today)
+                .reduce((sum, order) => {
+                    return sum + order.products.reduce((productSum, product) => 
+                        productSum + (product.price * product.quantity), 0
+                    );
+                }, 0);
+            
+            totalOrdersEl.textContent = totalOrders;
+            pendingOrdersEl.textContent = pendingOrders;
+            completedTodayEl.textContent = completedToday;
+            revenueTodayEl.textContent = `₱${revenueToday.toLocaleString()}`;
+        }
+
+        // View order details
+        function viewOrderDetails(orderId) {
+            const order = allOrders.find(o => o.id == orderId);
+            if (!order) return;
+            
+            // Calculate totals
+            const subtotal = order.products.reduce((sum, product) => 
+                sum + (product.price * product.quantity), 0
+            );
+            const shippingFee = order.shippingFee || 0;
+            const referralDiscount = order.referralDiscount || 0;
+            const total = subtotal + shippingFee - referralDiscount;
+            
+            // Generate modal content
+            const modalHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Order Information</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Order ID:</span>
+                                <span class="font-medium">#${order.id}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Order Date:</span>
+                                <span class="font-medium">${formatDate(order.date)}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Status:</span>
+                                <span class="font-medium status-${order.status.toLowerCase().replace(' ', '-')} status-badge">${order.status}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Payment Method:</span>
+                                <span class="font-medium">${order.paymentMethod}</span>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-lg font-semibold text-gray-800 mt-6 mb-4">Customer Information</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Name:</span>
+                                <span class="font-medium">${order.customer.name}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Email:</span>
+                                <span class="font-medium">${order.customer.email}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Phone:</span>
+                                <span class="font-medium">${order.customer.phone}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Address:</span>
+                                <span class="font-medium text-right">${order.customer.address}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Order Items</h4>
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${order.products.map(product => `
+                                        <tr>
+                                            <td class="px-4 py-3 text-sm">${product.name}</td>
+                                            <td class="px-4 py-3 text-sm">${product.quantity}</td>
+                                            <td class="px-4 py-3 text-sm">₱${product.price.toLocaleString()}</td>
+                                            <td class="px-4 py-3 text-sm font-medium">₱${(product.price * product.quantity).toLocaleString()}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-4 space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Subtotal:</span>
+                                <span class="font-medium">₱${subtotal.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Shipping Fee:</span>
+                                <span class="font-medium">₱${shippingFee.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Referral Discount:</span>
+                                <span class="font-medium text-green-600">-₱${referralDiscount.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-200 pt-2">
+                                <span class="text-lg font-semibold text-gray-800">Total:</span>
+                                <span class="text-lg font-bold text-blue-600">₱${total.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-print mr-2"></i> Print Invoice
+                    </button>
+                    <button class="update-status-btn-modal px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" data-id="${order.id}">
+                        <i class="fas fa-edit mr-2"></i> Update Status
+                    </button>
+                </div>
+            `;
+            
+            orderModalContent.innerHTML = modalHTML;
+            orderModal.classList.remove('hidden');
+            
+            // Add event listener to update status button in modal
+            document.querySelector('.update-status-btn-modal').addEventListener('click', function() {
+                const orderId = this.dataset.id;
+                orderModal.classList.add('hidden');
+                updateOrderStatus(orderId);
+            });
+        }
+
+        // Update order status
+        function updateOrderStatus(orderId) {
+            const order = allOrders.find(o => o.id == orderId);
+            if (!order) return;
+            
+            const statusOptions = [
+                { value: 'pending', label: 'Pending', icon: 'fa-clock' },
+                { value: 'processing', label: 'Processing', icon: 'fa-cog' },
+                { value: 'shipped', label: 'Shipped', icon: 'fa-shipping-fast' },
+                { value: 'delivered', label: 'Delivered', icon: 'fa-check-circle' },
+                { value: 'cancelled', label: 'Cancelled', icon: 'fa-times-circle' }
+            ];
+            
+            // Create status options HTML
+            let optionsHTML = '';
+            statusOptions.forEach(option => {
+                const isSelected = order.status.toLowerCase() === option.value;
+                optionsHTML += `
+                    <div class="status-option flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 ${isSelected ? 'bg-blue-50 border-blue-200' : ''}" data-value="${option.value}">
+                        <i class="fas ${option.icon} mr-3 text-gray-500"></i>
+                        <span class="font-medium">${option.label}</span>
+                        ${isSelected ? '<i class="fas fa-check ml-auto text-blue-600"></i>' : ''}
+                    </div>
+                `;
+            });
+            
+            Swal.fire({
+                title: 'Update Order Status',
+                html: `
+                    <div class="text-left">
+                        <p class="mb-4 text-gray-600">Update status for Order #${order.id}</p>
+                        <div class="space-y-2" id="status-options">
+                            ${optionsHTML}
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Update Status',
+                confirmButtonColor: '#1e40af',
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    const selectedOption = document.querySelector('.status-option.bg-blue-50');
+                    if (!selectedOption) {
+                        Swal.showValidationMessage('Please select a status');
+                        return false;
+                    }
+                    return selectedOption.dataset.value;
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    // In a real application, this would be an AJAX call to update the order status
+                    // For demo, we'll just update the local data and refresh the view
+                    const newStatus = result.value;
+                    
+                    // Update order status in our mock data
+                    const orderIndex = allOrders.findIndex(o => o.id == orderId);
+                    if (orderIndex !== -1) {
+                        allOrders[orderIndex].status = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+                        
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Status Updated',
+                            text: `Order #${orderId} status has been updated to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
+                            confirmButtonColor: '#1e40af'
+                        });
+                        
+                        // Refresh the orders view
+                        renderOrders();
+                        updateStats();
+                    }
+                }
+            });
+            
+            // Add event listeners to status options
+            setTimeout(() => {
+                document.querySelectorAll('.status-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        document.querySelectorAll('.status-option').forEach(opt => {
+                            opt.classList.remove('bg-blue-50', 'border-blue-200');
+                        });
+                        this.classList.add('bg-blue-50', 'border-blue-200');
+                    });
+                });
+            }, 100);
+        }
+
+        // Helper function to format dates
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // Generate mock orders for demo purposes
+        function generateMockOrders() {
+            const statuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+            const paymentMethods = ['GCash', 'PayMaya', 'Cash on Delivery', 'Credit Card'];
+            const products = [
+                { name: 'Floral Blue Tiles', price: 120 },
+                { name: 'Black Diamond Tiles', price: 150 },
+                { name: 'Classical Black Tiles', price: 110 },
+                { name: 'Floral Beige Green Tiles', price: 130 },
+                { name: 'Leafy Rose Tiles', price: 140 },
+                { name: 'Marble White Tiles', price: 160 }
+            ];
+            const customers = [
+                { name: 'John Doe', email: 'john.doe@example.com', phone: '0917-123-4567', address: '123 Main St, City' },
+                { name: 'Jane Smith', email: 'jane.smith@example.com', phone: '0918-234-5678', address: '456 Oak Ave, City' },
+                { name: 'Alice Brown', email: 'alice.brown@example.com', phone: '0919-345-6789', address: '789 Pine Rd, City' },
+                { name: 'Bob White', email: 'bob.white@example.com', phone: '0920-456-7890', address: '321 Elm St, City' },
+                { name: 'Charlie Black', email: 'charlie.black@example.com', phone: '0921-567-8901', address: '654 Maple Ave, City' },
+                { name: 'Daisy Green', email: 'daisy.green@example.com', phone: '0922-678-9012', address: '987 Cedar Rd, City' }
+            ];
+            
+            const orders = [];
+            const today = new Date();
+            
+            for (let i = 1; i <= 50; i++) {
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const customer = customers[Math.floor(Math.random() * customers.length)];
+                const productCount = Math.floor(Math.random() * 3) + 1;
+                const orderProducts = [];
+                
+                for (let j = 0; j < productCount; j++) {
+                    const product = products[Math.floor(Math.random() * products.length)];
+                    orderProducts.push({
+                        ...product,
+                        quantity: Math.floor(Math.random() * 5) + 1
+                    });
+                }
+                
+                // Generate a random date within the last 30 days
+                const randomDaysAgo = Math.floor(Math.random() * 30);
+                const orderDate = new Date(today);
+                orderDate.setDate(orderDate.getDate() - randomDaysAgo);
+                
+                orders.push({
+                    id: 1000 + i,
+                    date: orderDate.toISOString().split('T')[0],
+                    status: status,
+                    paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+                    customer: customer,
+                    products: orderProducts,
+                    shippingFee: Math.random() > 0.5 ? 150 : 0,
+                    referralDiscount: Math.random() > 0.7 ? Math.floor(Math.random() * 10) + 1 : 0
+                });
+            }
+            
+            return orders;
+        }
+    </script>
+</body>
+</html>

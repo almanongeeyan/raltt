@@ -805,7 +805,10 @@ include '../includes/headeruser.php';
                 const result = await response.json();
                 if (result.success) {
                     showModal('successModal');
-                    setTimeout(() => { resetTicketForm(); }, 2000);
+                    setTimeout(() => {
+                        resetTicketForm();
+                        loadTicketHistory(); // Reload ticket history after successful submission
+                    }, 2000);
                 } else {
                     showErrorModal('Ticket Error', result.error || 'Failed to submit ticket.');
                 }
@@ -1006,6 +1009,13 @@ include '../includes/headeruser.php';
                     } else {
                         itemsHtml = `<div class='mb-4 text-textlight'>No items selected for this ticket.</div>`;
                     }
+
+                    // Mark as Resolved button logic (no countdown, always enabled)
+                    let resolvedBtnHtml = '';
+                    if (t.ticket_status === 'Awaiting Customer') {
+                        resolvedBtnHtml = `<button id="markResolvedBtn" class="submit-btn w-full text-white font-bold py-3 rounded-lg mt-2">Mark as Resolved</button>`;
+                    }
+
                     document.getElementById('ticketDetailsContent').innerHTML = `
                         <div class="mb-4">
                             <h4 class="font-bold text-lg text-primary mb-1">${t.issue_type} - Order #${t.order_reference}</h4>
@@ -1019,8 +1029,49 @@ include '../includes/headeruser.php';
                             <p class="text-sm text-textdark mb-1"><span class="font-medium">Damage Noticed:</span> ${t.damage_time || 'N/A'}</p>
                         </div>
                         ${itemsHtml}
+                        ${resolvedBtnHtml}
                     `;
                     showModal('ticketDetailsModal');
+
+                    // No countdown logic needed
+
+                    // AJAX for Mark as Resolved
+                    setTimeout(() => {
+                        const btn = document.getElementById('markResolvedBtn');
+                        if (btn) {
+                            btn.addEventListener('click', async function() {
+                                btn.disabled = true;
+                                btn.innerHTML = '<span class="loading-spinner mr-2"><i class="fas fa-circle-notch fa-spin"></i></span>Marking...';
+                                try {
+                                    const formData = new URLSearchParams();
+                                    formData.append('ticket_id', ticketId);
+                                    formData.append('status', 'Resolved');
+                                    const resp = await fetch('../staffadmin_access/processes/process_update_ticket_status.php', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                        body: formData.toString()
+                                    });
+                                    const res = await resp.json();
+                                    if (res.success) {
+                                        btn.innerHTML = 'Marked as Resolved';
+                                        showToast('Ticket marked as resolved!');
+                                        setTimeout(() => {
+                                            closeModal('ticketDetailsModal');
+                                            loadTicketHistory();
+                                        }, 1200);
+                                    } else {
+                                        btn.innerHTML = 'Mark as Resolved';
+                                        btn.disabled = false;
+                                        alert(res.error || 'Failed to update status.');
+                                    }
+                                } catch (err) {
+                                    btn.innerHTML = 'Mark as Resolved';
+                                    btn.disabled = false;
+                                    alert('Server error.');
+                                }
+                            });
+                        }
+                    }, 400);
                 }
             }
         });
@@ -1063,6 +1114,21 @@ include '../includes/headeruser.php';
             }
         }
         window.addEventListener('DOMContentLoaded', loadTicketHistory);
+    // Toast notification function
+    function showToast(message) {
+        let toast = document.createElement('div');
+        toast.className = 'fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg font-bold text-sm flex items-center gap-2 animate-fadein';
+        toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 500);
+        }, 2500);
+    }
+    // Toast animation
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes fadein { from { opacity: 0; transform: translateY(-20px);} to { opacity: 1; transform: translateY(0);} } .animate-fadein { animation: fadein 0.5s; }`;
+    document.head.appendChild(style);
     </script>
 
 </body>

@@ -7,13 +7,10 @@ $branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
 $show_archived = isset($_GET['show_archived']) && $_GET['show_archived'] == '1';
 
 // Base query to get products
+
 $sql = "SELECT p.*, pb.stock_count
-        FROM products p
-        INNER JOIN product_branches pb ON p.product_id = pb.product_id AND pb.branch_id = :branch_id";
-        
-if (!$show_archived) {
-    $sql .= " WHERE p.is_archived = 0";
-}
+    FROM products p
+    INNER JOIN product_branches pb ON p.product_id = pb.product_id AND pb.branch_id = :branch_id";
 
 $stmt = $db_connection->prepare($sql);
 $stmt->bindValue(':branch_id', $branch_id, PDO::PARAM_INT);

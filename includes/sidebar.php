@@ -528,17 +528,17 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/cancelOrders.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
-                                    <!-- Cancel Request Icon -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/><line x1="6" y1="18" x2="18" y2="6" stroke="currentColor" stroke-width="2"/></svg>
-                                    <span>Cancel Request</span>
-                                </a>
-                            </li>
-                            <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_customTickets.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
                                     <!-- Customer Tickets Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 7V5a2 2 0 012-2h6a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
-                                    <span>Customer Tickets</span>
+                                    <span>Customer Ticket</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/Customer_Ticket_History.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
+                                    <!-- Ticket History Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8v4" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="16" r="1" fill="currentColor"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Ticket History</span>
                                 </a>
                             </li>
                         </ul>

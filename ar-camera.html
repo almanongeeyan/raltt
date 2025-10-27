@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AR Tile Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+  <style>
+    body { background: #222; color: #fff; font-family: sans-serif; }
+    #product-info { position: absolute; top: 0; left: 0; right: 0; background: rgba(34,34,34,0.85); padding: 16px; border-radius: 0 0 16px 16px; z-index: 10; }
+    #camera-view { width: 100vw; height: 100vh; object-fit: cover; }
+    .label { color: #cf8756; font-weight: bold; }
+    #scan-btn { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); background: #cf8756; color: #fff; padding: 12px 32px; border-radius: 999px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 4px 24px #cf8756aa; }
+  </style>
+</head>
+<body>
+  <div id="product-info" style="display:none"></div>
+  <video id="camera-view" autoplay playsinline></video>
+  <button id="scan-btn" onclick="capture()">Scan Tile</button>
+  <script>
+    const video = document.getElementById('camera-view');
+    const info = document.getElementById('product-info');
+
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      video.srcObject = stream;
+    });
+
+    async function capture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg'));
+      const formData = new FormData();
+      formData.append('image', blob);
+
+      const res = await fetch('/connection/ar_match.php', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        info.innerHTML = `
+          <div class="label">Name:</div> ${data.product.product_name}<br>
+          <div class="label">Description:</div> ${data.product.product_description}<br>
+          <div class="label">Design:</div> ${data.product.product_design}<br>
+          <div class="label">Size:</div> ${data.product.product_size}<br>
+          <div class="label">Finishes:</div> ${data.product.product_finishes}<br>
+          <div class="label">Classification:</div> ${data.product.product_classification}<br>
+          <div class="label">Best For:</div> ${data.product.product_best_for}
+        `;
+        info.style.display = 'block';
+      } else {
+        info.innerHTML = 'No match found.';
+        info.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

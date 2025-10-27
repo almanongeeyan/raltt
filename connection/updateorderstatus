@@ -1,0 +1,140 @@
+<?php
+session_start();
+require_once '../connection/connection.php';
+
+// Set header to return JSON
+header('Content-Type: application/json');
+
+
+$response = [
+    'success' => false,
+    'inventoryData' => [],
+    'error' => ''
+];
+
+
+// --- PATCH: Handle status update and deduct stock if completed ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['new_status'])) {
+    $order_id = (int)$_POST['order_id'];
+    $new_status = $_POST['new_status'];
+
+    try {
+        // 1. Get current order info
+        $stmt = $db_connection->prepare("SELECT order_status, branch_id FROM orders WHERE order_id = ?");
+        $stmt->execute([$order_id]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$order) throw new Exception('Order not found.');
+
+        // 2. Update order status
+        $stmt = $db_connection->prepare("UPDATE orders SET order_status = ?, updated_at = NOW() WHERE order_id = ?");
+        $stmt->execute([$new_status, $order_id]);
+
+        // 3. If status is completed and was not previously completed, deduct stock
+        if ($new_status === 'completed' && $order['order_status'] !== 'completed') {
+            // Get all items in the order
+            $itemsStmt = $db_connection->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
+            $itemsStmt->execute([$order_id]);
+            $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($items as $item) {
+                // Deduct from product_branches stock_count
+                $updateStock = $db_connection->prepare("UPDATE product_branches SET stock_count = stock_count - ? WHERE product_id = ? AND branch_id = ?");
+                $updateStock->execute([$item['quantity'], $item['product_id'], $order['branch_id']]);
+                if ($updateStock->rowCount() === 0) {
+                    throw new Exception('Stock row not found for product_id ' . $item['product_id'] . ' in branch_id ' . $order['branch_id'] . '.');
+                }
+            }
+        }
+
+        $response['success'] = true;
+    } catch (PDOException $e) {
+        error_log("Order Status Update DB Error: " . $e->getMessage());
+        $response['error'] = 'A database error occurred. Please check logs.';
+    } catch (Exception $e) {
+        error_log("Order Status Update General Error: " . $e->getMessage());
+        $response['error'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+    exit();
+}
+
+// --- Existing inventory AJAX logic (GET) ---
+try {
+    // ...existing code...
+    $filter_search = $_GET['search'] ?? '';
+    $filter_remarks = $_GET['remarks'] ?? '';
+    $filter_date = $_GET['dateFilter'] ?? '';
+    $filter_start = $_GET['dateStart'] ?? '';
+    $filter_end = $_GET['dateEnd'] ?? '';
+
+    $params = [];
+    $sql = "SELECT 
+        p.product_name,
+        b.branch_name,
+        100 AS last_restock_quantity, -- fixed value, replace if you have actual restock
+        SUM(oi.quantity) AS total_sold,
+        MAX(o.order_date) AS last_update,
+        (SUM(oi.quantity) / 100) * 100 AS percent_taken,
+        (CASE
+            WHEN SUM(oi.quantity) >= 95 THEN 'Low Stock'
+            WHEN SUM(oi.quantity) = 0 THEN 'No Stock'
+            ELSE 'Sufficient'
+        END) AS remarks
+    FROM order_items oi
+    JOIN orders o ON oi.order_id = o.order_id
+    JOIN products p ON oi.product_id = p.product_id
+    JOIN branches b ON o.branch_id = b.branch_id
+    WHERE o.order_status = 'completed'";
+
+    // ...existing code...
+    if (!empty($filter_search)) {
+        $sql .= " AND p.product_name LIKE ?";
+        $params[] = "%$filter_search%";
+    }
+
+    switch ($filter_date) {
+        case 'today':
+            $sql .= " AND DATE(o.order_date) = CURDATE()";
+            break;
+        case 'week':
+            $sql .= " AND YEARWEEK(o.order_date, 0) = YEARWEEK(NOW(), 0)";
+            break;
+        case 'month':
+            $sql .= " AND YEAR(o.order_date) = YEAR(NOW()) AND MONTH(o.order_date) = MONTH(NOW())";
+            break;
+        case 'custom':
+            if (!empty($filter_start) && !empty($filter_end)) {
+                $sql .= " AND DATE(o.order_date) BETWEEN ? AND ?";
+                $params[] = $filter_start;
+                $params[] = $filter_end;
+            }
+            break;
+    }
+
+    $sql .= " GROUP BY p.product_id, b.branch_id";
+
+    if (!empty($filter_remarks)) {
+        $sql .= " HAVING remarks = ?";
+        $params[] = $filter_remarks;
+    }
+
+    $sql .= " ORDER BY p.product_name, b.branch_name";
+
+    $stmt = $db_connection->prepare($sql);
+    $stmt->execute($params);
+    $inventoryData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $response['success'] = true;
+    $response['inventoryData'] = $inventoryData;
+
+} catch (PDOException $e) {
+    error_log("AJAX DB Error: " . $e->getMessage());
+    $response['error'] = 'A database error occurred. Please check logs.';
+} catch (Exception $e) {
+    error_log("AJAX General Error: " . $e->getMessage());
+    $response['error'] = 'An unexpected error occurred.';
+}
+
+echo json_encode($response);
+?>

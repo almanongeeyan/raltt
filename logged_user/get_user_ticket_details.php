@@ -12,7 +12,8 @@ if (!$user_id || !$ticket_id) {
 }
 
 
-$stmt = $conn->prepare("SELECT ticket_id, order_reference, issue_type, damage_time, issue_description, ticket_status, created_at, order_id FROM customer_tickets WHERE user_id = ? AND ticket_id = ? LIMIT 1");
+
+$stmt = $conn->prepare("SELECT ticket_id, order_reference, issue_type, damage_time, issue_description, ticket_status, created_at, order_id, awaiting_customer_at FROM customer_tickets WHERE user_id = ? AND ticket_id = ? LIMIT 1");
 $stmt->execute([$user_id, $ticket_id]);
 $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 

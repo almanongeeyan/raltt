@@ -14,10 +14,10 @@ $branch_id = (int)$_SESSION['branch_id'];
 try {
     $stmt = $conn->prepare('
         SELECT p.product_id, p.product_name, p.product_price, p.product_description, 
-               p.product_image, p.is_popular, p.is_best_seller, p.is_archived
+               p.product_image, p.is_popular, p.is_best_seller, p.is_archived, p.product_type
         FROM products p
         JOIN product_branches pb ON p.product_id = pb.product_id
-        WHERE pb.branch_id = ? AND p.is_archived = 0 AND p.product_type = "tile"
+        WHERE pb.branch_id = ? AND p.is_archived = 0 AND (p.product_type = "tile" OR p.product_type = "other")
         GROUP BY p.product_id
         ORDER BY p.product_name ASC
     ');
@@ -31,6 +31,12 @@ try {
         $designs = [];
         while ($d = $dstmt->fetch(PDO::FETCH_ASSOC)) $designs[] = $d['design_name'];
         $row['designs'] = $designs;
+        // Get best_for_ids
+        $bfstmt = $conn->prepare('SELECT best_for_id FROM product_best_for WHERE product_id = ?');
+        $bfstmt->execute([$product_id]);
+        $best_for_ids = [];
+        while ($bf = $bfstmt->fetch(PDO::FETCH_ASSOC)) $best_for_ids[] = $bf['best_for_id'];
+        $row['best_for_ids'] = $best_for_ids;
         // Convert image blob to base64
         if (!empty($row['product_image'])) {
             $row['product_image'] = 'data:image/jpeg;base64,' . base64_encode($row['product_image']);

@@ -850,15 +850,14 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
         const showArchived = document.getElementById('showArchivedCheckbox').checked;
         
         let filtered = allProducts.filter(product => {
-            // If checked, show only archived. If not checked, show all (archived and non-archived)
+            // Archive filter
             if (showArchived) {
-                return product.is_archived && product.is_archived != '0';
+                if (!product.is_archived || product.is_archived == '0') return false;
+            } else {
+                if (product.is_archived && product.is_archived != '0') return false;
             }
-            // If not checked, show all products (no filter on archive status)
-            return true;
-            
-            // Then apply other filters
-            // Filter by search term
+
+            // Search filter
             if (search) {
                 const searchableText = [
                     product.product_name,
@@ -870,28 +869,27 @@ $branch_name = isset($_SESSION['branch_name']) ? $_SESSION['branch_name'] : '';
                     ...(product.tile_sizes || []),
                     ...(product.best_for || [])
                 ].filter(Boolean).join(' ').toLowerCase();
-                
                 if (!searchableText.includes(search)) return false;
             }
-            
-            // Filter by category
+
+            // Category filter
             if (category !== 'all' && product.product_type !== category) return false;
-            
-            // Filter by tile type
+
+            // Tile type filter
             if (category === 'tile' && tileType) {
                 if (!Array.isArray(product.tile_designs) || !product.tile_designs.includes(tileType)) return false;
             }
-            
-            // Filter by other spec
+
+            // Other spec filter
             if (category === 'other' && otherSpec && product.product_spec !== otherSpec) return false;
-            
-            // Filter by stock status
+
+            // Stock status filter
             const stock = parseInt(product.stock_count || 0);
             if (stockStatus === 'in' && !(stock >= 100 && stock < 300)) return false;
             if (stockStatus === 'over' && stock < 300) return false;
             if (stockStatus === 'low' && !(stock < 50 && stock >= 10)) return false;
             if (stockStatus === 'none' && stock >= 10) return false;
-            
+
             return true;
         });
         

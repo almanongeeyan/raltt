@@ -46,3 +46,5 @@
 [2025-10-19 06:55:59] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
 [2025-10-19 07:11:12] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
 [2025-10-19 07:14:28] Database error in check_phone_registered.php: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.manual_accounts' doesn't exist
+[2025-10-26 13:55:28] Login error: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'branch_id' cannot be null
+[2025-10-26 13:58:16] Login error: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'branch_id' cannot be null

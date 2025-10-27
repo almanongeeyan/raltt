@@ -12,25 +12,34 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-$fullName = isset($_POST['fullName']) ? trim($_POST['fullName']) : '';
-$contactNumber = isset($_POST['contactNumber']) ? trim($_POST['contactNumber']) : '';
-$houseAddress = isset($_POST['houseAddress']) ? trim($_POST['houseAddress']) : '';
-$pinLocation = isset($_POST['pinLocation']) ? trim($_POST['pinLocation']) : '';
 
-if ($fullName === '' || $contactNumber === '' || $houseAddress === '' || $pinLocation === '') {
-    echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
+// Accept both camelCase and snake_case keys for compatibility
+$fields = [
+    'full_name' => isset($_POST['full_name']) ? trim($_POST['full_name']) : (isset($_POST['fullName']) ? trim($_POST['fullName']) : null),
+    'phone_number' => isset($_POST['phone_number']) ? trim($_POST['phone_number']) : (isset($_POST['contactNumber']) ? trim($_POST['contactNumber']) : null),
+    'house_address' => isset($_POST['house_address']) ? trim($_POST['house_address']) : (isset($_POST['houseAddress']) ? trim($_POST['houseAddress']) : null),
+    'full_address' => isset($_POST['full_address']) ? trim($_POST['full_address']) : (isset($_POST['pinLocation']) ? trim($_POST['pinLocation']) : null),
+];
+
+// Remove fields that are null or empty (not sent or blank)
+$updateFields = array_filter($fields, function($v) { return $v !== null && $v !== ''; });
+
+if (empty($updateFields)) {
+    echo json_encode(['status' => 'error', 'message' => 'No changes to update.']);
     exit;
 }
 
 try {
-    $stmt = $conn->prepare('UPDATE users SET full_name = :full_name, phone_number = :phone_number, house_address = :house_address, full_address = :full_address WHERE id = :id');
-    $result = $stmt->execute([
-        ':full_name' => $fullName,
-        ':phone_number' => $contactNumber,
-        ':house_address' => $houseAddress,
-        ':full_address' => $pinLocation,
-        ':id' => $user_id
-    ]);
+    $setParts = [];
+    $params = [];
+    foreach ($updateFields as $key => $value) {
+        $setParts[] = "$key = :$key";
+        $params[":$key"] = $value;
+    }
+    $params[':id'] = $user_id;
+    $sql = 'UPDATE users SET ' . implode(', ', $setParts) . ' WHERE id = :id';
+    $stmt = $conn->prepare($sql);
+    $result = $stmt->execute($params);
     if ($result) {
         echo json_encode(['status' => 'success']);
     } else {

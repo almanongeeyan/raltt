@@ -328,7 +328,6 @@ if ($user_id) {
                     <span>Back</span>
                 </button>
             </div>
-    <!-- Cancel Modal -->
     <?php
     // Count cancelled orders for this user
     $cancelCount = 0;
@@ -342,7 +341,7 @@ if ($user_id) {
         <div class="modal-content animate-bounce-in" style="max-width:400px;">
             <div class="modal-header p-4 flex justify-between items-center">
                 <h3 class="text-lg font-semibold text-primary">Cancel Order</h3>
-                <button class="close-btn text-xl" onclick="closeModal('cancelModal')">&times;</button>
+                <button class="close-btn text-xl" onclick="closeModal('cancelModal')">×</button>
             </div>
             <div class="p-4">
                 <?php if ($cancelCount >= 3) { ?>
@@ -447,6 +446,27 @@ if ($user_id) {
                             </div>
                         </div>
 
+                        <?php
+                        // Recent Activity: Order Placed (excluding cancelled)
+                        $orderPlacedCount = 0;
+                        $productToReviewCount = 0;
+                        if ($user_id) {
+                            // Orders placed excluding cancelled
+                            $stmtOrderPlaced = $db_connection->prepare("SELECT COUNT(*) FROM orders WHERE user_id = ? AND order_status != 'cancelled'");
+                            $stmtOrderPlaced->execute([$user_id]);
+                            $orderPlacedCount = $stmtOrderPlaced->fetchColumn();
+
+                            // Products to review: completed orders, not yet reviewed
+                            $stmtProductToReview = $db_connection->prepare(
+                                "SELECT COUNT(*) FROM order_items oi
+                                 JOIN orders o ON oi.order_id = o.order_id
+                                 WHERE o.user_id = ? AND o.order_status = 'completed'
+                                 AND oi.product_id NOT IN (SELECT product_id FROM product_reviews WHERE user_id = ?)"
+                            );
+                            $stmtProductToReview->execute([$user_id, $user_id]);
+                            $productToReviewCount = $stmtProductToReview->fetchColumn();
+                        }
+                        ?>
                         <div class="form-box activity-box mb-8 animate-slide-up" style="animation-delay: 0.3s">
                             <div class="p-6">
                                 <div class="profile-header flex items-center mb-6 pb-4">
@@ -463,10 +483,10 @@ if ($user_id) {
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-textdark">Order Placed</p>
-                                                <p class="text-xs text-textlight">2 days ago</p>
+                                                <p class="text-xs text-textlight">Total orders placed (excluding cancelled)</p>
                                             </div>
                                         </div>
-                                        <span class="text-primary font-medium text-sm">Products: 2</span>
+                                        <span class="text-primary font-medium text-sm">Orders: <?php echo $orderPlacedCount; ?></span>
                                     </div>
                                     <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg animate-fade-in" style="animation-delay: 0.5s">
                                         <div class="flex items-center">
@@ -474,11 +494,11 @@ if ($user_id) {
                                                 <i class="fa-solid fa-star text-white text-sm"></i>
                                             </div>
                                             <div>
-                                                <p class="text-sm font-medium text-textdark">Product Review</p>
-                                                <p class="text-xs text-textlight">1 week ago</p>
+                                                <p class="text-sm font-medium text-textdark">Product to Review</p>
+                                                <p class="text-xs text-textlight">Products delivered but not yet reviewed</p>
                                             </div>
                                         </div>
-                                        <span class="text-primary font-medium text-sm">Products: 1</span>
+                                        <span class="text-primary font-medium text-sm">Products: <?php echo $productToReviewCount; ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -589,6 +609,7 @@ if ($user_id) {
                                         case 'processing': return 'status-pending';
                                         case 'paid': return 'status-shipped';
                                         case 'ready_for_pickup': return 'status-shipped';
+                                        case 'otw': return 'status-shipped';
                                         case 'completed': return 'status-delivered';
                                         case 'cancelled': return 'status-cancelled';
                                         default: return 'status-pending';
@@ -597,8 +618,10 @@ if ($user_id) {
 
                                 $orderTabs = [
                                     'all-orders' => '',
-                                    'to-ship' => "order_status IN ('pending','processing','paid','ready_for_pickup')",
-                                    'to-receive' => "order_status IN ('paid','ready_for_pickup')",
+                                    // 'to-ship' should NOT include 'ready_for_pickup'
+                                    'to-ship' => "order_status IN ('pending','processing','paid')",
+                                    // 'to-receive' should include 'ready_for_pickup' and 'otw'
+                                    'to-receive' => "order_status IN ('paid','ready_for_pickup','otw')",
                                     'completed' => "order_status = 'completed'",
                                     'cancelled' => "order_status = 'cancelled'"
                                 ];
@@ -671,12 +694,13 @@ if ($user_id) {
                                                     echo '<div class="qty text-textdark font-medium text-center col-span-1 mb-2 md:mb-0 text-sm">' . $item['quantity'] . '</div>';
                                                     echo '<div class="price text-primary font-semibold text-center col-span-2 mb-2 md:mb-0 text-sm">₱' . number_format($productTotal, 2) . '</div>';
                                                     echo '<div class="status text-center col-span-1 mb-2 md:mb-0">';
-                                                        echo '<span class="status-badge ' . getStatusClass($order['order_status']) . '">' . ucfirst($order['order_status']) . '</span>';
+                                                        $statusText = ($order['order_status'] === 'otw') ? 'Out for Delivery' : ucfirst($order['order_status']);
+                                                        echo '<span class="status-badge ' . getStatusClass($order['order_status']) . '">' . $statusText . '</span>';
                                                     echo '</div>';
-                                                    // Cancel button for to-ship only
+                                                    // Cancel button for to-ship only, but not for 'processing' orders
                                                     if ($tab === "to-ship") {
                                                         echo '<div class="col-span-8 flex justify-end mt-2">';
-                                                        if ($cancelCount >= 3) {
+                                                        if ($cancelCount >= 3 || strtolower($order['order_status']) === 'processing') {
                                                             echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-gray-400 text-white text-xs font-semibold shadow cursor-not-allowed" disabled>Cancel</button>';
                                                         } else {
                                                             echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-red-500 text-white text-xs font-semibold shadow hover:bg-red-600 transition" onclick="openCancelModal(' . htmlspecialchars(json_encode($order['order_reference'])) . ')">Cancel</button>';
@@ -806,42 +830,431 @@ if ($user_id) {
         </div>
     </div>
 
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content animate-bounce-in">
-            <div class="modal-header p-6 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-primary">Edit Profile</h3>
-                <button class="close-btn text-xl" onclick="closeModal('editProfileModal')">&times;</button>
-            </div>
-            <div class="p-6">
-                <form class="space-y-4">
-                    <div>
-                        <label class="block text-textdark font-medium mb-2 text-sm">Full Name</label>
-                        <input type="text" class="form-input w-full p-3 text-sm" value="Cholene Jane Aberin">
+    <div id="editProfileModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20 modal-overlay hidden">
+            <div class="modal-content bg-white rounded-2xl shadow-2xl mx-2 relative border border-gray-200 fade-in" style="width:600px;min-width:600px;max-width:600px;max-height:90vh;overflow-y:auto;z-index:1100;">
+                <div class="px-8 pt-10 pb-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center mr-4 shadow-md">
+                            <i class="fa-solid fa-user text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-primary">Edit Profile</h2>
+                            <p class="text-sm text-gray-500 mt-1">Review and update your profile details</p>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-textdark font-medium mb-2 text-sm">House Address</label>
-                        <input type="text" class="form-input w-full p-3 text-sm" value="123 Main Street, Barangay San Antonio">
-                    </div>
-                    <div>
-                        <label class="block text-textdark font-medium mb-2 text-sm">Pin Point Address</label>
-                        <input type="text" class="form-input w-full p-3 text-sm" value="Near San Antonio Church, beside 7-Eleven">
-                    </div>
-                    <div>
-                        <label class="block text-textdark font-medium mb-2 text-sm">Contact Number</label>
-                        <input type="tel" class="form-input w-full p-3 text-sm" value="+63 912 345 6789">
-                    </div>
-                    <div>
-                        <label class="block text-textdark font-medium mb-2 text-sm">Email Address</label>
-                        <input type="email" class="form-input w-full p-3 text-sm" value="cholene.aberin@email.com">
-                    </div>
-                    <button type="button" class="submit-btn w-full text-white font-medium py-3 rounded mt-4 text-sm">
-                        Save Changes
-                    </button>
-                </form>
+                    <form id="editProfileForm" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="editFullName" class="block text-sm font-semibold text-gray-700">Full Name</label>
+                            <div class="relative">
+                                <input type="text" id="editFullName" name="full_name" value="<?php echo htmlspecialchars($userData['full_name'] ?? ''); ?>" class="input-focus mt-1 block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm text-gray-900 bg-white" required readonly>
+                                <div id="nameCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                                    <i class="fa-solid fa-check text-green-500"></i>
+                                </div>
+                                <button type="button" id="editNameBtn" class="absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-400 edit-icon"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="editPhoneNumber" class="block text-sm font-semibold text-gray-700">Contact Number</label>
+                            <div class="flex gap-3 items-center mt-1">
+                                <div class="relative flex-1">
+                                    <input type="text" id="editPhoneNumber" name="phone_number" value="<?php echo htmlspecialchars($userData['phone_number'] ?? ''); ?>" class="input-focus block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm text-gray-900 bg-white" required readonly>
+                                    <div id="phoneCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                                        <i class="fa-solid fa-check text-green-500"></i>
+                                    </div>
+                                    <span id="changeNumberText" class="absolute right-4 top-1/2 transform -translate-y-1/2 change-number" style="cursor:pointer; color:#7d310a; font-size:0.95rem;">
+                                        <?php echo empty($userData['phone_number']) ? 'Add Number' : 'Change Number'; ?>
+                                    </span>
+                                    <div id="phoneFormatError" class="text-xs text-red-500 mt-1" style="display:none;"></div>
+                                </div>
+                                <button type="button" id="verifyBtn" class="px-4 py-3 bg-primary text-white rounded-lg font-semibold shadow hover:bg-secondary transition whitespace-nowrap text-sm hidden">Verify</button>
+                            </div>
+                            <div id="verificationFormContainer"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="editHouseAddress" class="block text-sm font-semibold text-gray-700">House Address</label>
+                            <div class="relative">
+                                <input type="text" id="editHouseAddress" name="house_address" value="<?php echo htmlspecialchars($userData['house_address'] ?? ''); ?>" class="input-focus mt-1 block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm text-gray-900 bg-white" required readonly>
+                                <div id="addressCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                                    <i class="fa-solid fa-check text-green-500"></i>
+                                </div>
+                                <button type="button" id="editAddressBtn" class="absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-400 edit-icon"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="editFullAddress" class="block text-sm font-semibold text-gray-700">Pin Point Address</label>
+                            <div class="flex gap-3 items-center mt-1">
+                                <div class="relative flex-1">
+                                    <input type="text" id="editFullAddress" name="full_address" value="<?php echo htmlspecialchars($userData['full_address'] ?? ''); ?>" class="input-focus mt-1 block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm text-gray-900 bg-white" readonly>
+                                    <div id="locationCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                                        <i class="fa-solid fa-check text-green-500"></i>
+                                    </div>
+                                    <button type="button" id="editLocationBtn" class="absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-400 edit-icon"><i class="fa-solid fa-pen"></i></button>
+                                    <button type="button" id="locateMeBtn" class="px-4 py-3 bg-secondary text-white rounded-lg font-semibold shadow hover:bg-primary transition whitespace-nowrap text-sm" style="margin-left:4px; display:none;" onclick="locateMe()">
+                                        <span id="locateText">Locate Me</span>
+                                        <span id="locateSpinner" class="hidden animate-spin ml-1">⟳</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="mapContainer" class="mt-3 rounded-lg overflow-hidden border border-gray-200" style="max-height:150px; min-height:0; transition:max-height 0.3s; display:none;"></div>
+                        </div>
+                        
+                        <input type="hidden" name="email" value="<?php echo htmlspecialchars($userData['email'] ?? ''); ?>">
+
+                        <div class="flex justify-end pt-4 gap-3">
+                            <button type="button" id="cancelProfileBtn" class="w-1/2 px-6 py-3 bg-gray-200 text-gray-600 rounded-lg font-semibold shadow transition-all duration-300 text-sm" onclick="closeModal('editProfileModal')">Cancel</button>
+                            <button type="submit" id="saveProfileBtn" class="w-1/2 px-6 py-3 bg-gray-300 text-gray-500 rounded-lg font-semibold shadow transition-all duration-300 text-sm" disabled>Save Changes</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+        <div id="profileUpdateNotif" class="fixed top-6 right-6 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg font-semibold text-sm transition-all duration-300 opacity-0 pointer-events-none" style="min-width:200px;">Profile updated successfully!</div>
+        <script>
+            // Store original values for comparison
+            let originalProfile = {};
+            let isNumberVerified = true;
+            document.addEventListener('DOMContentLoaded', function() {
+                // Store initial values
+                originalProfile.full_name = document.getElementById('editFullName').value;
+                originalProfile.phone_number = document.getElementById('editPhoneNumber').value;
+                originalProfile.house_address = document.getElementById('editHouseAddress').value;
+                originalProfile.full_address = document.getElementById('editFullAddress').value;
 
+                // Edit button logic
+                document.getElementById('editNameBtn').addEventListener('click', function() {
+                    let input = document.getElementById('editFullName');
+                    input.readOnly = false;
+                    input.focus();
+                    this.style.display = 'none';
+                    document.getElementById('nameCheck').classList.add('hidden');
+                    validateProfileForm();
+                });
+                document.getElementById('editAddressBtn').addEventListener('click', function() {
+                    let input = document.getElementById('editHouseAddress');
+                    input.readOnly = false;
+                    input.focus();
+                    this.style.display = 'none';
+                    document.getElementById('addressCheck').classList.add('hidden');
+                    validateProfileForm();
+                });
+                document.getElementById('editLocationBtn').addEventListener('click', function() {
+                    let input = document.getElementById('editFullAddress');
+                    input.readOnly = false;
+                    input.focus();
+                    this.style.display = 'none';
+                    document.getElementById('locationCheck').classList.add('hidden');
+                    document.getElementById('locateMeBtn').style.display = '';
+                    validateProfileForm();
+                });
+
+                // Change/Add Number logic
+                document.getElementById('changeNumberText').addEventListener('click', function() {
+                    let input = document.getElementById('editPhoneNumber');
+                    input.readOnly = false;
+                    input.value = '';
+                    input.focus();
+                    this.style.display = 'none';
+                    document.getElementById('verifyBtn').classList.remove('hidden');
+                    isNumberVerified = false;
+                    validateProfileForm();
+                });
+
+                // Twilio Verification
+                document.getElementById('verifyBtn').addEventListener('click', function() {
+                    const number = document.getElementById('editPhoneNumber').value;
+                    const verifyBtn = document.getElementById('verifyBtn');
+                    const phoneFormatError = document.getElementById('phoneFormatError');
+                    phoneFormatError.style.display = 'none';
+                    phoneFormatError.textContent = '';
+                    if (!number.match(/^\+639\d{9}$/)) {
+                        phoneFormatError.textContent = 'Invalid phone format. Use +639xxxxxxxxx.';
+                        phoneFormatError.style.display = 'block';
+                        return;
+                    }
+                    verifyBtn.disabled = true;
+                    verifyBtn.textContent = 'Sending...';
+                    // Check if number is already registered
+                    fetch('/raltt/connection/check_phone_registered.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone: number })
+                    })
+                    .then(res => res.json())
+                    .then(checkData => {
+                        if (checkData.status === 'registered') {
+                            phoneFormatError.textContent = 'This phone number is already registered.';
+                            phoneFormatError.style.display = 'block';
+                            verifyBtn.disabled = false;
+                            verifyBtn.textContent = 'Verify';
+                        } else {
+                            // Send Twilio verification code
+                            const formData = new FormData();
+                            formData.append('phone', number);
+                            fetch('/raltt/connection/send_verification_debug.php', {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(resp => resp.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    showVerificationForm(number);
+                                    startResendCooldown(verifyBtn);
+                                } else {
+                                    phoneFormatError.textContent = data.message || 'Failed to send code.';
+                                    phoneFormatError.style.display = 'block';
+                                    verifyBtn.disabled = false;
+                                    verifyBtn.textContent = 'Verify';
+                                }
+                            });
+                        }
+                    });
+                });
+
+                // 2-minute cooldown for resend button
+                function startResendCooldown(btn) {
+                    let cooldown = 120;
+                    btn.disabled = true;
+                    updateBtnText();
+                    let interval = setInterval(function() {
+                        cooldown--;
+                        updateBtnText();
+                        if (cooldown <= 0) {
+                            clearInterval(interval);
+                            btn.disabled = false;
+                            btn.textContent = 'Resend';
+                        }
+                    }, 1000);
+                    function updateBtnText() {
+                        btn.textContent = cooldown > 0 ? `Resend (${cooldown}s)` : 'Resend';
+                    }
+                }
+
+                function showVerificationForm(phone) {
+                    const container = document.getElementById('verificationFormContainer');
+                    container.innerHTML = `
+                        <label for="verification_code" class="block text-xs font-semibold text-gray-700 mb-1">Verification Code</label>
+                        <div class="flex flex-col gap-2 items-stretch w-full">
+                            <input type="text" id="verification_code" name="verification_code" maxlength="6" placeholder="Enter the 6-digit code" class="input-focus block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm text-gray-900 bg-white" required style="min-width:0;">
+                            <button type="button" id="confirmCodeBtn" class="px-4 py-3 bg-green-500 text-white rounded-lg font-semibold shadow hover:bg-green-600 transition text-sm w-full">Confirm</button>
+                        </div>
+                        <div id="codeStatus" class="text-xs mt-2"></div>
+                    `;
+                    document.getElementById('confirmCodeBtn').addEventListener('click', function() {
+                        const code = document.getElementById('verification_code').value;
+                        const codeStatusDiv = document.getElementById('codeStatus');
+                        if (!code || code.length !== 6) {
+                            codeStatusDiv.textContent = 'Please enter a valid 6-digit code.';
+                            codeStatusDiv.style.color = 'red';
+                            return;
+                        }
+                        this.disabled = true;
+                        this.textContent = 'Checking...';
+                        const formData = new FormData();
+                        formData.append('phone', phone);
+                        formData.append('code', code);
+                        fetch('/raltt/connection/check_verification.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(resp => resp.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                codeStatusDiv.textContent = 'Phone number verified!';
+                                codeStatusDiv.style.color = 'green';
+                                isNumberVerified = true;
+                                document.getElementById('editPhoneNumber').readOnly = true;
+                                document.getElementById('verification_code').disabled = true;
+                                this.disabled = true;
+                                this.textContent = 'Verified';
+                                validateProfileForm();
+                            } else {
+                                codeStatusDiv.textContent = 'Wrong verification code, please try again';
+                                codeStatusDiv.style.color = 'red';
+                                this.disabled = false;
+                                this.textContent = 'Confirm';
+                                document.getElementById('verification_code').disabled = false;
+                            }
+                        });
+                    });
+                }
+
+                // Locate Me logic for Pin Point Address
+                window.locateMe = function() {
+                    const btn = document.getElementById('locateMeBtn');
+                    const locateText = document.getElementById('locateText');
+                    const locateSpinner = document.getElementById('locateSpinner');
+                    const mapContainer = document.getElementById('mapContainer');
+                    btn.disabled = true;
+                    locateText.classList.add('hidden');
+                    locateSpinner.classList.remove('hidden');
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(async function(pos) {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+                            try {
+                                const response = await fetch(`/raltt/connection/reverse_geocode.php?lat=${lat}&lng=${lng}`);
+                                const data = await response.json();
+                                if (data.address) {
+                                    const addressParts = [
+                                        data.address.house_number,
+                                        data.address.road,
+                                        data.address.neighbourhood,
+                                        data.address.suburb,
+                                        data.address.barangay,
+                                        data.address.village,
+                                        data.address.municipality,
+                                        data.address.town,
+                                        data.address.city_district,
+                                        data.address.city,
+                                        data.address.state_district,
+                                        data.address.state,
+                                        data.address.region,
+                                        data.address.postcode,
+                                        data.address.country
+                                    ].filter(Boolean);
+                                    let fullAddress = addressParts.join(', ');
+                                    document.getElementById('editFullAddress').value = fullAddress;
+                                } else if (data.display_name) {
+                                    document.getElementById('editFullAddress').value = data.display_name;
+                                } else {
+                                    document.getElementById('editFullAddress').value = '';
+                                }
+                            } catch (err) {
+                                document.getElementById('editFullAddress').value = '';
+                            }
+                            const mapUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                            mapContainer.innerHTML = `<iframe width='100%' height='150' src='${mapUrl}' frameborder='0' style='border:0;'></iframe>`;
+                            mapContainer.style.display = 'block';
+                            locateText.classList.remove('hidden');
+                            locateSpinner.classList.add('hidden');
+                            btn.disabled = false;
+                            validateProfileForm();
+                        }, function(error) {
+                            alert('Unable to retrieve your location. Please try again or enter manually.');
+                            locateText.classList.remove('hidden');
+                            locateSpinner.classList.add('hidden');
+                            mapContainer.style.display = 'none';
+                            btn.disabled = false;
+                        });
+                    } else {
+                        alert('Geolocation is not supported by your browser.');
+                        locateText.classList.remove('hidden');
+                        locateSpinner.classList.add('hidden');
+                        mapContainer.style.display = 'none';
+                        btn.disabled = false;
+                    }
+                };
+
+                // Validate on input
+                document.getElementById('editFullName').addEventListener('input', validateProfileForm);
+                document.getElementById('editPhoneNumber').addEventListener('input', function() {
+                    document.getElementById('phoneFormatError').style.display = 'none';
+                    validateProfileForm();
+                });
+                document.getElementById('editHouseAddress').addEventListener('input', validateProfileForm);
+                document.getElementById('editFullAddress').addEventListener('input', validateProfileForm);
+
+
+                function getChangedFields() {
+                    const changed = {};
+                    if (document.getElementById('editFullName').value !== originalProfile.full_name) changed.full_name = true;
+                    if (document.getElementById('editPhoneNumber').value !== originalProfile.phone_number) changed.phone_number = true;
+                    if (document.getElementById('editHouseAddress').value !== originalProfile.house_address) changed.house_address = true;
+                    if (document.getElementById('editFullAddress').value !== originalProfile.full_address) changed.full_address = true;
+                    return changed;
+                }
+
+                function validateProfileForm() {
+                    let fullName = document.getElementById('editFullName').value.trim();
+                    let phone = document.getElementById('editPhoneNumber').value.trim();
+                    let address = document.getElementById('editHouseAddress').value.trim();
+                    let location = document.getElementById('editFullAddress').value.trim();
+                    let saveBtn = document.getElementById('saveProfileBtn');
+                    let nameCheck = document.getElementById('nameCheck');
+                    let phoneCheck = document.getElementById('phoneCheck');
+                    let addressCheck = document.getElementById('addressCheck');
+                    let locationCheck = document.getElementById('locationCheck');
+
+                    // Show check if value changed from original (regardless of readonly)
+                    nameCheck.classList.toggle('hidden', fullName === originalProfile.full_name || fullName === '');
+                    phoneCheck.classList.toggle('hidden', phone === originalProfile.phone_number || phone === '');
+                    addressCheck.classList.toggle('hidden', address === originalProfile.house_address || address === '');
+                    locationCheck.classList.toggle('hidden', location === originalProfile.full_address || location === '');
+
+                    let hasChanges = Object.keys(getChangedFields()).length > 0;
+                    if (hasChanges && isNumberVerified) {
+                        saveBtn.disabled = false;
+                        saveBtn.classList.remove('bg-gray-300', 'text-gray-500');
+                        saveBtn.classList.add('bg-primary', 'text-white', 'hover:bg-secondary');
+                    } else {
+                        saveBtn.disabled = true;
+                        saveBtn.classList.remove('bg-primary', 'text-white', 'hover:bg-secondary');
+                        saveBtn.classList.add('bg-gray-300', 'text-gray-500');
+                    }
+                }
+
+
+                // AJAX save: only send changed fields
+                document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    let formData = new FormData();
+                    const changed = getChangedFields();
+                    if (changed.full_name) formData.append('full_name', document.getElementById('editFullName').value);
+                    if (changed.phone_number) formData.append('phone_number', document.getElementById('editPhoneNumber').value);
+                    if (changed.house_address) formData.append('house_address', document.getElementById('editHouseAddress').value);
+                    if (changed.full_address) formData.append('full_address', document.getElementById('editFullAddress').value);
+                    // Always send email for backend identification
+                    formData.append('email', document.querySelector('input[name="email"]').value);
+                    let xhr = new XMLHttpRequest();
+                    xhr.open('POST', '../connection/save_shipping_info.php', true);
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4) {
+                            let res = {};
+                            try { res = JSON.parse(xhr.responseText); } catch(e) {}
+                            if (xhr.status === 200 && res.status === 'success') {
+                                showProfileUpdateNotif();
+                                // Update profile info in real time
+                                const changed = getChangedFields();
+                                if (changed.full_name) {
+                                    document.querySelectorAll('.info-value')[0].textContent = document.getElementById('editFullName').value;
+                                }
+                                if (changed.phone_number) {
+                                    document.querySelectorAll('.info-value')[3].textContent = document.getElementById('editPhoneNumber').value;
+                                }
+                                if (changed.house_address) {
+                                    document.querySelectorAll('.info-value')[1].textContent = document.getElementById('editHouseAddress').value;
+                                }
+                                if (changed.full_address) {
+                                    document.querySelectorAll('.info-value')[2].textContent = document.getElementById('editFullAddress').value;
+                                }
+                                setTimeout(function() {
+                                    closeModal('editProfileModal');
+                                }, 1200);
+                                // Reset originalProfile to new values
+                                originalProfile.full_name = document.getElementById('editFullName').value;
+                                originalProfile.phone_number = document.getElementById('editPhoneNumber').value;
+                                originalProfile.house_address = document.getElementById('editHouseAddress').value;
+                                originalProfile.full_address = document.getElementById('editFullAddress').value;
+                                validateProfileForm();
+                            } else {
+                                alert(res.message || 'Failed to update profile.');
+                            }
+                        }
+                    };
+                    xhr.send(formData);
+                });
+
+                function showProfileUpdateNotif() {
+                    let notif = document.getElementById('profileUpdateNotif');
+                    notif.style.opacity = '1';
+                    notif.style.pointerEvents = 'auto';
+                    setTimeout(function() {
+                        notif.style.opacity = '0';
+                        notif.style.pointerEvents = 'none';
+                    }, 1800);
+                }
+            });
+        </script>
     <div id="copyToast" class="toast">
         <i class="fa-solid fa-check-circle"></i>
         <span>Referral code copied successfully!</span>
@@ -943,9 +1356,12 @@ if ($user_id) {
             // Initialize order tabs
             initOrderTabs();
 
-            // Set initial content section and sidebar active state
-            const defaultSection = document.querySelector('.sidebar-nav-item.active').getAttribute('data-section');
-            showSection(defaultSection);
+            // Always show Profile section and set sidebar active
+            showSection('profile-section');
+            document.querySelectorAll('.sidebar-nav-item').forEach(function(item) {
+                item.classList.remove('active');
+            });
+            document.querySelector('.sidebar-nav-item[data-section="profile"]').classList.add('active');
 
             // Add fade-in animation to body
             document.body.classList.add('animate-fade-in');
@@ -1309,34 +1725,9 @@ if ($user_id) {
     }
     </script>
 
-</body>
-    <!-- Cancel Modal -->
-    <div id="cancelModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:9999; align-items:center; justify-content:center;">
-        <div class="modal-content animate-bounce-in bg-white rounded-lg shadow-lg" style="max-width:400px; margin:auto;">
-            <div class="modal-header p-4 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-primary">Cancel Order</h3>
-                <button class="close-btn text-xl" onclick="closeModal('cancelModal')">&times;</button>
-            </div>
-            <div class="p-4">
-                <form id="cancelOrderForm">
-                    <input type="hidden" name="order_reference" id="cancelOrderReference">
-                    <label class="block text-textdark font-medium mb-2 text-sm">Reason for cancellation</label>
-                    <select name="cancel_reason" id="cancelReason" class="form-input w-full p-2 mb-4 text-sm">
-                        <option value="">Select reason...</option>
-                        <option value="Found a better price elsewhere">Found a better price elsewhere</option>
-                        <option value="Ordered by mistake">Ordered by mistake</option>
-                        <option value="Change of mind">Change of mind</option>
-                        <option value="Shipping is too slow">Shipping is too slow</option>
-                        <option value="Product is not as described">Product is not as described</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <button type="submit" class="submit-btn w-full text-white font-medium py-2 rounded mt-2 text-sm bg-red-500 hover:bg-red-600">Confirm Cancel</button>
-                </form>
-            </div>
-        </div>
-    </div>
     <script>
         function openCancelModal(orderRef) {
+            // This function now correctly references the *single* modal at the top
             document.getElementById('cancelOrderReference').value = orderRef.replace(/"/g, '');
             document.getElementById('cancelModal').style.display = 'flex';
         }
@@ -1369,6 +1760,12 @@ if ($user_id) {
                 confirmCancelBtn.disabled = !validateCancelForm();
             });
         }
+        
+        // Make sure the button starts in a valid state
+        if (confirmCancelBtn) {
+            confirmCancelBtn.disabled = !validateCancelForm();
+        }
+
         document.getElementById('cancelOrderForm').addEventListener('input', function() {
             confirmCancelBtn.disabled = !validateCancelForm();
         });
@@ -1404,26 +1801,11 @@ if ($user_id) {
         // AJAX function to refresh order tabs after cancel
         function refreshOrderTabs() {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'myProfile.php?ajax=orders', true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    var parser = new DOMParser();
-                    var doc = parser.parseFromString(xhr.responseText, 'text/html');
-                    var newTabs = doc.querySelector('.orders-tab-content-container');
-                    if (newTabs) {
-                        var container = document.querySelector('.orders-tab-content-container');
-                        container.innerHTML = newTabs.innerHTML;
-                        // If current tab is empty, show 'No orders found'
-                        var activeTab = document.querySelector('.order-tabs .tab.active').getAttribute('data-tab');
-                        var tabContent = document.getElementById(activeTab);
-                        if (tabContent && tabContent.querySelectorAll('.orders-drawer').length === 0) {
-                            tabContent.innerHTML = '<div class="text-center"><i class="fa-solid fa-box-open text-4xl text-textlight mb-4"></i><p class="text-textlight text-lg">No orders found</p><p class="text-textlight text-sm mt-2">Your ' + activeTab.replace('-', ' ') + ' will appear here</p></div>';
-                        }
-                    }
-                }
-            };
-            xhr.send();
+            // This logic is simplified; ideally, you'd fetch only the order tab content
+            // For now, it reloads the page to show the change, which is robust.
+            location.reload(); 
         }
+
         function showCancelToast() {
             var toast = document.getElementById('cancelToast');
             if (toast) {

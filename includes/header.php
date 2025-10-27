@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rich Anne Lea Tiles Trading</title>
+    <link rel="icon" type="image/png" href="../images/userlogo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -164,7 +165,7 @@
         }
         
         .mobile-dropdown.active .mobile-dropdown-content {
-            max-height: 200px;
+            max-height: 300px;
         }
         
         /* Logo hover effect */
@@ -174,6 +175,29 @@
         
         .logo-hover:hover {
             transform: scale(1.05);
+        }
+
+        /* Feature badge for new items */
+        .feature-badge {
+            background: linear-gradient(135deg, #EF7232, #A0522D);
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        /* Enhanced dropdown item hover */
+        .dropdown-item {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, #fef8f6, #fdf0ec);
+            transform: translateX(5px);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
@@ -195,14 +219,55 @@
                             Features
                             <i class="fas fa-caret-down ml-2 text-sm transition-transform duration-300 dropdown-arrow"></i>
                         </button>
-                        <div class="dropdown-content absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-dropdown overflow-hidden border border-gray-100 animate-slide-down">
-                            <a href="2d_visualizer_homepage.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light transition-all duration-300 border-b border-gray-100 last:border-b-0">
-                                <i class="fas fa-cube mr-3 text-primary-light"></i>
-                                <span>3D Tile Visualizer</span>
+                        <div class="dropdown-content absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-dropdown overflow-hidden border border-gray-100 animate-slide-down">
+                            <!-- 3D Tile Visualizer -->
+                            <a href="2d_visualizer_homepage.php" class="dropdown-item flex items-center px-4 py-3 text-gray-700 hover:text-primary-light">
+                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-cube text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <span class="font-medium">3D Tile Visualizer</span>
+                                    <p class="text-xs text-gray-500 mt-1">Design and preview tiles in 3D</p>
+                                </div>
                             </a>
-                            <a href="refferal.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light transition-all duration-300">
-                                <i class="fas fa-users mr-3 text-primary-light"></i>
-                                <span>Referral Code</span>
+                            
+                            <!-- AR Tile Recognition -->
+                            <a href="ar_info.php" class="dropdown-item flex items-center px-4 py-3 text-gray-700 hover:text-primary-light">
+                                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-camera text-purple-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">AR Tile Recognition</span>
+                                        <span class="feature-badge text-white text-xs font-bold">NEW</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Scan tiles with your camera</p>
+                                </div>
+                            </a>
+                            
+                            <!-- AI Recommendations -->
+                            <a href="ai_recommendation_info.php" class="dropdown-item flex items-center px-4 py-3 text-gray-700 hover:text-primary-light">
+                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-robot text-green-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">AI Recommendations</span>
+                                        <span class="feature-badge text-white text-xs font-bold">AI</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Personalized tile suggestions</p>
+                                </div>
+                            </a>
+                            
+                            <!-- Referral Code -->
+                            <a href="refferal.php" class="dropdown-item flex items-center px-4 py-3 text-gray-700 hover:text-primary-light">
+                                <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-users text-orange-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <span class="font-medium">Referral Code</span>
+                                    <p class="text-xs text-gray-500 mt-1">Share and earn rewards</p>
+                                </div>
                             </a>
                         </div>
                     </div>
@@ -237,16 +302,48 @@
                     <!-- Features Dropdown for Mobile -->
                     <div class="mobile-dropdown">
                         <button class="mobile-dropdown-toggle flex items-center justify-between w-full px-4 py-3 text-gray-700 hover:bg-accent rounded-lg transition-colors duration-300 font-medium">
-                            <span>Features</span>
+                            <div class="flex items-center">
+                                <span>Features</span>
+                                <span class="ml-2 feature-badge text-white text-xs">4 Items</span>
+                            </div>
                             <i class="fas fa-caret-down transition-transform duration-300"></i>
                         </button>
                         <div class="mobile-dropdown-content pl-8 pr-4 space-y-2">
+                            <!-- 3D Tile Visualizer -->
                             <a href="2d_visualizer_homepage.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light rounded-lg transition-all duration-300">
-                                <i class="fas fa-cube mr-3 text-primary-light"></i>
+                                <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center mr-3">
+                                    <i class="fas fa-cube text-blue-600 text-xs"></i>
+                                </div>
                                 <span>3D Tile Visualizer</span>
                             </a>
+                            
+                            <!-- AR Tile Recognition -->
+                            <a href="ar_info.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light rounded-lg transition-all duration-300">
+                                <div class="w-6 h-6 bg-purple-100 rounded flex items-center justify-center mr-3">
+                                    <i class="fas fa-camera text-purple-600 text-xs"></i>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span>AR Tile Recognition</span>
+                                    <span class="feature-badge text-white text-xs">NEW</span>
+                                </div>
+                            </a>
+                            
+                            <!-- AI Recommendations -->
+                            <a href="ai_recommendation_info.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light rounded-lg transition-all duration-300">
+                                <div class="w-6 h-6 bg-green-100 rounded flex items-center justify-center mr-3">
+                                    <i class="fas fa-robot text-green-600 text-xs"></i>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span>AI Recommendations</span>
+                                    <span class="feature-badge text-white text-xs">AI</span>
+                                </div>
+                            </a>
+                            
+                            <!-- Referral Code -->
                             <a href="refferal.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light rounded-lg transition-all duration-300">
-                                <i class="fas fa-users mr-3 text-primary-light"></i>
+                                <div class="w-6 h-6 bg-orange-100 rounded flex items-center justify-center mr-3">
+                                    <i class="fas fa-users text-orange-600 text-xs"></i>
+                                </div>
                                 <span>Referral Code</span>
                             </a>
                         </div>
@@ -259,7 +356,6 @@
         </div>
     </header>
 
-    
     <script>
         // Mobile Menu Toggle
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
@@ -356,6 +452,17 @@
                 setTimeout(() => {
                     ripple.remove();
                 }, 600);
+            });
+        });
+
+        // Enhanced dropdown hover effects
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(5px)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
             });
         });
     </script>

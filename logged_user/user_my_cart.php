@@ -349,7 +349,7 @@ $summary = getCartSummary($cartItems);
                                 <div class="md:col-span-2 flex justify-center mb-3 md:mb-0">
                                     <div class="flex items-center space-x-3 bg-white rounded-full py-1 px-3 shadow-sm" data-cart-item-id="<?php echo $item['cart_item_id']; ?>" data-unit-price="<?php echo $item['product_price']; ?>">
                                         <button class="quantity-btn bg-light text-textdark hover:bg-secondary hover:text-white" data-action="decrease">-</button>
-                                        <span class="font-semibold w-6 text-center quantity-value" style="color:#333;background:transparent;"><?php echo $item['quantity']; ?></span>
+                                        <input type="number" min="1" maxlength="4" class="font-semibold w-12 text-center quantity-value-input" style="color:#333;background:transparent;border:none;outline:none;" value="<?php echo $item['quantity']; ?>" data-cart-item-id="<?php echo $item['cart_item_id']; ?>">
                                         <button class="quantity-btn bg-light text-textdark hover:bg-secondary hover:text-white" data-action="increase">+</button>
                                     </div>
                                 </div>
@@ -608,31 +608,74 @@ $summary = getCartSummary($cartItems);
             });
 
             // Quantity buttons functionality with AJAX
+
             document.querySelectorAll('.flex.items-center[data-cart-item-id]').forEach(parent => {
                 const cartItemId = parent.getAttribute('data-cart-item-id');
                 const unitPrice = parseFloat(parent.getAttribute('data-unit-price'));
                 const minusBtn = parent.querySelector('.quantity-btn[data-action="decrease"]');
                 const plusBtn = parent.querySelector('.quantity-btn[data-action="increase"]');
-                const quantitySpan = parent.querySelector('.quantity-value');
-                
+                const quantityInput = parent.querySelector('.quantity-value-input');
+
                 minusBtn.addEventListener('click', function() {
-                    let quantity = parseInt(quantitySpan.textContent);
+                    let quantity = parseInt(quantityInput.value);
                     if (quantity > 1) {
                         quantity--;
-                        updateQuantity(cartItemId, quantity, quantitySpan, parent, unitPrice);
+                        updateQuantity(cartItemId, quantity, quantityInput, parent, unitPrice);
                     }
                 });
-                
+
                 plusBtn.addEventListener('click', function() {
-                    let quantity = parseInt(quantitySpan.textContent);
+                    let quantity = parseInt(quantityInput.value);
                     quantity++;
-                    updateQuantity(cartItemId, quantity, quantitySpan, parent, unitPrice);
+                    updateQuantity(cartItemId, quantity, quantityInput, parent, unitPrice);
+                });
+
+                // Real-time update on input change (on blur or enter)
+                // Real-time update on input (while typing)
+                quantityInput.addEventListener('input', function() {
+                    // Enforce max 4 digits
+                    if (quantityInput.value.length > 4) {
+                        quantityInput.value = quantityInput.value.slice(0, 4);
+                    }
+                    let quantity = parseInt(quantityInput.value);
+                    if (isNaN(quantity) || quantity < 1) quantity = 1;
+                    // Update summary and prices instantly, but don't send AJAX yet
+                    quantityInput.value = quantity;
+                    const cartItem = parent.closest('.cart-item');
+                    const totalElement = cartItem.querySelector('.item-total-price');
+                    if (totalElement) {
+                        totalElement.textContent = '₱' + (unitPrice * quantity).toLocaleString(undefined, {minimumFractionDigits:2});
+                    }
+                    const mobilePriceDisplay = cartItem.querySelector('.mobile-only .text-primary');
+                    if (mobilePriceDisplay) {
+                        mobilePriceDisplay.textContent = '₱' + (unitPrice * quantity).toLocaleString(undefined, {minimumFractionDigits:2});
+                    }
+                    updateSummary();
+                });
+
+                quantityInput.addEventListener('change', function() {
+                    let quantity = parseInt(quantityInput.value);
+                    if (isNaN(quantity) || quantity < 1) {
+                        quantity = 1;
+                        quantityInput.value = 1;
+                    }
+                    updateQuantity(cartItemId, quantity, quantityInput, parent, unitPrice);
+                });
+                quantityInput.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        let quantity = parseInt(quantityInput.value);
+                        if (isNaN(quantity) || quantity < 1) {
+                            quantity = 1;
+                            quantityInput.value = 1;
+                        }
+                        updateQuantity(cartItemId, quantity, quantityInput, parent, unitPrice);
+                    }
                 });
             });
 
-            function updateQuantity(cartItemId, quantity, quantitySpan, parent, unitPrice) {
+            function updateQuantity(cartItemId, quantity, quantityInput, parent, unitPrice) {
                 // Update quantity and prices instantly
-                quantitySpan.textContent = quantity;
+                quantityInput.value = quantity;
                 const cartItem = parent.closest('.cart-item');
                 const totalElement = cartItem.querySelector('.item-total-price');
                 if (totalElement) {
@@ -643,7 +686,7 @@ $summary = getCartSummary($cartItems);
                     mobilePriceDisplay.textContent = '₱' + (unitPrice * quantity).toLocaleString(undefined, {minimumFractionDigits:2});
                 }
                 updateSummary();
-                
+
                 // Then update on server
                 fetch('processes/update_cart_quantity.php', {
                     method: 'POST',
@@ -656,21 +699,23 @@ $summary = getCartSummary($cartItems);
             function updateSummary() {
                 let subtotal = 0;
                 let selectedCount = 0;
-                
+
                 document.querySelectorAll('.cart-item').forEach(item => {
                     const checkbox = item.querySelector('.item-checkbox');
                     if (checkbox && checkbox.checked) {
                         const parent = item.querySelector('.flex.items-center[data-cart-item-id]');
                         const unitPrice = parseFloat(parent.getAttribute('data-unit-price'));
-                        const quantity = parseInt(parent.querySelector('.quantity-value').textContent);
-                        subtotal += unitPrice * quantity;
+                        // Use input value for quantity
+                        const quantityInput = parent.querySelector('.quantity-value-input');
+                        const quantity = parseInt(quantityInput.value);
+                        subtotal += unitPrice * (isNaN(quantity) ? 1 : quantity);
                         selectedCount++;
                     }
                 });
-                
+
                 const shipping = (subtotal >= 1000) ? 0 : (subtotal > 0 ? 40 : 0);
                 const total = subtotal + shipping;
-                
+
                 document.querySelector('.order-summary-selected').textContent = `Selected Items (${selectedCount})`;
                 document.querySelector('.order-summary-subtotal').textContent = '₱' + subtotal.toLocaleString(undefined, {minimumFractionDigits:2});
                 document.querySelector('.order-summary-shipping').textContent = '₱' + shipping.toLocaleString(undefined, {minimumFractionDigits:2});

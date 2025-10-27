@@ -28,6 +28,7 @@ $average_rating = 0;
 $rating_distribution = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
 $total_reviews = 0;
 $user_can_review = false;
+$has_purchased = false;
 
 if ($product_id > 0) {
     // Get selected branch id
@@ -79,7 +80,7 @@ if ($product_id > 0) {
         $product['classifications'] = $product['classifications'] ? explode(',', $product['classifications']) : [];
         $product['best_for'] = $product['best_for'] ? explode(',', $product['best_for']) : [];
         
-        // Fetch product reviews - REMOVED is_approved condition since column doesn't exist
+        // Fetch product reviews
         $review_stmt = $conn->prepare('
             SELECT pr.*, u.full_name 
             FROM product_reviews pr 
@@ -349,24 +350,15 @@ include '../includes/headeruser.php';
             transition: width 0.5s ease;
         }
         
-        .review-modal {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            border: 1px solid #e5e7eb;
+        /* Heatmap animation styles */
+        .heatmap-update {
+            animation: heatmapPulse 1s ease-in-out;
         }
         
-        .feedback-tag {
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-        
-        .feedback-tag.selected {
-            background: linear-gradient(135deg, #7d310a, #cf8756);
-            color: white;
-            border-color: #7d310a;
-            transform: scale(1.05);
+        @keyframes heatmapPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         
         @media (max-width: 768px) {
@@ -421,7 +413,7 @@ include '../includes/headeruser.php';
                             </div>
                             
                             <!-- 3D View -->
-                            <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-lg">
+                            <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-lg mb-4">
                                 <h3 class="text-base font-semibold text-primary-product mb-3 flex items-center">
                                     <i class="fas fa-cube mr-2"></i> 3D Interactive View
                                 </h3>
@@ -429,6 +421,46 @@ include '../includes/headeruser.php';
                                     <!-- 3D viewer will be rendered here -->
                                 </div>
                                 <p class="text-xs text-gray-500 mt-2 text-center">Drag to rotate • Scroll to zoom</p>
+                            </div>
+
+                            <!-- Heatmap Stats Panel -->
+                            <?php
+                            // Get total sold (completed orders)
+                            $sold_stmt = $conn->prepare('SELECT SUM(oi.quantity) FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE oi.product_id = ? AND o.order_status = "completed"');
+                            $sold_stmt->execute([$product_id]);
+                            $total_sold = $sold_stmt->fetchColumn();
+                            $total_sold = $total_sold ? $total_sold : 0;
+
+                            // Get total completed orders
+                            $completed_stmt = $conn->prepare('SELECT COUNT(DISTINCT o.order_id) FROM orders o JOIN order_items oi ON oi.order_id = o.order_id WHERE oi.product_id = ? AND o.order_status = "completed"');
+                            $completed_stmt->execute([$product_id]);
+                            $completed_orders = $completed_stmt->fetchColumn();
+                            $completed_orders = $completed_orders ? $completed_orders : 0;
+
+                            // Get total times added to cart
+                            $cart_stmt = $conn->prepare('SELECT SUM(quantity) FROM cart_items WHERE product_id = ?');
+                            $cart_stmt->execute([$product_id]);
+                            $cart_adds = $cart_stmt->fetchColumn();
+                            $cart_adds = $cart_adds ? $cart_adds : 0;
+                            ?>
+                            <div class="bg-gradient-to-br from-yellow-100 via-orange-100 to-pink-100 rounded-xl p-4 border border-yellow-200 shadow-lg mb-4 animate-fade-in-up">
+                                <h3 class="text-base font-semibold text-orange-700 mb-3 flex items-center">
+                                    <i class="fas fa-fire mr-2"></i> Product Popularity Heatmap
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                    <div class="bg-white rounded-lg p-4 shadow flex flex-col items-center justify-center border border-orange-200">
+                                        <span class="text-3xl font-bold text-orange-600 mb-1"><i class="fas fa-shopping-bag"></i> <span id="total-sold"><?php echo $total_sold; ?></span></span>
+                                        <span class="text-xs text-gray-600">Total Sold</span>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-4 shadow flex flex-col items-center justify-center border border-green-200">
+                                        <span class="text-3xl font-bold text-green-600 mb-1"><i class="fas fa-check-circle"></i> <span id="completed-orders"><?php echo $completed_orders; ?></span></span>
+                                        <span class="text-xs text-gray-600">Orders Completed</span>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-4 shadow flex flex-col items-center justify-center border border-pink-200">
+                                        <span class="text-3xl font-bold text-pink-600 mb-1"><i class="fas fa-cart-plus"></i> <span id="cart-adds"><?php echo $cart_adds; ?></span></span>
+                                        <span class="text-xs text-gray-600">Times Added to Cart</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -609,11 +641,11 @@ include '../includes/headeruser.php';
                                             </div>
                                         </div>
                                         
-                                        <!-- Write Review Button -->
+                                        <!-- Write Review Button - Redirects to myProfile.php -->
                                         <?php if ($user_can_review): ?>
-                                        <button id="openReviewModal" class="bg-primary-product text-white px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 hover:bg-primary/90 shadow-lg flex items-center gap-2">
+                                        <a href="myProfile.php?section=to-review&product_id=<?php echo $product_id; ?>" class="bg-primary-product text-white px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 hover:bg-primary/90 shadow-lg flex items-center gap-2">
                                             <i class="fas fa-edit"></i> Write Review
-                                        </button>
+                                        </a>
                                         <?php elseif (isset($_SESSION['user_id'])): ?>
                                         <div class="text-sm text-gray-500 flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg">
                                             <i class="fas fa-info-circle text-primary-product"></i>
@@ -745,9 +777,7 @@ include '../includes/headeruser.php';
                                             <h3 class="text-2xl font-semibold text-gray-700 mb-3">No Reviews Yet</h3>
                                             <p class="text-gray-500 text-lg mb-6 max-w-md mx-auto">Be the first to share your thoughts about this amazing product!</p>
                                             <?php if ($user_can_review): ?>
-                                                <button id="openReviewModalEmpty" class="bg-primary-product text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 hover:bg-primary/90 shadow-lg flex items-center gap-3 mx-auto">
-                                                    <i class="fas fa-edit"></i> Write First Review
-                                                </button>
+                                                
                                             <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
@@ -767,7 +797,7 @@ include '../includes/headeruser.php';
                     <h2 class="text-lg font-semibold text-primary-product mb-4 flex items-center gap-2">
                         <i class="fa fa-shopping-cart"></i> Add to Cart
                     </h2>
-                    <form action="processes/add_to_cart.php" method="POST" class="space-y-4">
+                    <form action="processes/add_to_cart.php" method="POST" class="space-y-4" id="addToCartForm">
                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                         <input type="hidden" name="branch_id" value="<?php echo isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 1; ?>">
                         <div>
@@ -777,72 +807,6 @@ include '../includes/headeruser.php';
                         </div>
                         <button type="submit" id="submitAddToCart" class="w-full py-3 bg-primary-product text-white rounded-lg font-semibold text-sm transition-all duration-200 hover:bg-primary/90 shadow-lg flex items-center justify-center gap-2">
                             <i class="fa fa-cart-plus"></i> Add to Cart
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Review Modal -->
-            <div id="reviewModal" class="fixed inset-0 z-[60] flex items-center justify-center modal-overlay-product hidden">
-                <div class="review-modal p-6 w-full max-w-2xl mx-4 relative max-h-[90vh] overflow-y-auto">
-                    <button type="button" id="closeReviewModal" class="absolute top-4 right-4 text-gray-400 hover:text-primary-product text-xl focus:outline-none">
-                        <i class="fa fa-times"></i>
-                    </button>
-                    
-                    <h2 class="text-2xl font-semibold text-primary-product mb-6 flex items-center gap-3">
-                        <i class="fas fa-star text-secondary-product"></i> Write a Review
-                    </h2>
-                    
-                    <form id="reviewForm" action="processes/submit_review.php" method="POST" class="space-y-6">
-                        <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
-                        
-                        <!-- Rating -->
-                        <div>
-                            <label class="block text-lg font-semibold text-gray-700 mb-4">Overall Rating</label>
-                            <div class="flex items-center gap-1" id="starRating">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <input type="radio" id="star<?php echo $i; ?>" name="rating" value="<?php echo $i; ?>" class="hidden">
-                                    <label for="star<?php echo $i; ?>" class="text-4xl cursor-pointer transition-all duration-200 star-label" data-rating="<?php echo $i; ?>">
-                                        <i class="fas fa-star text-gray-300 hover:text-yellow-400"></i>
-                                    </label>
-                                <?php endfor; ?>
-                            </div>
-                            <div id="ratingText" class="text-lg font-medium text-gray-500 mt-3">Tap to rate the product</div>
-                        </div>
-                        
-                        <!-- Review Title -->
-                        <div>
-                            <label for="reviewTitle" class="block text-lg font-semibold text-gray-700 mb-3">Review Title</label>
-                            <input type="text" name="title" id="reviewTitle" 
-                                   class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary-product focus:ring-2 focus:ring-primary/20 text-lg font-medium text-gray-700 bg-white transition-all duration-200"
-                                   placeholder="Summarize your experience in a few words" maxlength="100">
-                        </div>
-                        
-                        <!-- Review Comment -->
-                        <div>
-                            <label for="reviewComment" class="block text-lg font-semibold text-gray-700 mb-3">Your Review</label>
-                            <textarea name="comment" id="reviewComment" rows="5"
-                                      class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-primary-product focus:ring-2 focus:ring-primary/20 text-lg font-medium text-gray-700 bg-white transition-all duration-200 resize-none"
-                                      placeholder="Share your detailed thoughts about this product..." maxlength="500"></textarea>
-                            <div class="text-sm text-gray-500 text-right mt-2">
-                                <span id="charCount">0</span>/500 characters
-                            </div>
-                        </div>
-                        
-                        <!-- Feedback Tags -->
-                        <div id="feedbackSection" class="hidden">
-                            <label class="block text-lg font-semibold text-gray-700 mb-4">What stood out? (Select up to 3)</label>
-                            <div id="feedbackTags" class="flex flex-wrap gap-3">
-                                <!-- Tags will be dynamically inserted -->
-                            </div>
-                            <input type="hidden" name="feedback" id="selectedFeedback" value="">
-                        </div>
-                        
-                        <!-- Submit Button -->
-                        <button type="submit" id="submitReview" 
-                                class="w-full py-4 bg-primary-product text-white rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-primary/90 shadow-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled>
-                            <i class="fas fa-paper-plane"></i> Submit Review
                         </button>
                     </form>
                 </div>
@@ -937,14 +901,8 @@ include '../includes/headeruser.php';
         </div>
     </section>
 
-    <!-- Toast Notification -->
-    <div id="reviewToast" class="fixed top-4 right-4 z-[100] bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg font-semibold text-lg flex items-center gap-3 transition-all duration-300 transform translate-x-full">
-        <i class="fas fa-check-circle text-xl"></i>
-        <span>Review submitted successfully!</span>
-    </div>
-
     <script>
-        // Toast notification
+        // Toast notification function (only called when needed)
         function showToast(message) {
             let toast = document.createElement('div');
             toast.className = 'fixed top-4 right-4 z-[100] bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg font-semibold text-lg flex items-center gap-3 animate-fade-in-up';
@@ -956,219 +914,47 @@ include '../includes/headeruser.php';
             }, 3000);
         }
 
-        // Review Modal functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const reviewModal = document.getElementById('reviewModal');
-            const openReviewBtn = document.getElementById('openReviewModal');
-            const openReviewEmptyBtn = document.getElementById('openReviewModalEmpty');
-            const closeReviewBtn = document.getElementById('closeReviewModal');
-            const reviewForm = document.getElementById('reviewForm');
-            const starLabels = document.querySelectorAll('.star-label');
-            const ratingText = document.getElementById('ratingText');
-            const feedbackSection = document.getElementById('feedbackSection');
-            const feedbackTags = document.getElementById('feedbackTags');
-            const selectedFeedback = document.getElementById('selectedFeedback');
-            const charCount = document.getElementById('charCount');
-            const reviewComment = document.getElementById('reviewComment');
-            const submitReviewBtn = document.getElementById('submitReview');
-            
-            let currentRating = 0;
-            
-            // Feedback options based on rating
-            const feedbackOptions = {
-                1: ['Poor quality', 'Not as described', 'Bad packaging', 'Defective product', 'Wrong item'],
-                2: ['Below expectations', 'Quality issues', 'Shipping damage', 'Color mismatch', 'Size issues'],
-                3: ['Average quality', 'Met expectations', 'Okay packaging', 'Decent product', 'As expected'],
-                4: ['Good quality', 'Nice design', 'Fast delivery', 'Good packaging', 'Happy with purchase'],
-                5: ['Excellent quality', 'Perfect design', 'Fast shipping', 'Great packaging', 'Highly recommend', 'Exceeded expectations']
-            };
-            
-            const ratingTexts = {
-                1: 'Poor - Very disappointed',
-                2: 'Fair - Could be better',
-                3: 'Good - Met expectations',
-                4: 'Very Good - Happy with purchase',
-                5: 'Excellent - Highly recommend'
-            };
-            
-            // Open review modal
-            function openReviewModal() {
-                reviewModal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-            
-            if (openReviewBtn) openReviewBtn.addEventListener('click', openReviewModal);
-            if (openReviewEmptyBtn) openReviewEmptyBtn.addEventListener('click', openReviewModal);
-            if (closeReviewBtn) closeReviewBtn.addEventListener('click', closeReviewModal);
-            
-            // Close review modal
-            function closeReviewModal() {
-                reviewModal.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-                resetReviewForm();
-            }
-            
-            // Close modal on outside click
-            reviewModal.addEventListener('click', function(e) {
-                if (e.target === reviewModal) {
-                    closeReviewModal();
-                }
-            });
-            
-            // Star rating interaction
-            starLabels.forEach(label => {
-                label.addEventListener('click', function() {
-                    const rating = parseInt(this.getAttribute('data-rating'));
-                    currentRating = rating;
-                    updateStarDisplay(rating);
-                    updateFeedbackOptions(rating);
-                    validateForm();
-                });
-                
-                label.addEventListener('mouseenter', function() {
-                    const rating = parseInt(this.getAttribute('data-rating'));
-                    updateStarDisplay(rating, true);
-                });
-            });
-            
-            document.getElementById('starRating').addEventListener('mouseleave', function() {
-                updateStarDisplay(currentRating);
-            });
-            
-            function updateStarDisplay(rating, isHover = false) {
-                starLabels.forEach((label, index) => {
-                    const starRating = index + 1;
-                    if (starRating <= rating) {
-                        label.classList.add('selected');
-                        label.querySelector('i').classList.remove('text-gray-300');
-                        label.querySelector('i').classList.add('text-yellow-400');
-                    } else {
-                        label.classList.remove('selected');
-                        label.querySelector('i').classList.remove('text-yellow-400');
-                        label.querySelector('i').classList.add('text-gray-300');
-                    }
-                });
-                
-                if (rating > 0 && !isHover) {
-                    ratingText.textContent = ratingTexts[rating];
-                    ratingText.className = 'text-lg font-semibold text-yellow-600 mt-3';
-                } else if (isHover) {
-                    ratingText.textContent = ratingTexts[rating] || 'Tap to rate';
-                    ratingText.className = 'text-lg font-semibold text-gray-600 mt-3';
-                } else {
-                    ratingText.textContent = 'Tap to rate the product';
-                    ratingText.className = 'text-lg font-medium text-gray-500 mt-3';
-                }
-            }
-            
-            function updateFeedbackOptions(rating) {
-                feedbackTags.innerHTML = '';
-                const options = feedbackOptions[rating] || [];
-                
-                if (options.length > 0) {
-                    feedbackSection.classList.remove('hidden');
-                    options.forEach(option => {
-                        const tag = document.createElement('button');
-                        tag.type = 'button';
-                        tag.className = 'feedback-tag bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-base font-medium border border-gray-300 transition-all duration-200 hover:bg-primary/10 hover:border-primary/30';
-                        tag.textContent = option;
-                        tag.addEventListener('click', function() {
-                            const selectedCount = feedbackTags.querySelectorAll('.feedback-tag.selected').length;
-                            if (this.classList.contains('selected') || selectedCount < 3) {
-                                this.classList.toggle('selected');
-                            }
-                            updateSelectedFeedback();
-                        });
-                        feedbackTags.appendChild(tag);
-                    });
-                } else {
-                    feedbackSection.classList.add('hidden');
-                }
-            }
-            
-            function updateSelectedFeedback() {
-                const selectedTags = Array.from(feedbackTags.querySelectorAll('.feedback-tag.selected'))
-                    .map(tag => tag.textContent);
-                selectedFeedback.value = selectedTags.join(', ');
-            }
-            
-            // Character count for review comment
-            reviewComment.addEventListener('input', function() {
-                const length = this.value.length;
-                charCount.textContent = length;
-                
-                if (length > 450) {
-                    charCount.classList.add('text-red-500');
-                } else {
-                    charCount.classList.remove('text-red-500');
-                }
-                
-                validateForm();
-            });
-            
-            // Form validation
-            function validateForm() {
-                const title = document.getElementById('reviewTitle').value.trim();
-                const comment = reviewComment.value.trim();
-                const isValid = currentRating > 0 && title.length > 0 && comment.length > 0;
-                
-                submitReviewBtn.disabled = !isValid;
-            }
-            
-            document.getElementById('reviewTitle').addEventListener('input', validateForm);
-            
-            // Reset form
-            function resetReviewForm() {
-                currentRating = 0;
-                updateStarDisplay(0);
-                feedbackSection.classList.add('hidden');
-                reviewForm.reset();
-                charCount.textContent = '0';
-                charCount.classList.remove('text-red-500');
-                submitReviewBtn.disabled = true;
-            }
-            
-            // AJAX form submission
-            reviewForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                if (submitReviewBtn.disabled) return;
-                
-                submitReviewBtn.disabled = true;
-                submitReviewBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-                
-                const formData = new FormData(reviewForm);
-                
-                fetch('processes/submit_review.php', {
-                    method: 'POST',
-                    body: formData
-                })
+        // Function to update heatmap data
+        function updateHeatmapData() {
+            // Make an AJAX request to get updated heatmap data
+            fetch('processes/get_heatmap_data.php?product_id=<?php echo $product_id; ?>')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showToast('Review submitted successfully!');
-                        closeReviewModal();
-                        // Reload page to show new review
-                        setTimeout(() => location.reload(), 2000);
-                    } else {
-                        showToast(data.error || 'Failed to submit review. Please try again.');
-                        submitReviewBtn.disabled = false;
-                        submitReviewBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+                        // Update the cart adds count with animation
+                        const cartAddsElement = document.getElementById('cart-adds');
+                        if (cartAddsElement) {
+                            cartAddsElement.textContent = data.cart_adds;
+                            cartAddsElement.parentElement.parentElement.classList.add('heatmap-update');
+                            setTimeout(() => {
+                                cartAddsElement.parentElement.parentElement.classList.remove('heatmap-update');
+                            }, 1000);
+                        }
+                        
+                        // Update other heatmap data if needed
+                        const totalSoldElement = document.getElementById('total-sold');
+                        const completedOrdersElement = document.getElementById('completed-orders');
+                        
+                        if (totalSoldElement && data.total_sold !== undefined) {
+                            totalSoldElement.textContent = data.total_sold;
+                        }
+                        
+                        if (completedOrdersElement && data.completed_orders !== undefined) {
+                            completedOrdersElement.textContent = data.completed_orders;
+                        }
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Failed to submit review. Please try again.');
-                    submitReviewBtn.disabled = false;
-                    submitReviewBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+                    console.error('Error updating heatmap data:', error);
                 });
-            });
+        }
 
-            // Quantity Modal logic & AJAX add to cart
+        // Quantity Modal logic & AJAX add to cart
+        document.addEventListener('DOMContentLoaded', function() {
             var qtyModal = document.getElementById('qtyModal');
             var openBtn = document.getElementById('openQtyModal');
             var closeBtn = document.getElementById('closeQtyModal');
-            var addToCartForm = qtyModal ? qtyModal.querySelector('form') : null;
+            var addToCartForm = document.getElementById('addToCartForm');
             
             if (openBtn && qtyModal) {
                 openBtn.addEventListener('click', function() {
@@ -1203,6 +989,9 @@ include '../includes/headeruser.php';
                         if (data.success) {
                             qtyModal.classList.add('hidden');
                             showToast('Product Successfully Added to your Cart');
+                            
+                            // Update the heatmap data after successful add to cart
+                            updateHeatmapData();
                         } else {
                             showToast(data.error || 'Failed to add to cart');
                         }

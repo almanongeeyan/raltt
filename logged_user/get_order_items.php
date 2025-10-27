@@ -10,7 +10,8 @@ if (!preg_match('/^[A-Z0-9]{8}$/', $ref)) {
 }
 
 // Query order by reference number
-$orderQuery = $conn->prepare("SELECT order_id, order_reference FROM orders WHERE order_reference = ? LIMIT 1");
+
+$orderQuery = $conn->prepare("SELECT order_id, order_reference, order_status FROM orders WHERE order_reference = ? LIMIT 1");
 $orderQuery->execute(['RAL-' . $ref]);
 $order = $orderQuery->fetch(PDO::FETCH_ASSOC);
 
@@ -18,6 +19,12 @@ if (!$order) {
     echo json_encode(['success' => false, 'error' => 'Order not found.']);
     exit;
 }
+
+if (strtolower($order['order_status']) !== 'completed') {
+    echo json_encode(['success' => false, 'error' => 'Order is not completed. Only completed orders can submit tickets.']);
+    exit;
+}
+
 $orderId = $order['order_id'];
 
 // Query items for this order, join with products for name and image

@@ -1,14 +1,11 @@
-<?php
-include '../includes/sidebar.php';
-?>
-
+<?php include '../includes/sidebar.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancel Requests</title>
+    <title>Customer Tickets | Support Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -16,579 +13,955 @@ include '../includes/sidebar.php';
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2563eb',
-                        secondary: '#60a5fa',
-                        accent: '#93c5fd',
-                        dark: '#1e3a8a',
-                        light: '#eef2ff',
-                        textdark: '#1f2937',
-                        textlight: '#6b7280',
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        success: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                        },
+                        danger: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                        },
+                        gray: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            800: '#1f2937',
+                            900: '#111827',
+                        }
                     },
                     fontFamily: {
                         inter: ['Inter', 'sans-serif'],
                     },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
                 }
             }
         }
     </script>
     <style>
-        /* This is a helper style to ensure main content shifts correctly when sidebar is open */
         body {
-            display: flex;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
 
-        .main-content-wrapper {
-            flex: 1;
-            padding-left: 0;
-            /* Default for mobile/collapsed */
-            transition: padding-left 0.3s ease;
-        }
-
-        @media (min-width: 768px) {
-            .main-content-wrapper {
-                padding-left: 250px;
-                /* Adjust for sidebar width on desktop */
-            }
-        }
-
-        .page-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .form-box {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            overflow: hidden;
-            max-height: 90vh;
-            /* Set a maximum height for scrolling */
-            overflow-y: auto;
-            /* Enable vertical scrolling */
-        }
-
-        /* New class for the sticky header */
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            background-color: white;
-            z-index: 10;
-            border-bottom: 1px solid #dbeafe;
-            margin-bottom: 1.5rem;
-            /* Equivalent to mb-6 */
-            padding-bottom: 1rem;
-            /* Equivalent to pb-4 */
-        }
-
-
-        .ticket-header {
-            background: linear-gradient(90deg, #eef2ff 0%, #dbeafe 100%);
-            border-bottom: 1px solid #dbeafe;
-        }
-
-        .ticket-item {
-            border: 1px solid #dbeafe;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .ticket-item:hover {
-            border-color: #60a5fa;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
         }
 
         .status-pending {
-            background-color: #dbeafe;
-            color: #2563eb;
+            background-color: #fef3c7;
+            color: #b45309;
         }
 
-        .status-processing {
+        .status-open {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-in-progress {
             background-color: #dbeafe;
-            color: #2563eb;
+            color: #1e40af;
+        }
+
+        .status-exchange-approved {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-awaiting-customer {
+            background-color: #fef3c7;
+            color: #b45309;
         }
 
         .status-resolved {
             background-color: #dcfce7;
-            color: #16a34a;
+            color: #15803d;
         }
 
         .status-closed {
-            background-color: #e5e7eb;
+            background-color: #f3f4f6;
             color: #4b5563;
         }
 
-        .order-card {
-            border: 1px solid #dbeafe;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            cursor: pointer;
+        .ticket-card {
+            transition: all 0.2s ease-in-out;
+            border-left: 4px solid transparent;
         }
 
-        .order-card:hover,
-        .order-card.selected {
-            background-color: #eef2ff;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
-        .order-card.selected {
-            background-color: #eef2ff;
+        .ticket-card.pending {
+            border-left-color: #f59e0b;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
+        .ticket-card.open {
+            border-left-color: #f59e0b;
+        }
+
+        .ticket-card.in-progress {
+            border-left-color: #3b82f6;
+        }
+
+        .ticket-card.exchange-approved {
+            border-left-color: #3b82f6;
+        }
+
+        .ticket-card.awaiting-customer {
+            border-left-color: #f59e0b;
+        }
+
+        .ticket-card.resolved {
+            border-left-color: #22c55e;
+        }
+
+        .ticket-card.closed {
+            border-left-color: #6b7280;
+        }
+
+        .filter-tab {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tab.active {
+            color: #2563eb;
+        }
+
+        .filter-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 2px;
+            background-color: #2563eb;
+        }
+
+        .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
+            backdrop-filter: blur(4px);
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
             align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
 
         .modal-content {
-            background-color: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 700px;
             max-height: 90vh;
             overflow-y: auto;
-        }
-
-        .filter-button {
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .filter-button::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: -2px;
             width: 100%;
-            height: 2px;
-            background-color: #2563eb;
-            /* Blue */
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
+            max-width: 800px;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
-        .filter-button.active::after {
-            transform: scaleX(1);
+        .loading-spinner {
+            animation: spin 1s linear infinite;
         }
 
-        .view-details-btn {
-            position: relative;
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .view-details-btn::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background-color: #2563eb;
-            /* Blue */
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
-        }
-
-        .view-details-btn:hover::after {
-            transform: scaleX(1);
-        }
-
-        .tab-button {
-            position: relative;
-            font-weight: 500;
-            flex: 1;
-            /* This will make buttons occupy equal space */
+        .empty-state {
+            padding: 3rem 1rem;
             text-align: center;
         }
 
-        .tab-button::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: #2563eb;
-            /* Blue */
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
+        .empty-state-icon {
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
         }
 
-        .tab-button.active::after {
-            transform: scaleX(1);
+        .status-update-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb;
+            background: white;
         }
 
-        @media (max-width: 768px) {
-            .ticket-container {
-                flex-direction: column;
-            }
+        .status-update-btn:hover:not(:disabled) {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .status-update-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .status-update-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
-    <div class="main-content-wrapper">
-        <main class="min-h-screen">
-            <div class="max-w-7xl mx-auto py-8 px-4">
-                <div class="mb-8">
-                    <a href="javascript:history.back()"
-                        class="flex items-center text-gray-800 hover:text-primary transition">
-                        <h1 class="text-3xl font-black flex items-center">
-                            <i class="fa-solid fa-arrow-left"></i>Back to branches
-                        </h1>
-                    </a>
+
+    <div class="lg:ml-64 flex flex-col min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button onclick="history.back()" class="flex items-center text-gray-500 hover:text-gray-700 mr-4">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                        </button>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">Customer Support Tickets</h1>
+                            <p class="text-sm text-gray-500 mt-1">Manage and resolve customer issues efficiently</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="search-tickets" placeholder="Search tickets..." 
+                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-64">
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </header>
 
-                <div class="page-container">
-                    <div class="ticket-container flex flex-col lg:flex-row gap-6">
-                        <!-- Ticket History List -->
-                        <div class="form-box flex-grow p-6">
-                            <div class="ticket-header pb-4 border-b border-gray-200 mb-6">
-                                <div class="flex items-center text-primary font-black text-xl mb-4">
-                                    <i class="fa-solid fa-list-ul mr-3"></i>
-                                    <span>Ticket History</span>
-                                </div>
-                                <div class="flex gap-4">
-                                    <button id="pending-btn"
-                                        class="tab-button text-primary py-2 active">Pending</button>
-                                    <button id="resolved-btn" class="tab-button text-primary py-2">Resolved</button>
-                                </div>
-
+        <!-- Main Content -->
+        <main class="flex-1 py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-xl shadow-card p-4 border-l-4 border-primary-500">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-primary-100 p-3 mr-4">
+                                <i class="fas fa-ticket-alt text-primary-600"></i>
                             </div>
-                            <!-- Filter Dropdown -->
-                            <div class="flex flex-col md:flex-row gap-4 mb-6">
-                                <div class="flex-1">
-                                    <label for="issue-filter" class="block text-textdark font-medium mb-1">Issue
-                                        Filter</label>
-                                    <select id="issue-filter"
-                                        class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">
-                                        <option value="">All Issues</option>
-                                        <option value="Cracked Tiles">Cracked Tiles</option>
-                                        <option value="Shattered Tiles">Shattered Tiles</option>
-                                        <option value="Defective Tiles">Defective Tiles</option>
-                                        <option value="Wrong Item Delivered">Wrong Item Delivered</option>
-                                        <option value="Other Issue">Other Issue</option>
-                                    </select>
-                                </div>
-                                <div class="flex-1">
-                                    <label for="date-filter" class="block text-textdark font-medium mb-1">Date
-                                        Filter</label>
-                                    <input type="date" id="date-filter"
-                                        class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">
-                                </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total Tickets</p>
+                                <p class="text-2xl font-bold text-gray-900" id="total-tickets">0</p>
                             </div>
-
-                            <div id="ticket-list" class="space-y-4">
-                                <!-- Tickets will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 border-l-4 border-warning-500">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-warning-100 p-3 mr-4">
+                                <i class="fas fa-clock text-warning-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Pending</p>
+                                <p class="text-2xl font-bold text-gray-900" id="pending-tickets">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 border-l-4 border-success-500">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-success-100 p-3 mr-4">
+                                <i class="fas fa-check-circle text-success-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Resolved</p>
+                                <p class="text-2xl font-bold text-gray-900" id="resolved-tickets">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 border-l-4 border-gray-500">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-gray-100 p-3 mr-4">
+                                <i class="fas fa-archive text-gray-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Closed</p>
+                                <p class="text-2xl font-bold text-gray-900" id="closed-tickets">0</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Details Modal -->
-                <div id="detailsModal" class="modal">
-                    <div class="modal-content">
-                        <div id="modal-content-inner">
-                            <!-- Content will be dynamically loaded here -->
+                <!-- Filters and Controls -->
+                <div class="bg-white rounded-xl shadow-card mb-6 overflow-hidden">
+                    <div class="p-4 border-b border-gray-200">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex space-x-1 bg-gray-100 rounded-lg p-1 overflow-x-auto">
+                                <button id="all-tab" class="filter-tab py-2 px-4 rounded-md font-medium active">All Tickets</button>
+                                <button id="open-tab" class="filter-tab py-2 px-4 rounded-md font-medium text-gray-500">Open</button>
+                                <button id="inprogress-tab" class="filter-tab py-2 px-4 rounded-md font-medium text-gray-500">In Progress</button>
+                                <button id="exchange-tab" class="filter-tab py-2 px-4 rounded-md font-medium text-gray-500">Exchange Approved</button>
+                                <button id="awaiting-tab" class="filter-tab py-2 px-4 rounded-md font-medium text-gray-500">Awaiting Customer</button>
+                                <button id="resolved-tab" class="filter-tab py-2 px-4 rounded-md font-medium text-gray-500">Resolved</button>
+                                <button id="closed-tab" class="filter-tab py-2 px-4 rounded-md font-medium text-gray-500">Closed</button>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <select id="issue-filter" class="text-sm border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="">All Issues</option>
+                                    <option value="Cracked Tile">Cracked Tile</option>
+                                    <option value="Shattered Tile">Shattered Tile</option>
+                                    <option value="Defective Tile">Defective Tile</option>
+                                    <option value="Wrong Item Delivered">Wrong Item Delivered</option>
+                                    <option value="Payment Issues">Payment Issues</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <button id="clear-filters" class="text-sm text-gray-600 hover:text-gray-800 py-2 px-3 border border-gray-300 rounded-lg">
+                                    Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tickets List -->
+                    <div id="tickets-container">
+                        <div class="flex flex-col items-center justify-center py-12">
+                            <div class="loading-spinner text-4xl text-primary-500 mb-4">
+                                <i class="fas fa-circle-notch"></i>
+                            </div>
+                            <p class="text-gray-500">Loading tickets...</p>
                         </div>
                     </div>
                 </div>
-
-                <script>
-                    const ticketsData = [
-                        { id: 'TKT-789456', orderId: 'ORD-123456', date: 'Nov 16, 2023', status: 'Pending', issue: 'Cracked Tiles', description: 'Several tiles arrived with cracks along the edges. The package appeared to have been mishandled during transit.', resolution: 'Exchange for Same Item', product: 'Arte Ceramiche Matte Floor Tile', price: 200, branch: 'Deparo Branch', qty: 2, customerName: 'Juan Dela Cruz', customerEmail: 'juan.dcruz@email.com', customerPhone: '0917-123-4567', customerAddress: '123 Main St, Anytown, Philippines' },
-                        { id: 'TKT-789457', orderId: 'ORD-123457', date: 'Nov 5, 2023', status: 'Resolved', issue: 'Shattered Tiles', description: 'Two tiles were completely shattered upon opening the box. The sound was very distinct when the package was dropped by the delivery personnel.', resolution: 'Replacement Sent', product: 'Porcelain Wood-Look Tile', price: 150, branch: 'Brixton Branch', qty: 1, customerName: 'Maria Santos', customerEmail: 'maria.santos@email.com', customerPhone: '0922-345-6789', customerAddress: '456 Oak Ave, Somewhere, Philippines' },
-                        { id: 'TKT-789455', orderId: 'ORD-123455', date: 'Oct 28, 2023', status: 'Closed', issue: 'Color Mismatch', description: 'Tiles received don\'t match the sample color from the showroom. They are a much darker shade of beige.', resolution: 'Refund Issued', product: 'Marble Effect Wall Tile', price: 700, branch: 'Vanguard Branch', qty: 1, customerName: 'Pedro Reyes', customerEmail: 'pedro.reyes@email.com', customerPhone: '0933-456-7890', customerAddress: '789 Elm St, Nowhere, Philippines' },
-                    ];
-
-                    const ticketList = document.getElementById('ticket-list');
-                    const pendingBtn = document.getElementById('pending-btn');
-                    const resolvedBtn = document.getElementById('resolved-btn');
-                    const issueFilter = document.getElementById('issue-filter');
-                    const dateFilter = document.getElementById('date-filter');
-                    const detailsModal = document.getElementById('detailsModal');
-                    const modalContentInner = document.getElementById('modal-content-inner');
-
-                    let currentFilter = { status: 'Pending', issue: '', date: '' };
-
-                    function filterAndRenderTickets() {
-                        let filteredTickets = ticketsData.filter(ticket => {
-                            const statusMatch = currentFilter.status ? ticket.status.toLowerCase() === currentFilter.status.toLowerCase() : true;
-                            const issueMatch = currentFilter.issue ? ticket.issue === currentFilter.issue : true;
-
-                            const ticketDate = new Date(ticket.date);
-                            const filterDate = currentFilter.date ? new Date(currentFilter.date) : null;
-                            const dateMatch = filterDate ? ticketDate.toDateString() === filterDate.toDateString() : true;
-
-                            return statusMatch && issueMatch && dateMatch;
-                        });
-
-                        ticketList.innerHTML = '';
-                        if (filteredTickets.length === 0) {
-                            ticketList.innerHTML = '<div class="text-center text-textlight py-12">No tickets match your filters.</div>';
-                            return;
-                        }
-
-                        filteredTickets.forEach(ticket => {
-                            const statusClass = `status-${ticket.status.toLowerCase()}`;
-                            const initials = ticket.product.split(' ').map(n => n[0]).join('');
-                            const ticketHtml = `
-                                <div class="order-card p-4 flex items-center justify-between" data-ticket-id="${ticket.id}">
-                                    <div class="flex items-center">
-                                        <div class="w-16 h-16 rounded-lg bg-light text-primary font-bold flex items-center justify-center text-xl mr-4">
-                                            ${initials}
-                                        </div>
-                                        <div class="flex-grow">
-                                            <p class="font-bold text-textdark">${ticket.product}</p>
-                                            <p class="text-sm text-textlight">${ticket.customerName} • ${ticket.date}</p>
-                                            <p class="text-sm text-textlight">${ticket.customerAddress} • Qty: ${ticket.qty}</p>
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-primary font-black mb-2">₱${ticket.price.toLocaleString()}</p>
-                                        <span class="${statusClass} text-xs font-medium py-1 px-2 rounded-full">${ticket.status}</span>
-                                        <button class="text-primary text-sm font-medium mt-2 view-details-btn block w-full text-right">View Details</button>
-                                    </div>
-                                </div>
-                            `;
-                            ticketList.innerHTML += ticketHtml;
-                        });
-
-                        document.querySelectorAll('.view-details-btn').forEach(button => {
-                            button.addEventListener('click', function (e) {
-                                e.stopPropagation(); // Prevents the parent div from being clicked
-                                const ticketId = this.closest('.order-card').dataset.ticketId;
-                                const ticket = ticketsData.find(t => t.id === ticketId);
-                                if (ticket) {
-                                    renderTicketDetails(ticket);
-                                }
-                            });
-                        });
-
-                        document.querySelectorAll('.order-card').forEach(card => {
-                            card.addEventListener('click', function () {
-                                document.querySelectorAll('.order-card').forEach(c => c.classList.remove('selected'));
-                                this.classList.add('selected');
-                            });
-                        });
-                    }
-
-                    function renderTicketDetails(ticket) {
-                        const statusClass = `status-${ticket.status.toLowerCase()}`;
-                        const isPending = ticket.status === 'Pending';
-
-                        let modalHtml = '';
-
-                        if (isPending) {
-                            modalHtml = `
-                                <div class="p-8">
-                                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-textlight/20">
-                                        <h2 class="text-2xl font-black text-primary">Ticket Details</h2>
-                                        <button class="text-2xl text-textlight hover:text-textdark close-modal-btn">&times;</button>
-                                    </div>
-                                    
-                                    <div class="mb-6">
-                                        <h3 class="text-lg font-bold text-textdark mb-2">Customer Information</h3>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label class="block text-textdark font-medium mb-1">Name</label>
-                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerName}</div>
-                                            </div>
-                                            <div>
-                                                <label class="block text-textdark font-medium mb-1">Email</label>
-                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerEmail}</div>
-                                            </div>
-                                            <div class="md:col-span-2">
-                                                <label class="block text-textdark font-medium mb-1">Address</label>
-                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerAddress}</div>
-                                            </div>
-                                            <div>
-                                                <label class="block text-textdark font-medium mb-1">Mobile</label>
-                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerPhone}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                        <div>
-                                            <label class="block text-textdark font-medium mb-1">Ticket ID</label>
-                                            <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.id}</div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-textdark font-medium mb-1">Status</label>
-                                            <div class="w-full p-3 rounded-lg border border-gray-300 bg-white">
-                                                <span class="${statusClass} text-sm font-medium py-1 px-2 rounded-full">${ticket.status}</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-textdark font-medium mb-1">Order ID</label>
-                                            <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">#${ticket.orderId}</div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-textdark font-medium mb-1">Date</label>
-                                            <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.date}</div>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-textdark font-medium mb-1">Issue Type</label>
-                                            <input type="text" class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white" value="${ticket.issue}" disabled>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-textdark font-medium mb-1">Description</label>
-                                            <textarea class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white" rows="3" disabled>${ticket.description}</textarea>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-6">
-                                        <label class="block text-textdark font-medium mb-2">Proposed Solution</label>
-                                        <select id="solution-select" class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">
-                                            <option value="">Select a solution</option>
-                                            <option value="Exchange for Same Item">Exchange for Same Item</option>
-                                            <option value="Refund Issued">Refund Issued</option>
-                                            <option value="Store Credit">Store Credit</option>
-                                            <option value="Replacement Sent">Replacement Sent</option>
-                                        </select>
-                                    </div>
-                                    <div class="flex justify-end gap-4 mt-6">
-                                        <button class="py-2 px-6 rounded-lg font-medium text-textdark border border-textlight/20 hover:bg-gray-100 transition close-modal-btn">Close</button>
-                                        <button id="send-btn" class="py-2 px-6 rounded-lg font-bold text-lg transition bg-primary hover:bg-secondary text-white">Send</button>
-                                    </div>
-                                </div>
-                            `;
-                        } else {
-                            modalHtml = `
-                                <div class="p-8">
-                                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-textlight/20">
-                                        <h2 class="text-2xl font-black text-primary">Ticket Details</h2>
-                                        <button class="text-2xl text-textlight hover:text-textdark close-modal-btn">&times;</button>
-                                    </div>
-                                    
-                                    <div class="mb-6">
-                                        <h3 class="text-lg font-bold text-textdark mb-2">Customer Information</h3>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label class="block text-textdark font-medium mb-1">Name</label>
-                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerName}</div>
-                                            </div>
-                                            <div>
-                                                <label class="block text-textdark font-medium mb-1">Email</label>
-                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerEmail}</div>
-                                            </div>
-                                            <div class="md:col-span-2">
-                                                <label class="block text-textdark font-medium mb-1">Address</label>
-                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerAddress}</div>
-                                            </div>
-                                            <div>
-                                                <label class="block text-textdark font-medium mb-1">Mobile</label>
-                                                <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.customerPhone}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                        <div>
-                                            <label class="block text-textdark font-medium mb-1">Ticket ID</label>
-                                            <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.id}</div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-textdark font-medium mb-1">Status</label>
-                                            <div class="w-full p-3 rounded-lg border border-gray-300 bg-white">
-                                                <span class="${statusClass} text-sm font-medium py-1 px-2 rounded-full">${ticket.status}</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-textdark font-medium mb-1">Order ID</label>
-                                            <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">#${ticket.orderId}</div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-textdark font-medium mb-1">Date</label>
-                                            <div class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white">${ticket.date}</div>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-textdark font-medium mb-1">Issue Type</label>
-                                            <input type="text" class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white" value="${ticket.issue}" disabled>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-textdark font-medium mb-1">Description</label>
-                                            <textarea class="w-full p-3 text-textdark rounded-lg border border-gray-300 bg-white" rows="3" disabled>${ticket.description}</textarea>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-6">
-                                        <label class="block text-textdark font-medium mb-2">Final Solution</label>
-                                        <div class="w-full p-3 text-sm text-textdark rounded-lg border border-gray-300 bg-white">${ticket.resolution}</div>
-                                    </div>
-                                    <div class="flex justify-end gap-4 mt-6">
-                                        <button class="py-2 px-6 rounded-lg font-medium text-textdark border border-textlight/20 hover:bg-gray-100 transition close-modal-btn">Close</button>
-                                        <button class="py-2 px-6 rounded-lg font-bold text-lg transition bg-gray-400 text-gray-700 cursor-not-allowed" disabled>Resolved</button>
-                                    </div>
-                                </div>
-                            `;
-                        }
-
-                        modalContentInner.innerHTML = modalHtml;
-                        detailsModal.style.display = 'flex';
-
-                        document.querySelectorAll('.close-modal-btn').forEach(btn => {
-                            btn.addEventListener('click', () => {
-                                detailsModal.style.display = 'none';
-                            });
-                        });
-
-                        if (isPending) {
-                            const sendBtn = document.getElementById('send-btn');
-                            sendBtn.addEventListener('click', () => {
-                                const solution = document.getElementById('solution-select').value;
-                                if (solution) {
-                                    console.log(`Sending solution for ticket ${ticket.id}: ${solution}`);
-                                    detailsModal.style.display = 'none';
-                                } else {
-                                    console.log('Please select a solution.');
-                                }
-                            });
-                        }
-                    }
-
-                    pendingBtn.addEventListener('click', () => {
-                        currentFilter.status = 'Pending';
-                        pendingBtn.classList.add('active');
-                        resolvedBtn.classList.remove('active');
-                        filterAndRenderTickets();
-                    });
-
-                    resolvedBtn.addEventListener('click', () => {
-                        currentFilter.status = 'Resolved';
-                        resolvedBtn.classList.add('active');
-                        pendingBtn.classList.remove('active');
-                        filterAndRenderTickets();
-                    });
-
-                    issueFilter.addEventListener('change', (e) => {
-                        currentFilter.issue = e.target.value;
-                        filterAndRenderTickets();
-                    });
-
-                    dateFilter.addEventListener('change', (e) => {
-                        currentFilter.date = e.target.value;
-                        filterAndRenderTickets();
-                    });
-
-                    // Initial render
-                    filterAndRenderTickets();
-                </script>
             </div>
         </main>
     </div>
+
+    <!-- Ticket Details Modal -->
+    <div id="ticket-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl z-10">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 text-primary-600">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-900">Ticket #<span id="modal-ticket-id"></span></h2>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span id="modal-ticket-status" class="status-badge text-sm"></span>
+                                    <span class="text-xs text-gray-500">Created on <span id="modal-ticket-date"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="close-modal" class="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 rounded-full hover:bg-gray-100">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Customer Information -->
+                        <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-primary-700 mb-4 flex items-center">
+                                <i class="fas fa-user-circle text-primary-500 mr-2"></i>Customer Information
+                            </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="block text-xs text-gray-500 uppercase tracking-wide">Name</span>
+                                    <span id="modal-customer-name" class="block text-gray-900 font-medium mt-1"></span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-gray-500 uppercase tracking-wide">Email</span>
+                                    <span id="modal-customer-email" class="block text-gray-900 font-medium mt-1"></span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-gray-500 uppercase tracking-wide">Phone</span>
+                                    <span id="modal-customer-phone" class="block text-gray-900 font-medium mt-1"></span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-gray-500 uppercase tracking-wide">Address</span>
+                                    <span id="modal-customer-address" class="block text-gray-900 font-medium mt-1"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Details -->
+                        <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-primary-700 mb-4 flex items-center">
+                                <i class="fas fa-info-circle text-primary-500 mr-2"></i>Ticket Details
+                            </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="block text-xs text-gray-500 uppercase tracking-wide">Order Reference</span>
+                                    <span id="modal-order-id" class="block text-gray-900 font-medium mt-1"></span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-gray-500 uppercase tracking-wide">Issue Type</span>
+                                    <span id="modal-issue-type" class="block text-gray-900 font-medium mt-1"></span>
+                                </div>
+                                <div>
+                                    <span class="block text-xs text-gray-500 uppercase tracking-wide">Description</span>
+                                    <p id="modal-issue-description" class="block text-gray-900 mt-2 bg-white p-3 rounded-lg border border-gray-200"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resolution Details (if available) -->
+                    <div id="resolution-section" class="bg-success-50 rounded-xl p-5 border border-success-200 mb-6 hidden">
+                        <h3 class="text-lg font-semibold text-success-700 mb-4 flex items-center">
+                            <i class="fas fa-check-circle text-success-500 mr-2"></i>Resolution Details
+                        </h3>
+                        <p id="modal-resolution" class="text-gray-900"></p>
+                    </div>
+
+                    <!-- Quick Status Update -->
+                    <div class="bg-primary-50 rounded-xl p-5 border border-primary-200">
+                        <h3 class="text-lg font-semibold text-primary-700 mb-4 flex items-center">
+                            <i class="fas fa-sync-alt text-primary-500 mr-2"></i>Update Status
+                        </h3>
+                        <p class="text-sm text-gray-600 mb-4">Update the status of this ticket to track its progress.</p>
+                        <div id="quick-status-ticket-modal" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let ticketsData = [];
+        let currentFilter = { status: 'all', issue: '', date: '', search: '' };
+        const branchId = <?php echo isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 'null'; ?>;
+
+        // DOM elements
+        const ticketsContainer = document.getElementById('tickets-container');
+        const allTab = document.getElementById('all-tab');
+        const openTab = document.getElementById('open-tab');
+        const inProgressTab = document.getElementById('inprogress-tab');
+        const exchangeTab = document.getElementById('exchange-tab');
+        const awaitingTab = document.getElementById('awaiting-tab');
+        const resolvedTab = document.getElementById('resolved-tab');
+        const closedTab = document.getElementById('closed-tab');
+        const issueFilter = document.getElementById('issue-filter');
+        const searchInput = document.getElementById('search-tickets');
+        const clearFiltersBtn = document.getElementById('clear-filters');
+        const ticketModal = document.getElementById('ticket-modal');
+
+        // Stats elements
+        const totalTicketsEl = document.getElementById('total-tickets');
+        const pendingTicketsEl = document.getElementById('pending-tickets');
+        const resolvedTicketsEl = document.getElementById('resolved-tickets');
+        const closedTicketsEl = document.getElementById('closed-tickets');
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTickets();
+            setupEventListeners();
+        });
+
+        // Set up event listeners
+        function setupEventListeners() {
+            allTab.addEventListener('click', () => setActiveFilter('status', 'all'));
+            openTab.addEventListener('click', () => setActiveFilter('status', 'Open'));
+            inProgressTab.addEventListener('click', () => setActiveFilter('status', 'In Progress'));
+            exchangeTab.addEventListener('click', () => setActiveFilter('status', 'Exchange Approved'));
+            awaitingTab.addEventListener('click', () => setActiveFilter('status', 'Awaiting Customer'));
+            resolvedTab.addEventListener('click', () => setActiveFilter('status', 'Resolved'));
+            closedTab.addEventListener('click', () => setActiveFilter('status', 'Closed'));
+            
+            issueFilter.addEventListener('change', (e) => setActiveFilter('issue', e.target.value));
+            searchInput.addEventListener('input', (e) => setActiveFilter('search', e.target.value));
+            clearFiltersBtn.addEventListener('click', clearFilters);
+            
+            // Close modal when clicking outside
+            document.querySelector('.modal-overlay').addEventListener('click', (e) => {
+                if (e.target === document.querySelector('.modal-overlay')) {
+                    ticketModal.classList.add('hidden');
+                }
+            });
+            
+            // Close modal when clicking close button
+            document.getElementById('close-modal').addEventListener('click', () => {
+                ticketModal.classList.add('hidden');
+            });
+        }
+
+        // Set active filter and update UI
+        function setActiveFilter(type, value) {
+            currentFilter[type] = value;
+            
+            // Update active tab UI
+            if (type === 'status') {
+                [allTab, openTab, inProgressTab, exchangeTab, awaitingTab, resolvedTab, closedTab].forEach(tab => {
+                    tab.classList.remove('active', 'text-primary-700');
+                    tab.classList.add('text-gray-500');
+                });
+                
+                if (value === 'all') {
+                    allTab.classList.add('active', 'text-primary-700');
+                    allTab.classList.remove('text-gray-500');
+                } else if (value === 'Open') {
+                    openTab.classList.add('active', 'text-primary-700');
+                    openTab.classList.remove('text-gray-500');
+                } else if (value === 'In Progress') {
+                    inProgressTab.classList.add('active', 'text-primary-700');
+                    inProgressTab.classList.remove('text-gray-500');
+                } else if (value === 'Exchange Approved') {
+                    exchangeTab.classList.add('active', 'text-primary-700');
+                    exchangeTab.classList.remove('text-gray-500');
+                } else if (value === 'Awaiting Customer') {
+                    awaitingTab.classList.add('active', 'text-primary-700');
+                    awaitingTab.classList.remove('text-gray-500');
+                } else if (value === 'Resolved') {
+                    resolvedTab.classList.add('active', 'text-primary-700');
+                    resolvedTab.classList.remove('text-gray-500');
+                } else if (value === 'Closed') {
+                    closedTab.classList.add('active', 'text-primary-700');
+                    closedTab.classList.remove('text-gray-500');
+                }
+            }
+            
+            filterAndRenderTickets();
+            updateStats();
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            currentFilter = { status: 'all', issue: '', date: '', search: '' };
+            issueFilter.value = '';
+            searchInput.value = '';
+            setActiveFilter('status', 'all');
+        }
+
+        // Load tickets from backend
+        async function loadTickets() {
+            try {
+                if (branchId === null) {
+                    showErrorState('Branch ID not set in session.');
+                    return;
+                }
+                
+                const response = await fetch('get_all_tickets.php?branch_id=' + branchId);
+                const result = await response.json();
+                
+                if (result.success && result.tickets) {
+                    ticketsData = result.tickets.map(ticket => ({
+                        id: ticket.ticket_id,
+                        orderId: ticket.order_reference,
+                        date: new Date(ticket.created_at).toLocaleDateString(),
+                        status: ticket.ticket_status,
+                        issue: ticket.issue_type,
+                        description: ticket.issue_description,
+                        resolution: ticket.resolution || '',
+                        product: ticket.issue_type,
+                        price: '', // Not available
+                        branch: ticket.branch_id || '',
+                        qty: '', // Not available
+                        customerName: ticket.customer_name || '',
+                        customerEmail: ticket.customer_email || '',
+                        customerPhone: ticket.customer_phone || '',
+                        customerAddress: (ticket.house_address ? ticket.house_address + ', ' : '') + (ticket.full_address ? ticket.full_address : ''),
+                        awaiting_customer_at: ticket.awaiting_customer_at || null,
+                    }));
+                    
+                    filterAndRenderTickets();
+                    updateStats();
+                } else {
+                    showErrorState('No tickets found.');
+                }
+            } catch (err) {
+                showErrorState('Unable to load tickets. Please try again.');
+                console.error('Error loading tickets:', err);
+            }
+        }
+
+        // Filter tickets based on current filters and render them
+        function filterAndRenderTickets() {
+            // Remove closed tickets after 11:59PM each day (frontend only)
+            const now = new Date();
+            const isAfterMidnight = now.getHours() === 23 && now.getMinutes() === 59;
+            let filteredTickets = ticketsData.filter(ticket => {
+                // Remove closed tickets after 11:59PM
+                if (ticket.status === 'Closed' && isAfterMidnight) {
+                    return false;
+                }
+                // Status filter
+                let statusMatch = true;
+                if (currentFilter.status === 'all') {
+                    statusMatch = true;
+                } else {
+                    statusMatch = ticket.status === currentFilter.status;
+                }
+                // Issue type filter
+                const issueMatch = currentFilter.issue ? 
+                    ticket.issue === currentFilter.issue : true;
+                // Search filter
+                const searchMatch = currentFilter.search ? 
+                    Object.values(ticket).some(value => 
+                        String(value).toLowerCase().includes(currentFilter.search.toLowerCase())
+                    ) : true;
+                return statusMatch && issueMatch && searchMatch;
+            });
+            renderTickets(filteredTickets);
+        }
+
+        // Render tickets to the DOM
+        function renderTickets(tickets) {
+            if (tickets.length === 0) {
+                ticketsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-1">No tickets found</h3>
+                        <p class="text-gray-500 mb-4">Try adjusting your filters or search terms</p>
+                        <button id="clear-filters-empty" class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition">
+                            Clear Filters
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('clear-filters-empty').addEventListener('click', clearFilters);
+                return;
+            }
+            
+            let ticketsHTML = '';
+            
+            tickets.forEach(ticket => {
+                const statusClass = `status-${ticket.status.toLowerCase().replace(/ /g, '-')}`;
+                const cardClass = `ticket-card ${ticket.status.toLowerCase().replace(/ /g, '-')} bg-white p-5 mb-3 rounded-lg shadow-card border border-gray-200`;
+                ticketsHTML += `
+                    <div class="${cardClass}" data-ticket-id="${ticket.id}">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex flex-wrap items-center gap-2 mb-2">
+                                    <h3 class="font-semibold text-gray-900">${ticket.issue}</h3>
+                                    <span class="status-badge ${statusClass}">${ticket.status}</span>
+                                </div>
+                                <p class="text-gray-600 text-sm mb-3 line-clamp-2">${ticket.description}</p>
+                                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-user mr-1"></i>
+                                        <span>${ticket.customerName || 'Unknown Customer'}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-shopping-bag mr-1"></i>
+                                        <span>Order #${ticket.orderId}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        <span>${ticket.date}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 md:mt-0 flex items-center gap-2">
+                                <button class="view-details-btn bg-primary-500 hover:bg-primary-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition" data-ticket-id="${ticket.id}">
+                                    Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ticketsContainer.innerHTML = ticketsHTML;
+            
+            // Add event listeners to the newly created buttons
+            document.querySelectorAll('.view-details-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const ticketId = this.dataset.ticketId;
+                    const ticket = ticketsData.find(t => t.id == ticketId);
+                    if (ticket) {
+                        showTicketDetails(ticket);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.ticket-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const ticketId = this.dataset.ticketId;
+                    const ticket = ticketsData.find(t => t.id == ticketId);
+                    if (ticket) {
+                        showTicketDetails(ticket);
+                    }
+                });
+            });
+        }
+
+        // Show ticket details in modal
+        function showTicketDetails(ticket) {
+            // Set modal content
+            document.getElementById('modal-ticket-id').textContent = ticket.id;
+            document.getElementById('modal-ticket-date').textContent = ticket.date;
+            document.getElementById('modal-customer-name').textContent = ticket.customerName || 'Not provided';
+            document.getElementById('modal-customer-email').textContent = ticket.customerEmail || 'Not provided';
+            document.getElementById('modal-customer-phone').textContent = ticket.customerPhone || 'Not provided';
+            document.getElementById('modal-customer-address').textContent = ticket.customerAddress || 'Not provided';
+            document.getElementById('modal-order-id').textContent = ticket.orderId;
+            document.getElementById('modal-issue-type').textContent = ticket.issue;
+            document.getElementById('modal-issue-description').textContent = ticket.description;
+            
+            // Set status badge
+            const statusBadge = document.getElementById('modal-ticket-status');
+            const statusClass = `status-${ticket.status.toLowerCase().replace(/ /g, '-')}`;
+            statusBadge.className = `status-badge ${statusClass} text-sm`;
+            statusBadge.textContent = ticket.status;
+            
+            // Show resolution if available
+            const resolutionSection = document.getElementById('resolution-section');
+            const resolutionText = document.getElementById('modal-resolution');
+            if (ticket.resolution && ticket.resolution.trim() !== '') {
+                resolutionText.textContent = ticket.resolution;
+                resolutionSection.classList.remove('hidden');
+            } else {
+                resolutionSection.classList.add('hidden');
+            }
+            
+            // Show modal
+            ticketModal.classList.remove('hidden');
+            
+            // Render quick status buttons
+            renderQuickStatusButtonsModal(ticket);
+        }
+
+        // Render quick status buttons for modal
+        function renderQuickStatusButtonsModal(ticket) {
+            // Modal status flow
+            const statusFlow = ['Open', 'In Progress', 'Exchange Approved', 'Awaiting Customer', 'Resolved', 'Closed'];
+            const currentStatusIndex = statusFlow.indexOf(ticket.status);
+            let buttonsHTML = '';
+            // For Resolved, only enable after 1 day since status set
+            let resolvedEnabled = true;
+            if (statusFlow[currentStatusIndex + 1] === 'Resolved') {
+                // Only use awaiting_customer_at for cooldown
+                let awaitingCustomerAt = ticket.awaiting_customer_at;
+                if (awaitingCustomerAt) {
+                    const awaitingDate = new Date(awaitingCustomerAt);
+                    const now = new Date();
+                    const diffMs = now - awaitingDate;
+                    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+                    resolvedEnabled = diffDays >= 1;
+                } else {
+                    // If not set, Resolved should be disabled
+                    resolvedEnabled = false;
+                }
+            }
+            statusFlow.forEach((status, idx) => {
+                const isCurrent = idx === currentStatusIndex;
+                const isNext = idx === currentStatusIndex + 1;
+                let disabled = true;
+                let extra = '';
+                if (isCurrent) {
+                    disabled = true;
+                } else if (isNext) {
+                    if (status === 'Resolved') {
+                        disabled = !resolvedEnabled;
+                        if (!resolvedEnabled) {
+                            let awaitingCustomerAt = ticket.awaiting_customer_at;
+                            if (awaitingCustomerAt) {
+                                const awaitingDate = new Date(awaitingCustomerAt);
+                                const now = new Date();
+                                const diffMs = now - awaitingDate;
+                                const msLeft = (1000 * 60 * 60 * 24) - diffMs;
+                                if (msLeft > 0) {
+                                    const hours = Math.floor(msLeft / (1000 * 60 * 60));
+                                    const minutes = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
+                                    const seconds = Math.floor((msLeft % (1000 * 60)) / 1000);
+                                    extra = `<span class='text-xs text-gray-400 ml-2'>(Available in ${hours}h ${minutes}m ${seconds}s)</span>`;
+                                }
+                            }
+                        }
+                    } else {
+                        disabled = false;
+                    }
+                }
+                buttonsHTML += `
+                    <button class="status-update-btn ${isCurrent ? 'active' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}"
+                        data-ticket-id="${ticket.id}"
+                        data-status="${status}"
+                        ${disabled ? 'disabled' : ''}>
+                        ${status}
+                        ${isCurrent ? '<i class=\"fas fa-check ml-1\"></i>' : ''}
+                        ${extra}
+                    </button>
+                `;
+            });
+            document.getElementById('quick-status-ticket-modal').innerHTML = buttonsHTML;
+            // Add event listeners to status update buttons
+            document.querySelectorAll('#quick-status-ticket-modal .status-update-btn:not([disabled])').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const ticketId = this.dataset.ticketId;
+                    const status = this.dataset.status;
+                    this.classList.add('is-loading');
+                    this.innerHTML = '<span class="loading-spinner mr-2"><i class="fas fa-circle-notch fa-spin"></i></span>' + status;
+                    updateTicketStatusAjax(ticketId, status, this);
+                });
+            });
+            // If Resolved is next and not enabled, update countdown every second
+            if (statusFlow[currentStatusIndex + 1] === 'Resolved' && !resolvedEnabled) {
+                let awaitingCustomerAt = ticket.awaiting_customer_at;
+                if (awaitingCustomerAt) {
+                    const updateCountdown = () => {
+                        const awaitingDate = new Date(awaitingCustomerAt);
+                        const now = new Date();
+                        const diffMs = now - awaitingDate;
+                        const msLeft = (1000 * 60 * 60 * 24) - diffMs;
+                        if (msLeft > 0) {
+                            const hours = Math.floor(msLeft / (1000 * 60 * 60));
+                            const minutes = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((msLeft % (1000 * 60)) / 1000);
+                            const btn = document.querySelector('#quick-status-ticket-modal .status-update-btn[data-status="Resolved"]');
+                            if (btn) {
+                                btn.innerHTML = `Resolved <span class='text-xs text-gray-400 ml-2'>(Available in ${hours}h ${minutes}m ${seconds}s)</span>`;
+                            }
+                            setTimeout(updateCountdown, 1000);
+                        } else {
+                            // Enable the button
+                            const btn = document.querySelector('#quick-status-ticket-modal .status-update-btn[data-status="Resolved"]');
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                                btn.innerHTML = 'Resolved';
+                                btn.addEventListener('click', function(e) {
+                                    e.stopPropagation();
+                                    const ticketId = this.dataset.ticketId;
+                                    const status = this.dataset.status;
+                                    this.classList.add('is-loading');
+                                    this.innerHTML = '<span class="loading-spinner mr-2"><i class="fas fa-circle-notch fa-spin"></i></span>' + status;
+                                    updateTicketStatusAjax(ticketId, status, this);
+                                });
+                            }
+                        }
+                    };
+                    updateCountdown();
+                }
+            }
+        }
+
+        // AJAX update for ticket status with animation and real-time update
+        function updateTicketStatusAjax(ticketId, status, btn) {
+            fetch('processes/process_update_ticket_status.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `ticket_id=${encodeURIComponent(ticketId)}&status=${encodeURIComponent(status)}`
+            })
+            .then(res => res.json())
+            .then(async result => {
+                if (result.success) {
+                    // Animate success
+                    btn.classList.remove('is-loading');
+                    btn.classList.add('bg-success-500', 'text-white');
+                    btn.innerHTML = '<i class="fas fa-check mr-1"></i>Updated!';
+                    
+                    setTimeout(() => {
+                        ticketModal.classList.add('hidden');
+                        loadTickets(); // Reload tickets real-time
+                    }, 700);
+                } else {
+                    btn.classList.remove('is-loading');
+                    btn.classList.add('bg-danger-500', 'text-white');
+                    btn.innerHTML = '<i class="fas fa-times mr-1"></i>Error';
+                    
+                    setTimeout(() => {
+                        btn.classList.remove('bg-danger-500', 'text-white');
+                        btn.innerHTML = status;
+                    }, 1200);
+                    
+                    alert('Failed to update status: ' + (result.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                btn.classList.remove('is-loading');
+                btn.classList.add('bg-danger-500', 'text-white');
+                btn.innerHTML = '<i class="fas fa-times mr-1"></i>Error';
+                
+                setTimeout(() => {
+                    btn.classList.remove('bg-danger-500', 'text-white');
+                    btn.innerHTML = status;
+                }, 1200);
+                
+                alert('An error occurred while updating the ticket status.');
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = ticketsData.length;
+            const pending = ticketsData.filter(t => 
+                ['pending', 'open', 'awaiting customer'].includes(t.status.toLowerCase())).length;
+            const resolved = ticketsData.filter(t => 
+                t.status.toLowerCase() === 'resolved').length;
+            const closed = ticketsData.filter(t => 
+                t.status.toLowerCase() === 'closed').length;
+            
+            totalTicketsEl.textContent = total;
+            pendingTicketsEl.textContent = pending;
+            resolvedTicketsEl.textContent = resolved;
+            closedTicketsEl.textContent = closed;
+        }
+
+        // Show error state
+        function showErrorState(message) {
+            ticketsContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon text-danger-500">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">Unable to load tickets</h3>
+                    <p class="text-gray-500 mb-4">${message}</p>
+                    <button id="retry-loading" class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition">
+                        Try Again
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('retry-loading').addEventListener('click', loadTickets);
+        }
+    </script>
 </body>
 
 </html>

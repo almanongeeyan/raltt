@@ -555,7 +555,7 @@ if ($user_id > 0) {
                     </div>
                     <div style="text-align:right; margin:-1.5rem 1.5rem 0 0;">
                         <span style="display:inline-block; padding:0.25em 1.5em; border:2px solid #059669; color:#059669; font-weight:bold; font-size:1.1em; border-radius:8px; transform:rotate(-8deg); background:#e6f9f2; letter-spacing:2px; box-shadow:0 1px 4px #05966922;">
-                            <?php echo ($payment_method === 'gcash' || $payment_method === 'self-pickup') ? 'PAID' : 'UNPAID'; ?>
+                            <?php echo ($payment_method === 'gcash') ? 'PAID' : 'UNPAID'; ?>
                         </span>
                     </div>
                     <div class="receipt-body" style="font-family: 'Fira Mono', 'Consolas', monospace;">

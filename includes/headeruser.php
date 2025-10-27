@@ -3,13 +3,29 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
 if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
     header('Location: ../connection/tresspass.php');
     exit();
 }
 
+
 // Database connection and branch fetching
 require_once __DIR__ . '/../connection/connection.php';
+if (!isset($db_connection) && isset($conn)) {
+    $db_connection = $conn;
+}
+
+
+// Log branch change event to customer_branch_trail
+if (isset($_SESSION['user_id']) && isset($_SESSION['branch_id']) && isset($db_connection)) {
+    try {
+        $stmt = $db_connection->prepare("INSERT INTO customer_branch_trail (user_id, branch_id, event_type) VALUES (?, ?, 'branch_change')");
+        $stmt->execute([$_SESSION['user_id'], $_SESSION['branch_id']]);
+    } catch (Exception $e) {
+        // Optionally log error
+    }
+}
 $branches = [];
 try {
     // Using PDO::FETCH_ASSOC for associative arrays
@@ -26,6 +42,12 @@ try {
     ];
 }
 
+// ***FIX 1: Check if the current page is an order summary or confirmation page***
+$currentPage = basename($_SERVER['PHP_SELF']);
+$isCheckoutPage = in_array($currentPage, ['order_summary.php', 'order_confirmation.php']);
+// ***END FIX 1***
+
+
 $user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
 $user_branch = null;
 if ($user_branch_id) {
@@ -34,6 +56,16 @@ if ($user_branch_id) {
             $user_branch = $b;
             break;
         }
+    }
+}
+
+// Function to log branch change event
+function log_branch_change($user_id, $branch_id, $db_connection) {
+    try {
+        $stmt = $db_connection->prepare("INSERT INTO customer_branch_trail (user_id, branch_id, event_type) VALUES (?, ?, 'branch_change')");
+        $stmt->execute([$user_id, $branch_id]);
+    } catch (Exception $e) {
+        // Optionally log error
     }
 }
 ?>
@@ -54,34 +86,67 @@ if ($user_branch_id) {
             --color-gold-dark: #b88b4a;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: #111827; }
-        .glass-effect { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #111827; 
+        }
+        .glass-effect { 
+            background: rgba(17, 24, 39, 0.85); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+        }
         .text-gold { color: var(--color-gold); }
         .border-gold { border-color: var(--color-gold); }
         .bg-gold { background-color: var(--color-gold); }
         
         /* Burger menu animation */
-        .burger-line { transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); }
-        .burger.open .burger-line:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); }
-        .burger.open .burger-line:nth-child(2) { opacity: 0; }
-        .burger.open .burger-line:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); }
+        .burger-line { 
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); 
+        }
+        .burger.open .burger-line:nth-child(1) { 
+            transform: rotate(-45deg) translate(-5px, 6px); 
+        }
+        .burger.open .burger-line:nth-child(2) { 
+            opacity: 0; 
+        }
+        .burger.open .burger-line:nth-child(3) { 
+            transform: rotate(45deg) translate(-5px, -6px); 
+        }
 
         /* Smooth transitions for overlays */
-        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        .fade-out { animation: fadeOut 0.3s ease-in forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .fade-in { 
+            animation: fadeIn 0.3s ease-out forwards; 
+        }
+        .fade-out { 
+            animation: fadeOut 0.3s ease-in forwards; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+        @keyframes fadeOut { 
+            from { opacity: 1; } 
+            to { opacity: 0; } 
+        }
 
         /* Custom scrollbar for modal */
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #374151; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar { 
+            width: 8px; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-track { 
+            background: #374151; 
+            border-radius: 10px; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+            background: #6b7280; 
+            border-radius: 10px; 
+        }
         
         /* Disabled branch button style */
         .branch-disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            background-color: #374151; /* bg-gray-700 */
+            background-color: #374151;
         }
         .branch-disabled:hover {
             border-color: transparent !important;
@@ -94,19 +159,46 @@ if ($user_branch_id) {
         #branch-location-overlay.dragging {
             cursor: grabbing;
         }
+
+        /* Navigation link styles */
+        .nav-link { 
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
+            font-weight: 600; 
+            font-size: 1.125rem; 
+            padding: 1rem; 
+            border-radius: 0.75rem; 
+            transition: all 0.2s; 
+        } 
+        .nav-link:hover { 
+            background-color: rgba(255,255,255,0.1); 
+            color: var(--color-gold); 
+        } 
+        .nav-link i { 
+            width: 1.5rem; 
+            text-align: center; 
+        }
+
+        /* Loading overlay */
+        #page-loading-overlay {
+            background: rgba(17, 24, 39, 0.9);
+            backdrop-filter: blur(8px);
+        }
     </style>
 </head>
 <body class="text-white pt-20">
 
-<!-- Initial Data for JS -->
 <script>
+    // Pass PHP data to JavaScript safely
     window.RALTT_DATA = {
         branches: <?php echo json_encode($branches); ?>,
-        userBranch: <?php echo json_encode($user_branch); ?>
+        userBranch: <?php echo json_encode($user_branch); ?>,
+        isCheckoutPage: <?php echo json_encode($isCheckoutPage); ?>
     };
 </script>
 
-<!-- Header -->
+<!-- Header Section -->
 <header class="raltt-header fixed top-0 left-0 w-full z-50 glass-effect border-b border-white/10">
     <div class="container mx-auto flex items-center justify-between px-4 h-20">
         <!-- Logo -->
@@ -117,6 +209,7 @@ if ($user_branch_id) {
                 <span class="text-gold font-semibold text-sm">Premium Tiles & More</span>
             </div>
         </a>
+
         <!-- Desktop Navigation -->
         <nav class="hidden lg:flex items-center gap-2">
             <a href="../logged_user/landing_page.php" class="font-semibold px-5 py-2 rounded-lg hover:bg-white/10 transition-colors">Home</a>
@@ -124,23 +217,41 @@ if ($user_branch_id) {
             <a href="../logged_user/3dvisualizer.php" class="font-semibold px-5 py-2 rounded-lg hover:bg-white/10 transition-colors">3D Visualizer</a>
             <a href="user_my_cart.php" class="font-semibold px-5 py-2 rounded-lg hover:bg-white/10 transition-colors">My Cart</a>
         </nav>
-        <!-- User Area -->
+
+        <!-- User Actions -->
         <div class="flex items-center gap-4 z-50">
+            <!-- Search Button -->
             <button id="search-toggle" class="text-white/80 hover:text-gold transition-colors text-xl w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center">
                 <i class="fas fa-search"></i>
             </button>
+
+            <!-- User Dropdown -->
             <div class="hidden lg:block relative group">
                 <button class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 transition-colors">
-                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center"><i class="fa fa-user text-gold"></i></div>
+                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                        <i class="fa fa-user text-gold"></i>
+                    </div>
                     <i class="fa fa-caret-down text-white/50"></i>
                 </button>
                 <div class="absolute right-0 top-full mt-2 w-56 bg-gray-800 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-white/10 py-2">
-                    <a href="../logged_user/myProfile.php" class="flex items-center gap-3 px-4 py-2.5 text-white/90 hover:bg-gold hover:text-white"><i class="fas fa-user-circle w-5 text-center"></i> My Account</a>
-                    <a href="../logged_user/customer_ticket.php" class="flex items-center gap-3 px-4 py-2.5 text-white/90 hover:bg-gold hover:text-white"><i class="fas fa-ticket-alt w-5 text-center"></i> Customer Ticket</a>
+                    <a href="../logged_user/myProfile.php" class="flex items-center gap-3 px-4 py-2.5 text-white/90 hover:bg-gold hover:text-white transition-colors">
+                        <i class="fas fa-user-circle w-5 text-center"></i> My Account
+                    </a>
+                    <!-- AR Tile Access Link Added -->
+                    <a href="../logged_user/ARTile_Access.php" class="flex items-center gap-3 px-4 py-2.5 text-white/90 hover:bg-gold hover:text-white transition-colors">
+                        <i class="fas fa-qrcode w-5 text-center"></i> AR Tile Access
+                    </a>
+                    <a href="../logged_user/customer_ticket.php" class="flex items-center gap-3 px-4 py-2.5 text-white/90 hover:bg-gold hover:text-white transition-colors">
+                        <i class="fas fa-ticket-alt w-5 text-center"></i> Customer Ticket
+                    </a>
                     <div class="h-px bg-white/10 my-2"></div>
-                    <a href="../logout.php" class="flex items-center gap-3 px-4 py-2.5 text-white/90 hover:bg-gold hover:text-white"><i class="fas fa-sign-out-alt w-5 text-center"></i> Logout</a>
+                    <a href="../logout.php" class="flex items-center gap-3 px-4 py-2.5 text-white/90 hover:bg-gold hover:text-white transition-colors">
+                        <i class="fas fa-sign-out-alt w-5 text-center"></i> Logout
+                    </a>
                 </div>
             </div>
+
+            <!-- Mobile Menu Toggle -->
             <button id="mobile-menu-toggle" class="lg:hidden burger flex flex-col justify-center items-center w-10 h-10 z-[100]">
                 <span class="burger-line w-6 h-0.5 bg-white mb-1.5 rounded-full"></span>
                 <span class="burger-line w-6 h-0.5 bg-white mb-1.5 rounded-full"></span>
@@ -148,12 +259,13 @@ if ($user_branch_id) {
             </button>
         </div>
     </div>
+
     <!-- Desktop Search Bar -->
     <div id="desktop-search" class="hidden absolute top-full left-0 w-full bg-gray-900/95 border-t border-white/10 py-4 px-4 shadow-xl">
         <div class="container mx-auto flex items-center gap-4 max-w-2xl bg-gray-800 rounded-full px-5 py-2 border border-gray-600">
             <i class="fa fa-search text-gray-400"></i>
             <input type="text" placeholder="Search for premium tiles and more..." class="flex-1 bg-transparent text-white placeholder-gray-400 outline-none">
-            <button id="close-search" class="text-gray-400 hover:text-white">&times;</button>
+            <button id="close-search" class="text-gray-400 hover:text-white transition-colors">&times;</button>
         </div>
     </div>
 </header>
@@ -162,21 +274,38 @@ if ($user_branch_id) {
 <div id="mobile-menu" class="lg:hidden fixed inset-0 z-40 bg-gray-900/95 transform translate-x-full transition-transform duration-300 backdrop-blur-md">
     <div class="flex flex-col h-full pt-24 pb-8 px-6">
         <nav class="flex flex-col space-y-2 flex-1">
-            <a href="../logged_user/landing_page.php" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            <a href="../logged_user/landing_page.php#premium-tiles" class="nav-link"><i class="fas fa-th-large"></i> Products</a>
-            <a href="../logged_user/3dvisualizer.php" class="nav-link"><i class="fas fa-cube"></i> 3D Visualizer</a>
-            <a href="user_my_cart.php" class="nav-link"><i class="fas fa-shopping-cart"></i> My Cart</a>
+            <a href="../logged_user/landing_page.php" class="nav-link">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="../logged_user/landing_page.php#premium-tiles" class="nav-link">
+                <i class="fas fa-th-large"></i> Products
+            </a>
+            <a href="../logged_user/3dvisualizer.php" class="nav-link">
+                <i class="fas fa-cube"></i> 3D Visualizer
+            </a>
+            <a href="user_my_cart.php" class="nav-link">
+                <i class="fas fa-shopping-cart"></i> My Cart
+            </a>
             <div class="pt-6 border-t border-white/10 mt-4">
-                <a href="../logged_user/myProfile.php" class="nav-link"><i class="fas fa-user-circle"></i> My Account</a>
-                <a href="../logged_user/customer_ticket.php" class="nav-link"><i class="fas fa-ticket-alt"></i> Customer Ticket</a>
-                <a href="../logout.php" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <a href="../logged_user/myProfile.php" class="nav-link">
+                    <i class="fas fa-user-circle"></i> My Account
+                </a>
+                <!-- AR Tile Access Link Added for Mobile -->
+                <a href="../logged_user/ARTile_Access.php" class="nav-link">
+                    <i class="fas fa-qrcode"></i> AR Tile Access
+                </a>
+                <a href="../logged_user/customer_ticket.php" class="nav-link">
+                    <i class="fas fa-ticket-alt"></i> Customer Ticket
+                </a>
+                <a href="../logout.php" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </div>
         </nav>
     </div>
-    <style>.nav-link { display:flex; align-items:center; gap:1rem; font-weight:600; font-size:1.125rem; padding:1rem; border-radius:0.75rem; transition: all 0.2s; } .nav-link:hover { background-color: rgba(255,255,255,0.1); color: var(--color-gold); } .nav-link i { width: 1.5rem; text-align:center; }</style>
 </div>
 
-<!-- Branch Location UI (Draggable) -->
+<!-- Branch Location Overlay -->
 <div id="branch-location-overlay" class="fixed top-24 left-6 z-40 glass-effect text-white p-3 rounded-full shadow-2xl border border-white/10 flex items-center gap-3 select-none">
     <i class="fas fa-map-marker-alt text-gold text-lg"></i>
     <div>
@@ -188,7 +317,9 @@ if ($user_branch_id) {
             <span id="branch-distance" class="text-xs text-gold opacity-80"></span>
         </div>
     </div>
-    <button id="branch-change-btn" class="text-xs bg-white/10 hover:bg-white/20 text-white font-semibold py-1.5 px-3 rounded-full transition-colors">Change</button>
+    <button id="branch-change-btn" class="text-xs bg-white/10 hover:bg-white/20 text-white font-semibold py-1.5 px-3 rounded-full transition-colors">
+        Change
+    </button>
 </div>
 
 <!-- Branch Selection Modal -->
@@ -197,16 +328,18 @@ if ($user_branch_id) {
         <div class="p-5 text-center border-b border-white/10 relative">
             <h2 class="text-xl font-bold">Select Your Branch</h2>
             <p class="text-sm text-white/60 mt-1">Enable location to choose a branch.</p>
-            <button id="close-branch-modal" class="absolute top-3 right-3 w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center">&times;</button>
+            <button id="close-branch-modal" class="absolute top-3 right-3 w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+                &times;
+            </button>
         </div>
         <div id="branch-location-status" class="p-3 text-center text-sm"></div>
         <div id="branch-list" class="p-4 space-y-2 max-h-[60vh] overflow-y-auto custom-scrollbar">
-            <!-- Branch items will be injected by JavaScript -->
+            <!-- Branch list will be populated by JavaScript -->
         </div>
     </div>
 </div>
 
-<!-- Page Loading Overlay -->
+<!-- Loading Overlay -->
 <div id="page-loading-overlay" class="hidden fixed inset-0 z-[99999] bg-gray-900/80 backdrop-blur-sm flex items-center justify-center">
     <div class="text-center">
         <i class="fas fa-spinner fa-spin text-4xl text-gold mb-4"></i>
@@ -215,13 +348,15 @@ if ($user_branch_id) {
 </div>
 
 <script>
+// Main Application
 document.addEventListener('DOMContentLoaded', () => {
+    const { branches, userBranch, isCheckoutPage } = window.RALTT_DATA;
 
     /**
      * Draggable Element Module
      */
-    const DraggableModule = ((elementId) => {
-        const el = document.getElementById(elementId);
+    const DraggableModule = (() => {
+        const el = document.getElementById('branch-location-overlay');
         if (!el) return;
 
         let isDragging = false;
@@ -236,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rect = el.getBoundingClientRect();
             initialLeft = rect.left;
             initialTop = rect.top;
+            
             document.addEventListener('mousemove', onDrag);
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchmove', onDrag, { passive: false });
@@ -263,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         el.addEventListener('mousedown', startDrag);
         el.addEventListener('touchstart', startDrag);
-    })('branch-location-overlay');
+    })();
 
     /**
      * UI Interaction Module
@@ -275,24 +411,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const desktopSearch = document.getElementById('desktop-search');
         const closeSearch = document.getElementById('close-search');
 
+        // Mobile Menu Toggle
         const toggleMobileMenu = () => {
+            const isOpen = mobileMenuToggle.classList.toggle('open');
             mobileMenu.classList.toggle('translate-x-full');
-            mobileMenuToggle.classList.toggle('open');
-            document.body.style.overflow = mobileMenuToggle.classList.contains('open') ? 'hidden' : '';
-        };
-        const toggleSearch = () => {
-            desktopSearch.classList.toggle('hidden');
-            if (!desktopSearch.classList.contains('hidden')) desktopSearch.querySelector('input')?.focus();
+            document.body.style.overflow = isOpen ? 'hidden' : '';
         };
 
-        mobileMenuToggle?.addEventListener('click', toggleMobileMenu);
-        mobileMenu?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-             if (mobileMenuToggle.classList.contains('open')) toggleMobileMenu();
-        }));
-        searchToggle?.addEventListener('click', toggleSearch);
-        closeSearch?.addEventListener('click', toggleSearch);
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && !desktopSearch.classList.contains('hidden')) toggleSearch();
+        // Search Toggle
+        const toggleSearch = () => {
+            const isHidden = desktopSearch.classList.toggle('hidden');
+            if (!isHidden) {
+                desktopSearch.querySelector('input')?.focus();
+            }
+        };
+
+        // Event Listeners
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        }
+
+        if (mobileMenu) {
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (mobileMenuToggle.classList.contains('open')) {
+                        toggleMobileMenu();
+                    }
+                });
+            });
+        }
+
+        if (searchToggle) {
+            searchToggle.addEventListener('click', toggleSearch);
+        }
+
+        if (closeSearch) {
+            closeSearch.addEventListener('click', toggleSearch);
+        }
+
+        // Escape key to close search
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !desktopSearch.classList.contains('hidden')) {
+                toggleSearch();
+            }
         });
     })();
 
@@ -300,7 +461,6 @@ document.addEventListener('DOMContentLoaded', () => {
      * Branch Management Module
      */
     const BranchModule = (() => {
-        const { branches, userBranch } = window.RALTT_DATA;
         const changeBtn = document.getElementById('branch-change-btn');
         const modal = document.getElementById('branch-modal');
         const closeModalBtn = document.getElementById('close-branch-modal');
@@ -310,25 +470,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const loadingOverlay = document.getElementById('page-loading-overlay');
         let geolocationInterval = null;
 
+        // Calculate distance between coordinates
         const haversineDistance = (lat1, lon1, lat2, lon2) => {
-            const R = 6371; // km
+            const R = 6371; // Earth radius in km
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+            const a = Math.sin(dLat / 2) ** 2 + 
+                     Math.cos(lat1 * Math.PI / 180) * 
+                     Math.cos(lat2 * Math.PI / 180) * 
+                     Math.sin(dLon / 2) ** 2;
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         };
-        
+
+        // Select branch and reload page
         const selectBranch = async (branchId) => {
             modal.classList.add('hidden', 'fade-out');
             loadingOverlay.classList.remove('hidden');
             loadingOverlay.classList.add('fade-in');
+            
             try {
-                await fetch('set_branch.php', {
+                const response = await fetch('set_branch.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded' 
+                    },
                     body: `branch_id=${encodeURIComponent(branchId)}`
                 });
-                window.location.reload();
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    throw new Error('Failed to switch branch');
+                }
             } catch (error) {
                 console.error('Error switching branch:', error);
                 alert('Failed to switch branch. Please try again.');
@@ -336,8 +509,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // Render branch list
         const renderBranchList = (userCoords = null, enabled = false) => {
+            if (!branchListContainer) return;
+            
             branchListContainer.innerHTML = '';
+
+            // Sort branches by distance if coordinates available
             const sortedBranches = [...branches].sort((a, b) => {
                 if (!userCoords) return 0;
                 const distA = haversineDistance(userCoords.latitude, userCoords.longitude, a.lat, a.lng);
@@ -347,15 +525,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             sortedBranches.forEach(branch => {
                 const isSelected = userBranch && userBranch.id === branch.id;
-                const distance = userCoords ? haversineDistance(userCoords.latitude, userCoords.longitude, branch.lat, branch.lng).toFixed(1) + ' km' : null;
-                const isClickable = enabled && !isSelected;
+                const distance = userCoords ? 
+                    haversineDistance(userCoords.latitude, userCoords.longitude, branch.lat, branch.lng).toFixed(1) + ' km' : 
+                    null;
+                
+                const isClickable = enabled && !isSelected && !isCheckoutPage;
+                
                 const branchElement = document.createElement('div');
                 branchElement.className = `flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200 ${
-                    isSelected ? 'bg-gold border-gold text-white shadow-lg' :
-                    isClickable ? 'bg-gray-700 border-transparent hover:border-gold cursor-pointer' :
+                    isSelected ? 
+                    'bg-gold border-gold text-white shadow-lg' :
+                    isClickable ? 
+                    'bg-gray-700 border-transparent hover:border-gold cursor-pointer' :
                     'bg-gray-700 border-transparent branch-disabled'
                 }`;
-                if (isClickable) branchElement.onclick = () => selectBranch(branch.id);
+
+                if (isClickable) {
+                    branchElement.onclick = () => selectBranch(branch.id);
+                }
+
                 branchElement.innerHTML = `
                     <div class="flex items-center gap-3">
                         <i class="fas fa-store ${isSelected ? '' : 'text-gold'}"></i>
@@ -366,66 +554,141 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${isSelected ? `<span class="ml-3 text-xs bg-white/20 px-2 py-1 rounded-full">Current</span>` : ''}
                     </div>
                 `;
+
                 branchListContainer.appendChild(branchElement);
             });
         };
 
+        // Update location status message
         const updateLocationStatus = (message, type = 'info') => {
-            const icons = { info: 'fa-spinner fa-spin', success: 'fa-check-circle', error: 'fa-times-circle' };
-            const colors = { info: 'bg-blue-900/50 text-blue-300', success: 'bg-green-900/50 text-green-300', error: 'bg-red-900/50 text-red-400' };
+            if (!locationStatusEl) return;
+            
+            const icons = { 
+                info: 'fa-spinner fa-spin', 
+                success: 'fa-check-circle', 
+                error: 'fa-times-circle' 
+            };
+            const colors = { 
+                info: 'bg-blue-900/50 text-blue-300', 
+                success: 'bg-green-900/50 text-green-300', 
+                error: 'bg-red-900/50 text-red-400' 
+            };
+            
             locationStatusEl.className = `p-3 text-center text-sm ${colors[type]}`;
             locationStatusEl.innerHTML = `<i class="fas ${icons[type]} mr-2"></i> ${message}`;
         };
 
+        // Open branch modal
         const openModal = () => {
+            if (!modal) return;
+            
             modal.classList.remove('hidden', 'fade-out');
             modal.classList.add('fade-in');
+
+            // Check if on checkout page - disable branch selection
+            if (isCheckoutPage) {
+                updateLocationStatus('Branch selection is disabled during checkout.', 'error');
+                renderBranchList(null, false);
+                return;
+            }
+
+            // Normal branch selection flow
             renderBranchList(null, false);
             updateLocationStatus('Requesting location access...', 'info');
+
+            if (!navigator.geolocation) {
+                updateLocationStatus('Geolocation is not supported by this browser.', 'error');
+                return;
+            }
+
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     updateLocationStatus('Location found! Branches are now enabled.', 'success');
                     renderBranchList(pos.coords, true);
                 },
-                () => {
-                    updateLocationStatus('Location is required to change branch. Please enable it in your browser settings.', 'error');
+                (error) => {
+                    let errorMessage = 'Location access denied. Please enable location services to change branches.';
+                    if (error.code === error.TIMEOUT) {
+                        errorMessage = 'Location request timed out. Please try again.';
+                    }
+                    updateLocationStatus(errorMessage, 'error');
                 },
-                { timeout: 5000 }
+                { 
+                    timeout: 10000,
+                    enableHighAccuracy: false 
+                }
             );
         };
-        
+
+        // Close branch modal
         const closeModal = () => {
+            if (!modal) return;
+            
             modal.classList.add('fade-out');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
         };
 
+        // Check user's distance from current branch
         const checkGeolocation = () => {
-             if (!navigator.geolocation || !userBranch) return;
-             navigator.geolocation.getCurrentPosition(pos => {
-                const dist = haversineDistance(pos.coords.latitude, pos.coords.longitude, userBranch.lat, userBranch.lng);
-                distanceEl.textContent = `(${dist.toFixed(1)} km away)`;
-             }, () => {
-                distanceEl.textContent = '';
-             }, { enableHighAccuracy: true });
+            if (!navigator.geolocation || !userBranch || !distanceEl) return;
+            
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const dist = haversineDistance(
+                        pos.coords.latitude, 
+                        pos.coords.longitude, 
+                        userBranch.lat, 
+                        userBranch.lng
+                    );
+                    distanceEl.textContent = `(${dist.toFixed(1)} km away)`;
+                },
+                () => {
+                    if (distanceEl) {
+                        distanceEl.textContent = '';
+                    }
+                },
+                { 
+                    enableHighAccuracy: false,
+                    timeout: 5000 
+                }
+            );
         };
-        
+
+        // Start geolocation watcher
         const startGeolocationWatcher = () => {
             checkGeolocation();
-            if(geolocationInterval) clearInterval(geolocationInterval);
-            geolocationInterval = setInterval(checkGeolocation, 3000);
+            if (geolocationInterval) {
+                clearInterval(geolocationInterval);
+            }
+            geolocationInterval = setInterval(checkGeolocation, 30000); // Check every 30 seconds
         };
 
-        changeBtn?.addEventListener('click', openModal);
-        closeModalBtn?.addEventListener('click', closeModal);
-        modal?.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
+        // Event Listeners
+        if (changeBtn) {
+            changeBtn.addEventListener('click', openModal);
+        }
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Initialize
         startGeolocationWatcher();
     })();
 });
 </script>
 
-<!-- Chatbase Script (Restored) -->
+<!-- Chatbase Chatbot -->
 <script>
 window.chatbaseConfig = {
     chatbotId: "-vAdaLts54qAK1OtQj9SL",

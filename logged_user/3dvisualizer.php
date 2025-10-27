@@ -54,80 +54,56 @@ include '../includes/headeruser.php';
             box-shadow: 0 12px 32px rgba(0,0,0,0.15);
         }
         
-        .pagination-btn {
-            transition: all 0.2s ease;
-        }
-        
-        .pagination-btn:hover {
-            background-color: #cf8756;
-            color: white;
-        }
-        
         #visualizer-3d {
             background: radial-gradient(circle at 60% 40%, #fff 60%, #f7f3ef 100%);
             border-radius: 20px;
             box-shadow: 0 8px 32px 0 rgba(207,135,86,0.2), 0 1.5px 0 #fff;
             overflow: hidden;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
         }
 
-        #visualizer-3d::-webkit-scrollbar {
-            display: none;
+        .environment-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
         }
         
-        .bathroom-container {
-            position: relative;
-            width: 100%;
-            height: 340px;
-            overflow: hidden;
+        .env-btn {
+            background: white;
+            border: 2px solid #e8a56a;
+            border-radius: 12px;
+            padding: 12px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #7d310a;
+        }
+        
+        .env-btn:hover, .env-btn.active {
+            background: #7d310a;
+            border-color: #7d310a;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .ai-generated-display {
+            background: white;
             border-radius: 16px;
-        }
-        
-        #visualizer-container {
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
             position: relative;
-            width: 100%;
-            height: 100%;
+            border: 2px solid #e8a56a;
         }
         
-        #background-image {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .ai-generated-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            pointer-events: none;
-        }
-        
-        #webgl-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        
-        .tile-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding: 10px;
-            background: #f9f5f2;
-            border-radius: 10px;
-        }
-        
-        .tile-controls label {
-            font-weight: 600;
-            color: #7d310a;
-            margin-right: 10px;
-            font-size: 14px;
-        }
-        
-        .tile-controls input {
-            width: 120px;
+            border-radius: 12px;
         }
         
         .loading-overlay {
@@ -136,57 +112,47 @@ include '../includes/headeruser.php';
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.95);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 10;
             flex-direction: column;
+            border-radius: 16px;
         }
         
-        .floor-mask {
-            position: absolute;
-            mix-blend-mode: multiply;
-            z-index: 3;
-        }
-        
-        /* Floating containers styles */
-        .floating-container-section {
-            background: white;
+        .stability-badge {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 6px 12px;
             border-radius: 20px;
-            padding: 24px;
-            margin-top: 24px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            font-size: 12px;
+            font-weight: bold;
         }
-        
+
         .floating-containers-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 0;
-            margin: 0;
-            width: 510px;
+            gap: 8px;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 500px;
             height: 450px;
-            max-width: 100%;
-            padding: 0;
         }
         
         .floating-container {
             background: #f9f5f2;
-            border-radius: 0;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
-            box-shadow: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             cursor: pointer;
-            border: none;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            aspect-ratio: 1/1;
+            border: 2px dashed #cf8756;
         }
 
         .floating-container img {
@@ -198,26 +164,28 @@ include '../includes/headeruser.php';
         }
         
         .floating-container:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         .floating-container.empty:before {
             content: '+';
-            font-size: 32px;
+            font-size: 24px;
             color: #cf8756;
             opacity: 0.7;
         }
-        
-        /* Removed duplicate .floating-container img rule to enforce object-fit: cover and full square fill */
-        
+
         .drag-instructions {
             text-align: center;
             margin-top: 16px;
             color: #7d310a;
             font-weight: 500;
+            background: #fff8f0;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #e8a56a;
         }
-        
+
         .container-highlight {
             border: 2px solid #7d310a;
             background-color: rgba(125, 49, 10, 0.1);
@@ -228,45 +196,63 @@ include '../includes/headeruser.php';
             transform: scale(1.05);
             z-index: 100;
         }
-        
-        .drag-scroll-container {
-            position: fixed;
-            top: 0;
-            left: 0;
+
+        .progress-bar {
             width: 100%;
-            height: 30px;
-            z-index: 1000;
-            pointer-events: none;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
         }
         
-        .drag-scroll-top, .drag-scroll-bottom {
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .tile-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #e8a56a;
+            margin: 0 auto 10px;
+        }
+
+        .prompt-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .api-key-section {
+            display: none;
+        }
+
+        .tile-reference-display {
             position: absolute;
-            width: 100%;
-            height: 15px;
-            background: rgba(125, 49, 10, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: all;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid #e8a56a;
+            z-index: 5;
         }
-        
-        .drag-scroll-top {
-            top: 0;
-        }
-        
-        .drag-scroll-bottom {
-            bottom: 0;
-        }
-        
-        .drag-scroll-top.visible, .drag-scroll-bottom.visible {
-            opacity: 1;
-        }
-        
-        .drag-scroll-top i, .drag-scroll-bottom i {
-            color: #7d310a;
-            font-size: 18px;
+
+        .tile-reference-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -274,7 +260,7 @@ include '../includes/headeruser.php';
     <div class="container mx-auto px-4 py-8">
         <div class="text-center mb-12">
             <h1 class="text-3xl md:text-4xl font-black text-primary mb-4">3D Tile Visualizer</h1>
-            <p class="text-lg max-w-3xl mx-auto" style="color:#111;font-weight:500;">Experience our premium tiles in immersive 3D. Select any tile to visualize it in your space before making a purchase decision.</p>
+            <p class="text-lg max-w-3xl mx-auto" style="color:#111;font-weight:500;">Experience our premium tiles in immersive 3D with AI-powered visualization using your selected tile image.</p>
         </div>
         
         <div class="flex flex-col lg:flex-row gap-8">
@@ -293,22 +279,82 @@ include '../includes/headeruser.php';
                 </div>
                 
                 <div class="bg-white rounded-2xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-primary mb-4">Above View Tile Visualization</h2>
-                    <p class="text-textlight text-sm mb-4">See how your selected tile looks from above, with furniture based on its best use.</p>
-                    <div class="bathroom-container" style="height:320px;">
-                        <canvas id="aboveview-canvas" style="width:100%;height:100%;display:block;"></canvas>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-primary">AI Environment Visualization</h2>
+                        <span class="stability-badge">USES YOUR TILE IMAGE</span>
                     </div>
-                    <div class="flex items-center justify-between mt-4">
-                        <div class="text-textlight text-xs">Furniture will appear if the tile is best for tables.</div>
-                        <div class="flex items-center">
-                            <span class="text-textlight text-xs mr-2">Tile Scale:</span>
-                            <input type="range" id="tile-scale-above" min="0.5" max="3" step="0.1" value="1" class="w-24">
+                    <p class="text-textlight text-sm mb-4">Select an environment to generate AI-powered visualization using your actual tile image as reference.</p>
+                    
+                    <!-- Hidden API Key Section -->
+                    <div class="api-key-section">
+                        <input type="hidden" id="api-key" value="sk-88Ufan8hPs5BlgAfLsUsHMML7DFvpV8VY77004U6UIL4CLLK">
+                    </div>
+
+                    <!-- Current Tile Preview -->
+                    <div id="current-tile-section" class="hidden mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="flex items-center gap-4">
+                            <img id="current-tile-preview" src="" alt="Selected tile" class="tile-preview">
+                            <div>
+                                <h4 class="font-semibold text-primary text-sm" id="current-tile-name"></h4>
+                                <p class="text-xs text-textlight">Ready for AI visualization - Your tile image will be used as reference</p>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Environment Buttons -->
+                    <div class="mt-6">
+                        <h3 class="font-semibold text-primary mb-3">Select Environment:</h3>
+                        <div class="environment-buttons">
+                            <div class="env-btn" data-environment="living-room">
+                                <i class="fas fa-home mr-2"></i>Living Room
+                            </div>
+                            <div class="env-btn" data-environment="patio">
+                                <i class="fas fa-tree mr-2"></i>Outdoor Patio
+                            </div>
+                            <div class="env-btn" data-environment="bathroom">
+                                <i class="fas fa-bath mr-2"></i>Bathroom
+                            </div>
+                            <div class="env-btn" data-environment="kitchen">
+                                <i class="fas fa-utensils mr-2"></i>Kitchen
+                            </div>
+                            <div class="env-btn" data-environment="bedroom">
+                                <i class="fas fa-bed mr-2"></i>Bedroom
+                            </div>
+                            <div class="env-btn" data-environment="entryway">
+                                <i class="fas fa-door-open mr-2"></i>Entryway
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prompt Preview -->
+                    <div id="prompt-preview" class="prompt-preview hidden">
+                        <strong>AI Prompt:</strong> <span id="prompt-text"></span>
+                    </div>
+                    
+                    <!-- AI Display -->
+                    <div class="ai-generated-display mt-6" id="ai-display">
+                        <div class="text-center text-textlight p-6">
+                            <i class="fas fa-robot text-4xl mb-3 text-secondary"></i>
+                            <p class="font-semibold mb-2">AI Visualization Ready</p>
+                            <p class="text-sm">Select a tile and environment to generate AI visualization</p>
+                            <p class="text-xs text-green-600 mt-2">Your actual tile image will be used as reference</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Controls -->
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="text-textlight text-xs">
+                            <i class="fas fa-bolt text-purple-500 mr-1"></i>
+                            Uses Stability AI with image reference
+                        </div>
+                        <button id="regenerate-btn" class="bg-primary text-white text-sm px-4 py-2 rounded-lg font-semibold hover:bg-secondary transition-colors hidden">
+                            <i class="fas fa-sync-alt mr-2"></i>Regenerate
+                        </button>
                     </div>
                 </div>
 
                 <!-- Floating Containers Section -->
-                <div class="floating-container-section">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mt-6">
                     <h2 class="text-xl font-bold text-primary mb-4">Tile Arrangement</h2>
                     <p class="text-textlight text-sm mb-4">Drag tiles from the products section to any container below to create your custom arrangement.</p>
                     
@@ -351,40 +397,25 @@ include '../includes/headeruser.php';
         </div>
     </div>
 
-    <!-- Drag scroll indicators -->
-    <div class="drag-scroll-container">
-        <div class="drag-scroll-top" id="drag-scroll-top">
-            <i class="fas fa-chevron-up"></i>
-        </div>
-        <div class="drag-scroll-bottom" id="drag-scroll-bottom">
-            <i class="fas fa-chevron-down"></i>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/controls/OrbitControls.js"></script>
     <script>
-    // Global variables for 3D visualizer
+    // Global variables
     let scene3d, camera3d, renderer3d, cube;
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-    
-    // Above view visualization
-    let aboveViewCanvas, aboveViewCtx, aboveTileImg = null, aboveFurnitureImg = null;
-    let tileScaleAbove = 1;
-    let tileIsBestForTable = false;
-
-    // Data handling
+    let currentEnvironment = null;
+    let currentTileImage = null;
+    let currentTileName = null;
     let allProducts = [];
     let currentPage = 1;
     const productsPerPage = 8;
-    
-    // Floating containers
     let draggedTile = null;
     let containers = [];
-    let dragScrollInterval = null;
-    
-    // Initialize 3D scene for single tile preview
+
+    // Stability AI Configuration
+    const STABILITY_API_KEY = 'sk-88Ufan8hPs5BlgAfLsUsHMML7DFvpV8VY77004U6UIL4CLLK';
+
+    // Initialize 3D Scene
     function init3DScene() {
         const container = document.getElementById('visualizer-3d');
         
@@ -406,9 +437,6 @@ include '../includes/headeruser.php';
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.85);
         directionalLight.position.set(2, 3, 4);
         directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        directionalLight.shadow.blurSamples = 16;
         scene3d.add(directionalLight);
         
         const shadowGeometry = new THREE.PlaneGeometry(2.8, 0.9);
@@ -418,6 +446,7 @@ include '../includes/headeruser.php';
         shadow.receiveShadow = true;
         scene3d.add(shadow);
         
+        // Event listeners for 3D controls
         container.addEventListener('mousedown', onMouseDown);
         container.addEventListener('touchstart', onTouchStart);
         window.addEventListener('mouseup', onMouseUp);
@@ -428,26 +457,28 @@ include '../includes/headeruser.php';
         
         animate3d();
     }
-    
-    // Animation loop for 3D preview
+
     function animate3d() {
         requestAnimationFrame(animate3d);
         renderer3d.render(scene3d, camera3d);
     }
-    
-    // Mouse/Touch event handlers for 3D controls
+
+    // Mouse/Touch event handlers
     function onMouseDown(event) {
         isDragging = true;
         previousMousePosition = { x: event.clientX, y: event.clientY };
     }
+    
     function onTouchStart(event) {
         if (event.touches.length === 1) {
             isDragging = true;
             previousMousePosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
         }
     }
+    
     function onMouseUp() { isDragging = false; }
     function onTouchEnd() { isDragging = false; }
+    
     function onMouseMove(event) {
         if (isDragging && cube) {
             const deltaX = event.clientX - previousMousePosition.x;
@@ -457,6 +488,7 @@ include '../includes/headeruser.php';
             previousMousePosition = { x: event.clientX, y: event.clientY };
         }
     }
+    
     function onTouchMove(event) {
         if (isDragging && event.touches.length === 1 && cube) {
             const deltaX = event.touches[0].clientX - previousMousePosition.x;
@@ -467,6 +499,7 @@ include '../includes/headeruser.php';
             event.preventDefault();
         }
     }
+    
     function onMouseWheel(event) {
         if (camera3d) {
             camera3d.position.z += event.deltaY * 0.01;
@@ -474,59 +507,238 @@ include '../includes/headeruser.php';
         }
     }
 
-    // Initialize above view canvas
-    function initAboveView() {
-        aboveViewCanvas = document.getElementById('aboveview-canvas');
-        aboveViewCtx = aboveViewCanvas.getContext('2d');
-        resizeAboveView();
-        window.addEventListener('resize', resizeAboveView);
-        document.getElementById('tile-scale-above').addEventListener('input', function(e) {
-            tileScaleAbove = parseFloat(e.target.value);
-            drawAboveView();
-        });
-        drawAboveView();
-    }
-
-    function resizeAboveView() {
-        if (!aboveViewCanvas) return;
-        const parent = aboveViewCanvas.parentElement;
-        aboveViewCanvas.width = parent.clientWidth;
-        aboveViewCanvas.height = parent.clientHeight;
-        drawAboveView();
-    }
-
-    function drawAboveView() {
-        if (!aboveViewCtx) return;
-        const w = aboveViewCanvas.width;
-        const h = aboveViewCanvas.height;
-        aboveViewCtx.clearRect(0, 0, w, h);
-        // Draw tiled background
-        if (aboveTileImg) {
-            const tileW = 80 * tileScaleAbove;
-            const tileH = 80 * tileScaleAbove;
-            for (let y = 0; y < h; y += tileH) {
-                for (let x = 0; x < w; x += tileW) {
-                    aboveViewCtx.drawImage(aboveTileImg, x, y, tileW, tileH);
+    // Initialize Environment Buttons
+    function initEnvironmentButtons() {
+        const envButtons = document.querySelectorAll('.env-btn');
+        envButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                envButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentEnvironment = this.dataset.environment;
+                
+                if (currentTileImage && currentTileName) {
+                    generateAIVisualization(currentTileImage, currentTileName, currentEnvironment);
+                } else {
+                    showAIMessage('Please select a tile first', 'exclamation-triangle');
                 }
+            });
+        });
+        
+        document.getElementById('regenerate-btn').addEventListener('click', function() {
+            if (currentTileImage && currentTileName && currentEnvironment) {
+                generateAIVisualization(currentTileImage, currentTileName, currentEnvironment);
             }
-        } else {
-            // fallback color
-            aboveViewCtx.fillStyle = '#eee';
-            aboveViewCtx.fillRect(0, 0, w, h);
-        }
-        // Draw furniture if best for table
-        if (tileIsBestForTable && aboveFurnitureImg) {
-            const fw = w * 0.4, fh = h * 0.25;
-            aboveViewCtx.drawImage(aboveFurnitureImg, (w-fw)/2, (h-fh)/2, fw, fh);
+        });
+    }
+
+    // Generate AI Visualization with Stability AI using enhanced prompts
+    async function generateAIVisualization(tileImage, tileName, environment) {
+        const aiDisplay = document.getElementById('ai-display');
+        const regenerateBtn = document.getElementById('regenerate-btn');
+        
+        // Show loading state
+        showLoadingState(aiDisplay, environment);
+        regenerateBtn.classList.remove('hidden');
+
+        try {
+            // Get tile description from image analysis
+            const tileDescription = await analyzeTileImage(tileImage, tileName);
+            const prompt = createEnhancedPromptWithDescription(tileName, environment, tileDescription);
+            
+            // Show prompt preview
+            document.getElementById('prompt-preview').classList.remove('hidden');
+            document.getElementById('prompt-text').textContent = prompt.substring(0, 150) + '...';
+            
+            const result = await callStabilityAI(STABILITY_API_KEY, prompt);
+            
+            if (result.success) {
+                // Display the generated image with tile reference
+                aiDisplay.innerHTML = `
+                    <div class="tile-reference-display">
+                        <img src="${tileImage}" alt="Reference tile" class="tile-reference-image">
+                        <div class="text-xs text-center mt-1 text-primary font-semibold">Your Tile: ${tileName}</div>
+                    </div>
+                    <img src="${result.image}" alt="AI Generated ${environment} visualization with ${tileName}" class="ai-generated-image">
+                    <div class="absolute bottom-3 right-3 bg-black bg-opacity-70 text-white text-xs px-3 py-1 rounded-full">
+                        <i class="fas fa-robot mr-1"></i>Stability AI
+                    </div>
+                    <div class="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                        Using Your Tile Pattern
+                    </div>
+                `;
+                
+                // Hide prompt preview after successful generation
+                document.getElementById('prompt-preview').classList.add('hidden');
+            } else {
+                throw new Error(result.error);
+            }
+            
+        } catch (error) {
+            console.error('AI Generation Error:', error);
+            showAIMessage('Failed to generate image: ' + error.message, 'exclamation-triangle');
+            document.getElementById('prompt-preview').classList.add('hidden');
         }
     }
-    
-    // Render 3D model and update above view
-    function render3D(imageUrl, isBestForTable) {
+
+    // Analyze tile image and create description
+    function analyzeTileImage(tileImage, tileName) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = function() {
+                // Create a simple analysis based on the image
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                // Get image data for basic analysis
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                // Simple color analysis
+                let r = 0, g = 0, b = 0;
+                for (let i = 0; i < data.length; i += 4) {
+                    r += data[i];
+                    g += data[i + 1];
+                    b += data[i + 2];
+                }
+                const pixelCount = data.length / 4;
+                const avgR = Math.round(r / pixelCount);
+                const avgG = Math.round(g / pixelCount);
+                const avgB = Math.round(b / pixelCount);
+                
+                // Determine color family
+                let colorFamily = 'neutral';
+                if (avgR > avgG + 30 && avgR > avgB + 30) colorFamily = 'warm';
+                else if (avgG > avgR + 30 && avgG > avgB + 30) colorFamily = 'green';
+                else if (avgB > avgR + 30 && avgB > avgG + 30) colorFamily = 'cool';
+                
+                // Determine pattern type based on name and colors
+                let patternType = 'geometric pattern';
+                if (tileName.toLowerCase().includes('marble')) patternType = 'marble veining';
+                if (tileName.toLowerCase().includes('wood')) patternType = 'wood grain';
+                if (tileName.toLowerCase().includes('stone')) patternType = 'natural stone texture';
+                if (tileName.toLowerCase().includes('mosaic')) patternType = 'mosaic pattern';
+                if (tileName.toLowerCase().includes('hexagon')) patternType = 'hexagonal pattern';
+                if (tileName.toLowerCase().includes('subway')) patternType = 'rectangular subway tile pattern';
+                
+                const description = `${colorFamily} colored ${patternType} with precise geometric layout, consistent grout lines, ${tileName.toLowerCase()}`;
+                resolve(description);
+            };
+            img.src = tileImage;
+        });
+    }
+
+    // Create enhanced prompt with tile description
+    function createEnhancedPromptWithDescription(tileName, environment, tileDescription) {
+        const environmentContext = {
+            'living-room': 'modern living room interior, focus on floor showing exact tile pattern, contemporary furniture partially visible, natural lighting from large windows',
+            'patio': 'outdoor patio scene with tile flooring, beautiful garden background, sunny day lighting, outdoor furniture partially visible',
+            'bathroom': 'elegant modern bathroom interior with tile flooring, minimalist design, excellent lighting, spa-like atmosphere',
+            'kitchen': 'contemporary kitchen interior with tile flooring, modern appliances partially visible, clean countertops, natural lighting',
+            'bedroom': 'modern bedroom interior with tile flooring, contemporary bed and furniture partially visible, soft natural lighting',
+            'entryway': 'elegant entryway or foyer with tile flooring, architectural elements partially visible, welcoming atmosphere'
+        };
+        
+        return `Professional architectural photography of a ${environmentContext[environment]}. The floor features ${tileDescription}. The tile pattern must be clearly visible and accurately represented, covering 60-70% of the image. Photorealistic style, 4k resolution, professional interior design photography, accurate perspective, realistic lighting and shadows.`;
+    }
+
+    // Call Stability AI API
+    async function callStabilityAI(apiKey, prompt) {
+        try {
+            console.log('Starting Stability AI image generation...');
+            
+            const response = await fetch('ai-proxy-stability.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    apiKey: apiKey,
+                    prompt: prompt
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: Proxy request failed`);
+            }
+
+            const data = await response.json();
+            
+            if (data.success) {
+                return {
+                    success: true,
+                    image: data.image
+                };
+            } else {
+                throw new Error(data.error || 'Unknown error from Stability AI');
+            }
+            
+        } catch (error) {
+            console.error('Stability AI API Error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // Helper functions
+    function showLoadingState(container, environment) {
+        container.innerHTML = `
+            <div class="loading-overlay">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-4xl text-purple-500 mb-3"></i>
+                    <p class="text-textlight font-semibold text-lg">Generating ${environment} Visualization</p>
+                    <p class="text-textlight text-sm mt-2">Using your tile image as reference with Stability AI...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <p class="text-xs text-textlight mt-3">Processing your tile image for accurate results</p>
+                </div>
+            </div>
+        `;
+        
+        // Animate progress bar
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 2;
+            const progressFill = document.getElementById('progress-fill');
+            if (progressFill) {
+                progressFill.style.width = Math.min(progress, 90) + '%';
+            }
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+            }
+        }, 300);
+    }
+
+    function showAIMessage(message, icon = 'info-circle') {
+        document.getElementById('ai-display').innerHTML = `
+            <div class="text-center text-textlight">
+                <i class="fas fa-${icon} text-3xl mb-3 text-secondary"></i>
+                <p class="font-semibold">${message}</p>
+            </div>
+        `;
+    }
+
+    // Render 3D Model
+    function render3D(imageUrl, productName, isBestForTable) {
         const container = document.getElementById('visualizer-3d');
+        
+        currentTileImage = imageUrl;
+        currentTileName = productName;
+        
+        // Show current tile preview
+        document.getElementById('current-tile-section').classList.remove('hidden');
+        document.getElementById('current-tile-preview').src = imageUrl;
+        document.getElementById('current-tile-name').textContent = productName;
+        
         if (cube) {
             scene3d.remove(cube);
         }
+        
         const geometry = new THREE.BoxGeometry(1.05, 1.05, 0.07);
         const textureLoaderCube = new THREE.TextureLoader();
         textureLoaderCube.load(imageUrl, function(texture) {
@@ -549,27 +761,14 @@ include '../includes/headeruser.php';
             container.innerHTML = `<div class="text-center text-textlight p-8"><i class="fas fa-exclamation-triangle text-3xl mb-3"></i><p>Failed to load 3D preview</p></div>`;
         });
 
-        // Update above view
-        tileIsBestForTable = !!isBestForTable;
-        aboveTileImg = null;
-        if (imageUrl) {
-            const img = new window.Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = function() {
-                aboveTileImg = img;
-                drawAboveView();
-            };
-            img.onerror = function() {
-                aboveTileImg = null;
-                drawAboveView();
-            };
-            img.src = imageUrl;
-        } else {
-            drawAboveView();
-        }
+        showAIMessage(`Tile selected: <strong>${productName}</strong><br>Now select an environment to generate AI visualization using your tile image`, 'cube');
+        document.getElementById('regenerate-btn').classList.add('hidden');
+        document.querySelectorAll('.env-btn').forEach(btn => btn.classList.remove('active'));
+        currentEnvironment = null;
+        document.getElementById('prompt-preview').classList.add('hidden');
     }
-    
-    // Initialize floating containers
+
+    // Initialize Floating Containers
     function initFloatingContainers() {
         const containersGrid = document.getElementById('floating-containers');
         containersGrid.innerHTML = '';
@@ -581,7 +780,6 @@ include '../includes/headeruser.php';
             container.dataset.index = i;
             containers.push({element: container, tile: null});
             
-            // Add event listeners for drag and drop
             container.addEventListener('dragover', handleDragOver);
             container.addEventListener('dragenter', handleDragEnter);
             container.addEventListener('dragleave', handleDragLeave);
@@ -590,8 +788,8 @@ include '../includes/headeruser.php';
             containersGrid.appendChild(container);
         }
     }
-    
-    // Drag and drop handlers
+
+    // Drag and Drop Handlers
     function handleDragStart(e) {
         draggedTile = {
             productId: e.target.dataset.productId,
@@ -599,22 +797,11 @@ include '../includes/headeruser.php';
             productName: e.target.dataset.productName
         };
         e.target.classList.add('tile-dragging');
-        
-        // Setup auto-scroll when dragging
-        document.addEventListener('dragover', handleDocumentDragOver);
     }
     
     function handleDragEnd(e) {
         e.target.classList.remove('tile-dragging');
         draggedTile = null;
-        
-        // Clean up auto-scroll
-        document.removeEventListener('dragover', handleDocumentDragOver);
-        stopAutoScroll();
-        
-        // Hide scroll indicators
-        document.getElementById('drag-scroll-top').classList.remove('visible');
-        document.getElementById('drag-scroll-bottom').classList.remove('visible');
     }
     
     function handleDragOver(e) {
@@ -639,12 +826,10 @@ include '../includes/headeruser.php';
         const containerIndex = parseInt(e.target.dataset.index);
         const container = containers[containerIndex];
         
-        // Update container with tile
         container.tile = draggedTile;
         container.element.classList.remove('empty');
         container.element.innerHTML = `<img src="${draggedTile.imageUrl}" alt="${draggedTile.productName}" draggable="false">`;
         
-        // Add remove button
         const removeBtn = document.createElement('button');
         removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 transition-opacity duration-200';
         removeBtn.innerHTML = '×';
@@ -654,7 +839,6 @@ include '../includes/headeruser.php';
         };
         container.element.appendChild(removeBtn);
         
-        // Show remove button on hover
         container.element.addEventListener('mouseenter', () => {
             removeBtn.classList.remove('opacity-0');
             removeBtn.classList.add('opacity-100');
@@ -674,60 +858,8 @@ include '../includes/headeruser.php';
         container.element.classList.add('empty');
         container.element.innerHTML = '';
     }
-    
-    // Auto-scroll functionality
-    function handleDocumentDragOver(e) {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const windowHeight = window.innerHeight;
-        const scrollHeight = document.documentElement.scrollHeight;
-        const scrollThreshold = 100;
-        
-        const dragScrollTop = document.getElementById('drag-scroll-top');
-        const dragScrollBottom = document.getElementById('drag-scroll-bottom');
-        
-        // Show/hide top scroll indicator
-        if (scrollTop > 0 && e.clientY < scrollThreshold) {
-            dragScrollTop.classList.add('visible');
-            startAutoScroll('up');
-        } else {
-            dragScrollTop.classList.remove('visible');
-            if (!(e.clientY < scrollThreshold)) {
-                stopAutoScroll();
-            }
-        }
-        
-        // Show/hide bottom scroll indicator
-        if (scrollTop + windowHeight < scrollHeight && e.clientY > windowHeight - scrollThreshold) {
-            dragScrollBottom.classList.add('visible');
-            startAutoScroll('down');
-        } else {
-            dragScrollBottom.classList.remove('visible');
-            if (!(e.clientY > windowHeight - scrollThreshold)) {
-                stopAutoScroll();
-            }
-        }
-    }
-    
-    function startAutoScroll(direction) {
-        if (dragScrollInterval) clearInterval(dragScrollInterval);
-        
-        dragScrollInterval = setInterval(() => {
-            if (direction === 'up') {
-                window.scrollBy(0, -20);
-            } else {
-                window.scrollBy(0, 20);
-            }
-        }, 20);
-    }
-    
-    function stopAutoScroll() {
-        if (dragScrollInterval) {
-            clearInterval(dragScrollInterval);
-            dragScrollInterval = null;
-        }
-    }
-    
-    // Fetch products
+
+    // Fetch Products
     function fetchProducts() {
         document.getElementById('products-grid').innerHTML = `
             <div class="col-span-2 flex justify-center items-center py-12">
@@ -756,18 +888,21 @@ include '../includes/headeruser.php';
                 `;
             });
     }
-    
-    // Render products in grid
+
+    // Render Products
     function renderProducts() {
         const grid = document.getElementById('products-grid');
         grid.innerHTML = '';
+        
         if (allProducts.length === 0) {
             grid.innerHTML = `<div class="col-span-2 text-center py-12"><i class="fas fa-box-open text-3xl text-textlight mb-3"></i><p class="text-textlight">No products available at the moment.</p></div>`;
             return;
         }
+        
         const start = (currentPage - 1) * productsPerPage;
         const end = start + productsPerPage;
         const pageProducts = allProducts.slice(start, end);
+        
         pageProducts.forEach(product => {
             const card = document.createElement('div');
             card.className = 'product-card bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col';
@@ -791,7 +926,7 @@ include '../includes/headeruser.php';
                     <h3 class="font-bold text-primary text-base mb-1">${product.product_name}</h3>
                     <div class="text-secondary font-extrabold text-lg mb-3">₱${parseInt(product.product_price).toLocaleString()}</div>
                     <div class="mt-auto">
-                        <button onclick="render3D('${product.product_image || '../images/user/tile1.jpg'}', ${product.best_for_table ? 'true' : 'false'})" 
+                        <button onclick="render3D('${product.product_image || '../images/user/tile1.jpg'}', '${product.product_name}', ${product.best_for_table ? 'true' : 'false'})" 
                                 class="w-full bg-primary text-white rounded-lg py-2 px-4 font-bold hover:bg-secondary transition-colors mb-2 view-3d-btn">
                             <i class="fas fa-cube mr-2"></i>View in 3D
                         </button>
@@ -801,26 +936,26 @@ include '../includes/headeruser.php';
             grid.appendChild(card);
         });
         
-        // Add drag event listeners to product images
+        // Add drag event listeners
         setTimeout(() => {
-            const productImages = document.querySelectorAll('.product-image');
-            productImages.forEach(img => {
+            document.querySelectorAll('.product-image').forEach(img => {
                 img.addEventListener('dragstart', handleDragStart);
                 img.addEventListener('dragend', handleDragEnd);
             });
         }, 100);
     }
-    
-    // Render pagination controls
+
+    // Render Pagination
     function renderPagination() {
         const pageCount = Math.ceil(allProducts.length / productsPerPage);
         const paginationContainer = document.getElementById('pagination');
         paginationContainer.innerHTML = '';
+        
         if (pageCount <= 1) return;
         
         if (currentPage > 1) {
             const prevBtn = document.createElement('button');
-            prevBtn.className = 'pagination-btn bg-white border border-secondary text-secondary rounded-md px-3 py-2 font-semibold';
+            prevBtn.className = 'bg-white border border-secondary text-secondary rounded-md px-3 py-2 font-semibold hover:bg-secondary hover:text-white transition-colors';
             prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
             prevBtn.addEventListener('click', () => {
                 currentPage--;
@@ -841,7 +976,7 @@ include '../includes/headeruser.php';
         
         for (let i = startPage; i <= endPage; i++) {
             const pageBtn = document.createElement('button');
-            pageBtn.className = `pagination-btn border rounded-md px-4 py-2 font-semibold ${i === currentPage ? 'bg-secondary text-white border-secondary' : 'bg-white border-secondary text-secondary'}`;
+            pageBtn.className = `border rounded-md px-4 py-2 font-semibold ${i === currentPage ? 'bg-secondary text-white border-secondary' : 'bg-white border-secondary text-secondary hover:bg-secondary hover:text-white'} transition-colors`;
             pageBtn.textContent = i;
             pageBtn.addEventListener('click', () => {
                 currentPage = i;
@@ -854,7 +989,7 @@ include '../includes/headeruser.php';
         
         if (currentPage < pageCount) {
             const nextBtn = document.createElement('button');
-            nextBtn.className = 'pagination-btn bg-white border border-secondary text-secondary rounded-md px-3 py-2 font-semibold';
+            nextBtn.className = 'bg-white border border-secondary text-secondary rounded-md px-3 py-2 font-semibold hover:bg-secondary hover:text-white transition-colors';
             nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
             nextBtn.addEventListener('click', () => {
                 currentPage++;
@@ -865,39 +1000,8 @@ include '../includes/headeruser.php';
             paginationContainer.appendChild(nextBtn);
         }
     }
-    
-    // Preload furniture image
-    function preloadFurnitureImg() {
-        aboveFurnitureImg = new window.Image();
-        aboveFurnitureImg.src = '../images/visualizer/table_topview.png';
-        aboveFurnitureImg.onload = drawAboveView;
-    }
 
-    // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        init3DScene();
-        initAboveView();
-        initFloatingContainers();
-        preloadFurnitureImg();
-        fetchProducts();
-        // Prevent page scroll when mouse is over 3D preview
-        const visualizer3d = document.getElementById('visualizer-3d');
-        if (visualizer3d) {
-            visualizer3d.addEventListener('wheel', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-        }
-    });
-    // Export as image functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const exportBtn = document.getElementById('export-arrangement-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', function() {
-                exportTileArrangementAsImage();
-            });
-        }
-    });
-
+    // Export Arrangement as Image
     function exportTileArrangementAsImage() {
         const grid = document.getElementById('floating-containers');
         const cols = 3;
@@ -909,22 +1013,18 @@ include '../includes/headeruser.php';
         canvas.height = grid.offsetHeight;
         const ctx = canvas.getContext('2d');
 
-        // Fill background
         ctx.fillStyle = '#f9f5f2';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw each tile
         for (let i = 0; i < rows * cols; i++) {
             const container = grid.children[i];
             if (!container) continue;
             const img = container.querySelector('img');
             if (img && img.src) {
-                // Draw image as cover
                 drawImageCover(ctx, img, (i % cols) * cellW, Math.floor(i / cols) * cellH, cellW, cellH);
             }
         }
 
-        // Draw improved watermark (centered, diagonal, shadow, better opacity)
         const watermark = 'Rich Anne Lea Tiles Trading';
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -933,7 +1033,6 @@ include '../includes/headeruser.php';
         ctx.globalAlpha = 0.22;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        // Shadow for watermark
         ctx.shadowColor = 'rgba(125,49,10,0.25)';
         ctx.shadowBlur = 8;
         ctx.lineWidth = 2;
@@ -944,14 +1043,12 @@ include '../includes/headeruser.php';
         ctx.fillText(watermark, 0, 0);
         ctx.restore();
 
-        // Download
         const link = document.createElement('a');
         link.download = 'tile-arrangement.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
     }
 
-    // Helper to draw image as cover (like object-fit: cover)
     function drawImageCover(ctx, img, x, y, w, h) {
         const imgRatio = img.naturalWidth / img.naturalHeight;
         const cellRatio = w / h;
@@ -969,6 +1066,23 @@ include '../includes/headeruser.php';
         }
         ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
     }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        init3DScene();
+        initEnvironmentButtons();
+        initFloatingContainers();
+        fetchProducts();
+        
+        document.getElementById('export-arrangement-btn').addEventListener('click', exportTileArrangementAsImage);
+        
+        const visualizer3d = document.getElementById('visualizer-3d');
+        if (visualizer3d) {
+            visualizer3d.addEventListener('wheel', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+        }
+    });
     </script>
 </body>
 </html>

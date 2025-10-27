@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>Sign Up - Rich Anne Lea Tiles Trading</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -361,6 +361,60 @@
             height: 100%;
             width: 100%;
         }
+
+        /* Stepper styles */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin: 0 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .step.active {
+            background-color: var(--primary-color);
+        }
+
+        .step.completed {
+            background-color: var(--success-color);
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+
+        .btn-prev {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-prev:hover {
+            background-color: #e0e0e0;
+        }
         
         /* Compact adjustments for short viewports */
         @media (max-height: 800px) {
@@ -396,79 +450,109 @@
     
     <div class="signup-container">
         <form class="signup-form" id="signupForm">
-            <h2>Sign Up</h2>
-            <p>Create an account for Rich Anne Lea Tiles Trading</p>
-            
-            <div class="form-group">
-                <label for="fullname">Name</label>
-                <div class="input-group">
-                    <input type="text" maxlength="30" id="fullname" name="fullname" autocomplete="off" placeholder="Enter your full name" required>
-                </div>
-                <div id="name-validation" class="validation-message"></div>
+            <div class="step-indicator">
+                <div class="step active" id="step1"></div>
+                <div class="step" id="step2"></div>
+                <div class="step" id="step3"></div>
             </div>
             
-            <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <div class="input-group">
-                    <input type="tel" id="phone" name="phone" autocomplete="off" placeholder="(e.g., +639171234567)" pattern="\+639[0-9]{9}" title="Phone number must be in the format +639xxxxxxxxx" maxlength="13" required>
-                    <button type="button" class="verify-btn" id="send-code-btn">Verify</button>
-                </div>
-                <div id="verify-status"></div>
-                <div id="verification-form">
-                    <label for="verification_code">Verification Code</label>
+            <h2>Sign Up</h2>
+            
+            <!-- Step 1: Name and Phone Number -->
+            <div class="step-content active" id="step-one">
+                <p>Enter your name and phone number</p>
+                
+                <div class="form-group">
+                    <label for="fullname">Name</label>
                     <div class="input-group">
-                        <input type="text" id="verification_code" name="verification_code" placeholder="Enter the 6-digit code" autocomplete="off" maxlength="6" required>
-                        <button type="button" class="btn-confirm" id="confirm-code-btn">Confirm</button>
+                        <input type="text" maxlength="30" id="fullname" name="fullname" autocomplete="off" placeholder="Enter your full name" required>
+                    </div>
+                    <div id="name-validation" class="validation-message"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <div class="input-group">
+                        <input type="tel" id="phone" name="phone" autocomplete="off" placeholder="(e.g., +639171234567)" pattern="\+639[0-9]{9}" title="Phone number must be in the format +639xxxxxxxxx" maxlength="13" required>
+                        <button type="button" class="verify-btn" id="send-code-btn">Verify</button>
+                    </div>
+                    <div id="verify-status"></div>
+                    <div id="verification-form">
+                        <label for="verification_code">Verification Code</label>
+                        <div class="input-group">
+                            <input type="text" id="verification_code" name="verification_code" placeholder="Enter the 6-digit code" autocomplete="off" maxlength="6" required>
+                            <button type="button" class="btn-confirm" id="confirm-code-btn">Confirm</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label for="house_address">House Address</label>
-                <div class="input-group">
-                    <input type="text" id="house_address" name="house_address" autocomplete="off" placeholder="Enter your house number, street, etc." required>
-                </div>
-                <div id="address-validation" class="validation-message"></div>
-            </div>
-            
-            <div class="form-group">
-                <label for="address">Pin Point Location</label>
-                <div class="input-group">
-                    <input type="text" id="address" name="address" placeholder="Tap 'Locate Me' to get your full location" readonly required>
-                    <button type="button" class="locate-btn" id="locate-btn">Locate Me</button>
-                </div>
-                <div id="location-info"></div>
                 
-                <div class="map-container" id="map-container">
-                    <div id="map"></div>
+                <button type="button" class="btn-submit" id="step-one-btn" disabled>Continue</button>
+            </div>
+            
+            <!-- Step 2: House Address and Location -->
+            <div class="step-content" id="step-two">
+                <p>Enter your address and location</p>
+                
+                <div class="form-group">
+                    <label for="house_address">House Address</label>
+                    <div class="input-group">
+                        <input type="text" id="house_address" name="house_address" autocomplete="off" placeholder="Enter your house number, street, etc." required>
+                    </div>
+                    <div id="address-validation" class="validation-message"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Pin Point Location</label>
+                    <div class="input-group">
+                        <input type="text" id="address" name="address" placeholder="Tap 'Locate Me' to get your full location" readonly required>
+                        <button type="button" class="locate-btn" id="locate-btn">Locate Me</button>
+                    </div>
+                    <div id="location-info"></div>
+                    
+                    <div class="map-container" id="map-container">
+                        <div id="map"></div>
+                    </div>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn-prev" id="step-two-prev">Previous</button>
+                    <button type="button" class="btn-submit" id="step-two-btn" disabled>Continue</button>
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="password">Password</label>
-                <div class="input-group">
-                    <input type="password" id="password" minlength="8" autocomplete="off" name="password" placeholder="Enter your password (minimum 8 characters)" required>
-                    <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePasswordVisibility('password')"></i>
+            <!-- Step 3: Password -->
+            <div class="step-content" id="step-three">
+                <p>Create your password</p>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-group">
+                        <input type="password" id="password" minlength="8" autocomplete="off" name="password" placeholder="Enter your password (minimum 8 characters)" required>
+                        <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePasswordVisibility('password')"></i>
+                    </div>
+                    <div class="password-requirements">
+                        Password must be at least 8 characters long
+                    </div>
+                    <div class="password-strength-meter">
+                        <div class="password-strength-meter-fill" id="password-strength-meter"></div>
+                    </div>
+                    <div id="password-validation" class="validation-message"></div>
                 </div>
-                <div class="password-requirements">
-                    Password must be at least 8 characters long
+                
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <div class="input-group">
+                        <input type="password" minlength="8" id="confirm_password" autocomplete="off" name="confirm_password" placeholder="Confirm your password" required>
+                        <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePasswordVisibility('confirm_password')"></i>
+                    </div>
+                    <div id="password-match-status" class="validation-message"></div>
                 </div>
-                <div class="password-strength-meter">
-                    <div class="password-strength-meter-fill" id="password-strength-meter"></div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn-prev" id="step-three-prev">Previous</button>
+                    <button type="submit" class="btn-submit" id="step-three-btn" disabled>Sign Up</button>
                 </div>
-                <div id="password-validation" class="validation-message"></div>
             </div>
-            
-            <div class="form-group">
-                <label for="confirm_password">Confirm Password</label>
-                <div class="input-group">
-                    <input type="password" minlength="8" id="confirm_password" autocomplete="off" name="confirm_password" placeholder="Confirm your password" required>
-                    <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePasswordVisibility('confirm_password')"></i>
-                </div>
-                <div id="password-match-status" class="validation-message"></div>
-            </div>
-            
-            <button type="submit" class="btn-submit" id="signup-submit-btn" disabled>Sign up</button>
             
             <p class="login-link">Already have an account? <a href="user_login_form.php">Log In</a></p>
         </form>
@@ -683,7 +767,7 @@
                                 locateBtn.style.backgroundColor = '#4CAF50'; 
                                 locateBtn.style.cursor = 'default';
                                 // Note: The button remains disabled to prevent re-locating
-                                checkFormCompletion();
+                                checkStepTwoCompletion();
                             } catch (error) {
                                 locationInfo.style.color = 'red';
                                 locationInfo.textContent = error.message;
@@ -743,11 +827,21 @@
             const verificationForm = document.getElementById('verification-form');
             const verifyStatusDiv = document.getElementById('verify-status');
             const verificationCodeInput = document.getElementById('verification_code');
-            const signupSubmitBtn = document.getElementById('signup-submit-btn');
             const passwordInput = document.getElementById('password');
             const confirmPasswordInput = document.getElementById('confirm_password');
             const fullnameInput = document.getElementById('fullname');
             const houseAddressInput = document.getElementById('house_address');
+            const stepOneBtn = document.getElementById('step-one-btn');
+            const stepTwoBtn = document.getElementById('step-two-btn');
+            const stepThreeBtn = document.getElementById('step-three-btn');
+            const stepTwoPrevBtn = document.getElementById('step-two-prev');
+            const stepThreePrevBtn = document.getElementById('step-three-prev');
+            const stepOne = document.getElementById('step-one');
+            const stepTwo = document.getElementById('step-two');
+            const stepThree = document.getElementById('step-three');
+            const step1Indicator = document.getElementById('step1');
+            const step2Indicator = document.getElementById('step2');
+            const step3Indicator = document.getElementById('step3');
 
             let isNumberVerified = false;
             let resendTimer = null;
@@ -776,17 +870,69 @@
                 }
             }
             
-            // Enhanced form completion check
-            function checkFormCompletion() {
+            // Step 1 completion check
+            function checkStepOneCompletion() {
                 const isNameValid = validateName(fullnameInput.value);
+                stepOneBtn.disabled = !(isNameValid && isNumberVerified);
+            }
+
+            // Step 2 completion check
+            function checkStepTwoCompletion() {
                 const isAddressValid = validateAddress(houseAddressInput.value);
+                const isLocationSet = document.getElementById('address').value.trim() !== '';
+                stepTwoBtn.disabled = !(isAddressValid && isLocationSet);
+            }
+
+            // Step 3 completion check
+            function checkStepThreeCompletion() {
                 const isPasswordValid = validatePassword(passwordInput.value);
                 const isPasswordMatch = validateConfirmPassword(passwordInput.value, confirmPasswordInput.value);
-                const isLocationSet = document.getElementById('address').value.trim() !== '';
-                
-                signupSubmitBtn.disabled = !(isNameValid && isNumberVerified && isAddressValid && 
-                                             isPasswordValid && isPasswordMatch && isLocationSet);
+                stepThreeBtn.disabled = !(isPasswordValid && isPasswordMatch);
             }
+
+            // Navigation functions
+            function goToStep(stepNumber) {
+                // Hide all steps
+                stepOne.classList.remove('active');
+                stepTwo.classList.remove('active');
+                stepThree.classList.remove('active');
+                
+                // Update step indicators
+                step1Indicator.classList.remove('active');
+                step2Indicator.classList.remove('active');
+                step3Indicator.classList.remove('active');
+                
+                // Show the selected step and update indicator
+                if (stepNumber === 1) {
+                    stepOne.classList.add('active');
+                    step1Indicator.classList.add('active');
+                } else if (stepNumber === 2) {
+                    stepTwo.classList.add('active');
+                    step2Indicator.classList.add('active');
+                } else if (stepNumber === 3) {
+                    stepThree.classList.add('active');
+                    step3Indicator.classList.add('active');
+                }
+            }
+
+            // Step 1 navigation
+            stepOneBtn.addEventListener('click', () => {
+                goToStep(2);
+            });
+
+            // Step 2 navigation
+            stepTwoPrevBtn.addEventListener('click', () => {
+                goToStep(1);
+            });
+
+            stepTwoBtn.addEventListener('click', () => {
+                goToStep(3);
+            });
+
+            // Step 3 navigation
+            stepThreePrevBtn.addEventListener('click', () => {
+                goToStep(2);
+            });
 
             // Phone verification
             sendCodeBtn.addEventListener('click', async () => {
@@ -914,7 +1060,7 @@
                         hiddenPhoneInput.value = phoneNumber;
                         signupForm.appendChild(hiddenPhoneInput);
 
-                        checkFormCompletion();
+                        checkStepOneCompletion();
                     } else {
                         throw new Error(data.message);
                     }
@@ -928,39 +1074,34 @@
                 }
             });
 
-            // Password validation on input
-            passwordInput.addEventListener('input', function() {
-                checkPasswordStrength(this.value);
-                validatePassword(this.value);
-                validateConfirmPassword(this.value, confirmPasswordInput.value);
-                checkFormCompletion();
-            });
-
-            // Confirm password validation
-            confirmPasswordInput.addEventListener('input', function() {
-                validateConfirmPassword(passwordInput.value, this.value);
-                checkFormCompletion();
-            });
-
             // Name validation
             fullnameInput.addEventListener('input', function() {
                 validateName(this.value);
-                checkFormCompletion();
+                checkStepOneCompletion();
             });
 
             // Address validation
             houseAddressInput.addEventListener('input', function() {
                 validateAddress(this.value);
-                checkFormCompletion();
+                checkStepTwoCompletion();
+            });
+
+            // Password validation on input
+            passwordInput.addEventListener('input', function() {
+                checkPasswordStrength(this.value);
+                validatePassword(this.value);
+                validateConfirmPassword(this.value, confirmPasswordInput.value);
+                checkStepThreeCompletion();
+            });
+
+            // Confirm password validation
+            confirmPasswordInput.addEventListener('input', function() {
+                validateConfirmPassword(passwordInput.value, this.value);
+                checkStepThreeCompletion();
             });
 
             // Form submission
             signupForm.addEventListener('submit', async (e) => {
-                let submitter = e.submitter || document.activeElement;
-                if (!submitter || submitter.id !== 'signup-submit-btn') {
-                    e.preventDefault();
-                    return;
-                }
                 e.preventDefault();
 
                 // Clear previous validation messages
@@ -1003,7 +1144,7 @@
                 }
                 
 
-                const submitBtn = document.getElementById('signup-submit-btn');
+                const submitBtn = document.getElementById('step-three-btn');
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Signing up...';
 
@@ -1066,7 +1207,7 @@
                     });
                 }
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Sign up';
+                submitBtn.textContent = 'Sign Up';
             });
         });
     </script>

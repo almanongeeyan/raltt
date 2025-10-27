@@ -330,10 +330,10 @@
             
             <!-- Step 1: Enter Phone Number -->
             <div id="step-one">
-                <p>Enter the phone number used to create your account</p>
-                
+                <p>Enter the phone number of your account</p>
+                <br>
                 <div class="form-group">
-                    <label for="phone">Phone Number (Required)*</label>
+                    <label for="phone">Phone Number*</label>
                     <div class="input-group">
                         <input type="tel" id="phone" name="phone" autocomplete="off" placeholder="(e.g., +639171234567)" pattern="\+639[0-9]{9}" title="Phone number must be in the format +639xxxxxxxxx" maxlength="13" required>
                     </div>

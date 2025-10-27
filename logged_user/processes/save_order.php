@@ -32,8 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Generate order reference
             $order_reference = 'RAL-' . strtoupper(bin2hex(random_bytes(4)));
-            // Insert order (branch_id is required, set to 1 for now or update as needed)
-            $branch_id = 1;
+            // Get branch_id from session (set by headeruser.php)
+            $branch_id = isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 1;
             $stmt = $conn->prepare("INSERT INTO orders (order_reference, user_id, branch_id, total_amount, original_subtotal, coins_redeemed, payment_method, order_status, shipping_fee, order_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
             $stmt->execute([
                 $order_reference,

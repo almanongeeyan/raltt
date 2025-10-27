@@ -17,12 +17,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'error' => 'You have reached the maximum of 3 cancellations.']);
             exit;
         }
-        // Find the order by reference and user
-        $stmt = $db_connection->prepare("SELECT order_id FROM orders WHERE order_reference = ? AND user_id = ? LIMIT 1");
+        // Find the order by reference and user, and check status
+        $stmt = $db_connection->prepare("SELECT order_id, order_status FROM orders WHERE order_reference = ? AND user_id = ? LIMIT 1");
         $stmt->execute([$orderRef, $userId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($order) {
             $orderId = $order['order_id'];
+            $orderStatus = strtolower($order['order_status']);
+            // Prevent cancellation if order is processing
+            if ($orderStatus === 'processing') {
+                echo json_encode(['success' => false, 'error' => 'Order is processing and cannot be cancelled.']);
+                exit;
+            }
             // Update order status, cancellation reason, and cancelled_by_user
             $update = $db_connection->prepare("UPDATE orders SET order_status = 'cancelled', cancellation_reason = ?, cancelled_by_user = 1 WHERE order_id = ?");
             $success = $update->execute([$cancelReason, $orderId]);
