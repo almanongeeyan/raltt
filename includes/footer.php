@@ -46,7 +46,7 @@
                         <!-- Features column -->
                         <div class="min-w-[180px] pr-0 md:pr-6 flex flex-col items-start">
                             <p class="font-bold mb-2 tracking-wide">Features</p>
-                            <a href="2d_visualizer_homepage.php" class="block text-white no-underline mb-1 rounded px-1.5 py-0.5 transition-all duration-300 hover:text-accent hover:bg-[rgba(239,114,50,0.08)]">2D Tile Visualizer</a>
+                            <a href="3d_visualizer_homepage.php" class="block text-white no-underline mb-1 rounded px-1.5 py-0.5 transition-all duration-300 hover:text-accent hover:bg-[rgba(239,114,50,0.08)]">3D Tile Visualizer</a>
                             <a href="referral_code.php" class="block text-white no-underline mb-1 rounded px-1.5 py-0.5 transition-all duration-300 hover:text-accent hover:bg-[rgba(239,114,50,0.08)]">Referral Code</a>
                         </div>
 

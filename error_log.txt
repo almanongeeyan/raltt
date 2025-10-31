@@ -1,0 +1,149 @@
+[31-Oct-2025 04:42:30 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.analytics_overview' doesn't exist in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:38
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(38): PDO->prepare('SELECT metric, ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 38
+[31-Oct-2025 04:42:36 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.analytics_overview' doesn't exist in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:38
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(38): PDO->prepare('SELECT metric, ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 38
+[31-Oct-2025 04:42:37 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.analytics_overview' doesn't exist in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:38
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(38): PDO->prepare('SELECT metric, ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 38
+[31-Oct-2025 04:42:38 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.analytics_overview' doesn't exist in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:38
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(38): PDO->prepare('SELECT metric, ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 38
+[31-Oct-2025 04:42:39 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.analytics_overview' doesn't exist in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:38
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(38): PDO->prepare('SELECT metric, ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 38
+[31-Oct-2025 04:42:40 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.analytics_overview' doesn't exist in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:38
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(38): PDO->prepare('SELECT metric, ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 38
+[31-Oct-2025 04:42:56 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'raltt_db.analytics_overview' doesn't exist in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:38
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(38): PDO->prepare('SELECT metric, ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 38
+[31-Oct-2025 04:49:01 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:78
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 78
+[31-Oct-2025 04:49:09 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:78
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 78
+[31-Oct-2025 04:49:09 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:78
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 78
+[31-Oct-2025 04:52:43 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 04:53:27 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:03:54 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:75
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 75
+[31-Oct-2025 05:04:59 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:05:17 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:05:25 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:05:26 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:05:27 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:05:28 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:05:29 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:11:59 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:12:52 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:78
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 78
+[31-Oct-2025 05:13:41 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:78
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 78
+[31-Oct-2025 05:14:00 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:78
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 78
+[31-Oct-2025 05:14:34 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:14:38 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: Unsupported operand types: string + int in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:76
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 76
+[31-Oct-2025 05:19:15 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "Mpdf\Mpdf" not found in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php:22
+Stack trace:
+#0 C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php(50): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->createExternalWriterInstance(Array)
+#1 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(232): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->save('php://output')
+#2 {main}
+  thrown in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php on line 22
+[31-Oct-2025 05:19:16 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "Mpdf\Mpdf" not found in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php:22
+Stack trace:
+#0 C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php(50): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->createExternalWriterInstance(Array)
+#1 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(232): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->save('php://output')
+#2 {main}
+  thrown in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php on line 22
+[31-Oct-2025 05:34:08 Europe/Berlin] PHP Fatal error:  Uncaught PhpOffice\PhpSpreadsheet\Exception: Maximum 31 characters allowed in sheet title. in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Worksheet\Worksheet.php:441
+Stack trace:
+#0 C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Worksheet\Worksheet.php(870): PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::checkSheetTitle('Predictive Data...')
+#1 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(40): PhpOffice\PhpSpreadsheet\Worksheet\Worksheet->setTitle('Predictive Data...')
+#2 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(146): setupSheet(Object(PhpOffice\PhpSpreadsheet\Worksheet\Worksheet), 'Predictive Data...', Array)
+#3 {main}
+  thrown in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Worksheet\Worksheet.php on line 441
+[31-Oct-2025 05:34:25 Europe/Berlin] PHP Fatal error:  Uncaught PhpOffice\PhpSpreadsheet\Exception: Maximum 31 characters allowed in sheet title. in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Worksheet\Worksheet.php:441
+Stack trace:
+#0 C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Worksheet\Worksheet.php(870): PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::checkSheetTitle('Predictive Data...')
+#1 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(40): PhpOffice\PhpSpreadsheet\Worksheet\Worksheet->setTitle('Predictive Data...')
+#2 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(146): setupSheet(Object(PhpOffice\PhpSpreadsheet\Worksheet\Worksheet), 'Predictive Data...', Array)
+#3 {main}
+  thrown in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Worksheet\Worksheet.php on line 441
+[31-Oct-2025 05:43:24 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "Mpdf\Mpdf" not found in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php:22
+Stack trace:
+#0 C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php(50): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->createExternalWriterInstance(Array)
+#1 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(327): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->save('php://output')
+#2 {main}
+  thrown in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php on line 22
+[31-Oct-2025 05:43:25 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "Mpdf\Mpdf" not found in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php:22
+Stack trace:
+#0 C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php(50): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->createExternalWriterInstance(Array)
+#1 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(327): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->save('php://output')
+#2 {main}
+  thrown in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php on line 22

@@ -368,7 +368,7 @@ include 'includes/header.php';
                         <button id="branch-left" aria-label="Previous Branch" class="p-3 bg-accent-50 hover:bg-primary-500 rounded-full transition-all duration-300 hover:text-white hover:scale-110">
                             <i class="fa-solid fa-angle-left text-xl"></i>
                         </button>
-                        <span id="branch-name" class="text-xl font-bold text-accent-900 tracking-wider">SAMARIA</span>
+                        <span id="branch-name" class="text-xl font-bold text-accent-900 tracking-wider">Samaria</span>
                         <button id="branch-right" aria-label="Next Branch" class="p-3 bg-accent-50 hover:bg-primary-500 rounded-full transition-all duration-300 hover:text-white hover:scale-110">
                             <i class="fa-solid fa-angle-right text-xl"></i>
                         </button>
@@ -424,7 +424,7 @@ include 'includes/header.php';
     <script>
         const branches = [
             {
-                name: "SAMARIA",
+                name: "Samaria",
                 address: "St. Vincent Ferrer Ave. Samaria Corner, Tala, Caloocan City",
                 hours: "8:00 AM – 6:00 PM",
                 contact: "0999 999 9999",
@@ -438,21 +438,21 @@ include 'includes/header.php';
                 map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.627702581635!2d121.01168531478546!3d14.607425189785834!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397bd30f87a8987%3A0x89d25141b714777d!2sPhase%201%2C%20Camarin%20Rd%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1625000000000!5m2!1sen!2sph"
             },
             {
-                name: "DEPARO",
+                name: "Deparo",
                 address: "189 Deparo Road, Caloocan City",
                 hours: "10:00 AM – 8:00 PM",
                 contact: "0999 999 9999",
                 map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.2961451796805!2d121.017676499333!3d14.75233823334116!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b1c722c4d1b9%3A0xc107b82c47609263!2sRich%20Anne%20Tiles!5e0!3m2!1sen!2sph!4v1756129529669!5m2!1sen!2sph"
             },
             {
-                name: "VANGUARD",
+                name: "Vanguard",
                 address: "Phase 6, Vanguard, Camarin, North Caloocan",
                 hours: "8:00 AM – 5:00 PM",
                 contact: "0999 999 9999",
                 map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.297019964697!2d121.06286101292358!3d14.759202001446935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b919d7d11f69%3A0x288d3d951a8a2522!2sVanguard!5e0!3m2!1sen!2sph!4v1756129529669!5m2!1sen!2sph"
             },
             {
-                name: "BRIXTON",
+                name: "Brixton",
                 address: "Coaster St. Brixtonville Subdivision, Caloocan City",
                 hours: "7:00 AM – 9:00 PM",
                 contact: "0999 999 9999",

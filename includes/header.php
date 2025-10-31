@@ -221,7 +221,7 @@
                         </button>
                         <div class="dropdown-content absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-dropdown overflow-hidden border border-gray-100 animate-slide-down">
                             <!-- 3D Tile Visualizer -->
-                            <a href="2d_visualizer_homepage.php" class="dropdown-item flex items-center px-4 py-3 text-gray-700 hover:text-primary-light">
+                            <a href="3d_visualizer_homepage.php" class="dropdown-item flex items-center px-4 py-3 text-gray-700 hover:text-primary-light">
                                 <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                                     <i class="fas fa-cube text-blue-600 text-sm"></i>
                                 </div>
@@ -239,7 +239,6 @@
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
                                         <span class="font-medium">AR Tile Recognition</span>
-                                        <span class="feature-badge text-white text-xs font-bold">NEW</span>
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">Scan tiles with your camera</p>
                                 </div>
@@ -253,7 +252,6 @@
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
                                         <span class="font-medium">AI Recommendations</span>
-                                        <span class="feature-badge text-white text-xs font-bold">AI</span>
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">Personalized tile suggestions</p>
                                 </div>
@@ -310,7 +308,7 @@
                         </button>
                         <div class="mobile-dropdown-content pl-8 pr-4 space-y-2">
                             <!-- 3D Tile Visualizer -->
-                            <a href="2d_visualizer_homepage.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light rounded-lg transition-all duration-300">
+                            <a href="3d_visualizer_homepage.php" class="flex items-center px-4 py-3 text-gray-700 hover:bg-accent-dark hover:text-primary-light rounded-lg transition-all duration-300">
                                 <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center mr-3">
                                     <i class="fas fa-cube text-blue-600 text-xs"></i>
                                 </div>
@@ -324,7 +322,6 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span>AR Tile Recognition</span>
-                                    <span class="feature-badge text-white text-xs">NEW</span>
                                 </div>
                             </a>
                             
@@ -335,7 +332,6 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span>AI Recommendations</span>
-                                    <span class="feature-badge text-white text-xs">AI</span>
                                 </div>
                             </a>
                             

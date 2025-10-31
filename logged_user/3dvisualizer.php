@@ -633,12 +633,12 @@ include '../includes/headeruser.php';
     // Create enhanced prompt with tile description
     function createEnhancedPromptWithDescription(tileName, environment, tileDescription) {
         const environmentContext = {
-            'living-room': 'modern living room interior, focus on floor showing exact tile pattern, contemporary furniture partially visible, natural lighting from large windows',
-            'patio': 'outdoor patio scene with tile flooring, beautiful garden background, sunny day lighting, outdoor furniture partially visible',
-            'bathroom': 'elegant modern bathroom interior with tile flooring, minimalist design, excellent lighting, spa-like atmosphere',
-            'kitchen': 'contemporary kitchen interior with tile flooring, modern appliances partially visible, clean countertops, natural lighting',
-            'bedroom': 'modern bedroom interior with tile flooring, contemporary bed and furniture partially visible, soft natural lighting',
-            'entryway': 'elegant entryway or foyer with tile flooring, architectural elements partially visible, welcoming atmosphere'
+            'living-room': 'modern living room interior, focus on floor showing exact tile pattern, contemporary furniture partially visible, natural lighting from large windows and focus more on the flooring',
+            'patio': 'outdoor patio scene with tile flooring, beautiful garden background, sunny day lighting, outdoor furniture partially visible and focus more on the flooring',
+            'bathroom': 'elegant modern bathroom interior with tile flooring, minimalist design, excellent lighting, spa-like atmosphere and focus more on the flooring',
+            'kitchen': 'contemporary kitchen interior with tile flooring, modern appliances partially visible, clean countertops, natural lighting and focus more on the flooring',
+            'bedroom': 'modern bedroom interior with tile flooring, contemporary bed and furniture partially visible, soft natural lighting and focus more on the flooring',
+            'entryway': 'elegant entryway or foyer with tile flooring, architectural elements partially visible, welcoming atmosphere and focus more on the flooring'
         };
         
         return `Professional architectural photography of a ${environmentContext[environment]}. The floor features ${tileDescription}. The tile pattern must be clearly visible and accurately represented, covering 60-70% of the image. Photorealistic style, 4k resolution, professional interior design photography, accurate perspective, realistic lighting and shadows.`;

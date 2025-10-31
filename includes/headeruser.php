@@ -9,13 +9,11 @@ if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
     exit();
 }
 
-
 // Database connection and branch fetching
 require_once __DIR__ . '/../connection/connection.php';
 if (!isset($db_connection) && isset($conn)) {
     $db_connection = $conn;
 }
-
 
 // Log branch change event to customer_branch_trail
 if (isset($_SESSION['user_id']) && isset($_SESSION['branch_id']) && isset($db_connection)) {
@@ -26,6 +24,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['branch_id']) && isset($db_co
         // Optionally log error
     }
 }
+
 $branches = [];
 try {
     // Using PDO::FETCH_ASSOC for associative arrays
@@ -42,11 +41,9 @@ try {
     ];
 }
 
-// ***FIX 1: Check if the current page is an order summary or confirmation page***
+// Check if the current page is an order summary or confirmation page
 $currentPage = basename($_SERVER['PHP_SELF']);
 $isCheckoutPage = in_array($currentPage, ['order_summary.php', 'order_confirmation.php']);
-// ***END FIX 1***
-
 
 $user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
 $user_branch = null;
@@ -142,7 +139,22 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             border-radius: 10px; 
         }
         
-        /* Disabled branch button style */
+        /* Branch item styles */
+        .branch-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .branch-item:hover:not(.branch-disabled):not(.branch-selected) {
+            border-color: var(--color-gold) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(207, 135, 86, 0.2);
+        }
+        .branch-selected {
+            background-color: var(--color-gold) !important;
+            border-color: var(--color-gold) !important;
+            color: white !important;
+            box-shadow: 0 4px 16px rgba(207, 135, 86, 0.4);
+        }
         .branch-disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -150,6 +162,8 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
         }
         .branch-disabled:hover {
             border-color: transparent !important;
+            transform: none !important;
+            box-shadow: none !important;
         }
 
         /* Draggable overlay style */
@@ -185,6 +199,67 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             background: rgba(17, 24, 39, 0.9);
             backdrop-filter: blur(8px);
         }
+
+        /* Google Maps container */
+        #branch-map {
+            height: 300px;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Branch info card */
+        .branch-info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Branch selection modal */
+        .branch-modal-content {
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .branch-modal-body {
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Map iframe styling */
+        .branch-map-iframe {
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .branch-modal-content {
+                max-height: 90vh;
+            }
+            
+            .branch-modal-body {
+                flex-direction: column;
+            }
+            
+            #branch-map {
+                height: 250px;
+            }
+            
+            .branch-modal-body > div {
+                width: 100% !important;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
     </style>
 </head>
 <body class="text-white pt-20">
@@ -194,7 +269,8 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
     window.RALTT_DATA = {
         branches: <?php echo json_encode($branches); ?>,
         userBranch: <?php echo json_encode($user_branch); ?>,
-        isCheckoutPage: <?php echo json_encode($isCheckoutPage); ?>
+        isCheckoutPage: <?php echo json_encode($isCheckoutPage); ?>,
+        googleMapsApiKey: '<?php echo isset($_ENV['GOOGLE_MAPS_API_KEY']) ? $_ENV['GOOGLE_MAPS_API_KEY'] : ''; ?>'
     };
 </script>
 
@@ -220,10 +296,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
 
         <!-- User Actions -->
         <div class="flex items-center gap-4 z-50">
-            <!-- Search Button -->
-            <button id="search-toggle" class="text-white/80 hover:text-gold transition-colors text-xl w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center">
-                <i class="fas fa-search"></i>
-            </button>
 
             <!-- User Dropdown -->
             <div class="hidden lg:block relative group">
@@ -260,14 +332,7 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
         </div>
     </div>
 
-    <!-- Desktop Search Bar -->
-    <div id="desktop-search" class="hidden absolute top-full left-0 w-full bg-gray-900/95 border-t border-white/10 py-4 px-4 shadow-xl">
-        <div class="container mx-auto flex items-center gap-4 max-w-2xl bg-gray-800 rounded-full px-5 py-2 border border-gray-600">
-            <i class="fa fa-search text-gray-400"></i>
-            <input type="text" placeholder="Search for premium tiles and more..." class="flex-1 bg-transparent text-white placeholder-gray-400 outline-none">
-            <button id="close-search" class="text-gray-400 hover:text-white transition-colors">&times;</button>
-        </div>
-    </div>
+    
 </header>
 
 <!-- Mobile Menu -->
@@ -324,7 +389,7 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
 
 <!-- Branch Selection Modal -->
 <div id="branch-modal" class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-gray-800 text-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-white/10">
+    <div class="bg-gray-800 text-white rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden border border-white/10 branch-modal-content">
         <div class="p-5 text-center border-b border-white/10 relative">
             <h2 class="text-xl font-bold">Select Your Branch</h2>
             <p class="text-sm text-white/60 mt-1">Enable location to choose a branch.</p>
@@ -332,9 +397,40 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
                 &times;
             </button>
         </div>
+        
         <div id="branch-location-status" class="p-3 text-center text-sm"></div>
-        <div id="branch-list" class="p-4 space-y-2 max-h-[60vh] overflow-y-auto custom-scrollbar">
-            <!-- Branch list will be populated by JavaScript -->
+        
+        <div class="branch-modal-body flex flex-col md:flex-row">
+            <!-- Branch List Section -->
+            <div class="w-full md:w-1/3 p-4 border-r border-white/10">
+                <div id="branch-list" class="space-y-2 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                    <!-- Branch list will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Map and Branch Details Section -->
+            <div class="w-full md:w-2/3 p-4 flex flex-col">
+                <div id="branch-map-container" class="mb-4 flex-1">
+                    <iframe id="branch-map-iframe" class="branch-map-iframe" 
+                        src=""
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+                <div id="branch-details" class="branch-info-card mt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 id="branch-details-name" class="text-lg font-bold text-gold">Select a branch</h3>
+                        <span id="branch-details-distance" class="text-sm bg-gold text-white px-2 py-1 rounded-full"></span>
+                    </div>
+                    <p id="branch-details-address" class="text-white/70 text-sm">Click on a branch to see its location and details</p>
+                    <div class="mt-4 flex justify-end">
+                        <button id="select-branch-btn" class="bg-gold hover:bg-gold-dark text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Select Branch
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -351,6 +447,15 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
 // Main Application
 document.addEventListener('DOMContentLoaded', () => {
     const { branches, userBranch, isCheckoutPage } = window.RALTT_DATA;
+
+    // Google Maps embed URLs for each branch
+    const branchMaps = {
+        1: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.2961451796805!2d121.017676499333!3d14.75233823334116!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b1c722c4d1b9%3A0xc107b82c47609263!2sRich%20Anne%20Tiles!5e0!3m2!1sen!2sph!4v1756129529669!5m2!1sen!2sph",
+        2: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.297019964697!2d121.06286101292358!3d14.759202001446935!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b919d7d11f69%3A0x288d3d951a8a2522!2sVanguard!5e0!3m2!1sen!2sph!4v1756129529669!5m2!1sen!2sph",
+        3: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3859.083321523455!2d120.97931341478523!3d14.583120689801826!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397c8d9c22e4c2f%3A0xf6f7f6f7f6f7f6f7!2sBrixtonville%20Subdivision%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1625000000000!5m2!1sen!2sph",
+        4: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15433.080516641774!2d121.03362143009946!3d14.75704764848384!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397bd586a117565%3A0x2832561ce14a3174!2sTala%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1625000000000!5m2!1sen!2sph",
+        5: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.627702581635!2d121.01168531478546!3d14.607425189785834!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397bd30f87a8987%3A0x89d25141b714777d!2sPhase%201%2C%20Camarin%20Rd%2C%20Caloocan%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1625000000000!5m2!1sen!2sph"
+    };
 
     /**
      * Draggable Element Module
@@ -468,7 +573,51 @@ document.addEventListener('DOMContentLoaded', () => {
         const locationStatusEl = document.getElementById('branch-location-status');
         const distanceEl = document.getElementById('branch-distance');
         const loadingOverlay = document.getElementById('page-loading-overlay');
+        const selectBranchBtn = document.getElementById('select-branch-btn');
+        const branchDetailsName = document.getElementById('branch-details-name');
+        const branchDetailsDistance = document.getElementById('branch-details-distance');
+        const branchDetailsAddress = document.getElementById('branch-details-address');
+        const branchMapIframe = document.getElementById('branch-map-iframe');
+        
         let geolocationInterval = null;
+        let selectedBranch = null;
+        let userCoords = null;
+
+        // Update Google Maps iframe for selected branch
+        const updateMapForBranch = (branch) => {
+            if (!branch || !branchMapIframe) return;
+            
+            // Update Google Maps iframe
+            if (branchMaps[branch.id]) {
+                branchMapIframe.src = branchMaps[branch.id];
+            }
+            
+            // Update branch details
+            branchDetailsName.textContent = branch.name;
+            
+            // Calculate and display distance if user location is available
+            if (userCoords) {
+                const distance = haversineDistance(
+                    userCoords.latitude, 
+                    userCoords.longitude, 
+                    branch.lat, 
+                    branch.lng
+                );
+                branchDetailsDistance.textContent = `${distance.toFixed(1)} km away`;
+            } else {
+                branchDetailsDistance.textContent = '';
+            }
+            
+            // Generate address based on branch name
+            branchDetailsAddress.textContent = `RALTT Shop ${branch.name} Branch - Premium Tiles & More`;
+            
+            // Enable select button if not current branch
+            const isCurrentBranch = userBranch && userBranch.id === branch.id;
+            selectBranchBtn.disabled = isCurrentBranch || isCheckoutPage;
+            selectBranchBtn.textContent = isCurrentBranch ? 'Current Branch' : 'Select Branch';
+            
+            selectedBranch = branch;
+        };
 
         // Calculate distance between coordinates
         const haversineDistance = (lat1, lon1, lat2, lon2) => {
@@ -509,44 +658,66 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // Select branch in the list
+        const selectBranchInList = (branchId) => {
+            const branch = branches.find(b => b.id === branchId);
+            if (!branch) return;
+            
+            // Update UI to show selected branch
+            const branchElements = document.querySelectorAll('.branch-item');
+            branchElements.forEach(el => {
+                if (parseInt(el.dataset.branchId) === branchId) {
+                    el.classList.add('branch-selected');
+                    el.classList.remove('bg-gray-700', 'border-transparent');
+                } else {
+                    el.classList.remove('branch-selected');
+                    el.classList.add('bg-gray-700', 'border-transparent');
+                }
+            });
+            
+            updateMapForBranch(branch);
+        };
+
         // Render branch list
-        const renderBranchList = (userCoords = null, enabled = false) => {
+        const renderBranchList = (coordinates = null, enabled = false) => {
             if (!branchListContainer) return;
             
             branchListContainer.innerHTML = '';
+            userCoords = coordinates;
 
             // Sort branches by distance if coordinates available
             const sortedBranches = [...branches].sort((a, b) => {
-                if (!userCoords) return 0;
-                const distA = haversineDistance(userCoords.latitude, userCoords.longitude, a.lat, a.lng);
-                const distB = haversineDistance(userCoords.latitude, userCoords.longitude, b.lat, b.lng);
+                if (!coordinates) return 0;
+                const distA = haversineDistance(coordinates.latitude, coordinates.longitude, a.lat, a.lng);
+                const distB = haversineDistance(coordinates.latitude, coordinates.longitude, b.lat, b.lng);
                 return distA - distB;
             });
 
             sortedBranches.forEach(branch => {
                 const isSelected = userBranch && userBranch.id === branch.id;
-                const distance = userCoords ? 
-                    haversineDistance(userCoords.latitude, userCoords.longitude, branch.lat, branch.lng).toFixed(1) + ' km' : 
+                const distance = coordinates ? 
+                    haversineDistance(coordinates.latitude, coordinates.longitude, branch.lat, branch.lng).toFixed(1) + ' km' : 
                     null;
                 
-                const isClickable = enabled && !isSelected && !isCheckoutPage;
+                const isClickable = enabled && !isCheckoutPage;
                 
                 const branchElement = document.createElement('div');
-                branchElement.className = `flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200 ${
+                branchElement.className = `branch-item flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200 ${
                     isSelected ? 
-                    'bg-gold border-gold text-white shadow-lg' :
+                    'branch-selected' :
                     isClickable ? 
                     'bg-gray-700 border-transparent hover:border-gold cursor-pointer' :
-                    'bg-gray-700 border-transparent branch-disabled'
+                    'branch-disabled bg-gray-700 border-transparent'
                 }`;
+                branchElement.dataset.branchId = branch.id;
 
                 if (isClickable) {
-                    branchElement.onclick = () => selectBranch(branch.id);
+                    branchElement.onclick = () => selectBranchInList(branch.id);
                 }
 
                 branchElement.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <i class="fas fa-store ${isSelected ? '' : 'text-gold'}"></i>
+                        <i class="fas fa-store ${isSelected ? 'text-white' : 'text-gold'}"></i>
                         <span class="font-bold">${branch.name}</span>
                     </div>
                     <div class="text-right">
@@ -557,6 +728,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 branchListContainer.appendChild(branchElement);
             });
+
+            // Select the first branch by default if not already selected
+            if (sortedBranches.length > 0 && enabled) {
+                const defaultBranch = sortedBranches[0];
+                selectBranchInList(defaultBranch.id);
+            } else if (userBranch) {
+                selectBranchInList(userBranch.id);
+            }
         };
 
         // Update location status message
@@ -612,6 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         errorMessage = 'Location request timed out. Please try again.';
                     }
                     updateLocationStatus(errorMessage, 'error');
+                    renderBranchList(null, true); // Still enable branch selection without location
                 },
                 { 
                     timeout: 10000,
@@ -678,6 +858,14 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     closeModal();
+                }
+            });
+        }
+
+        if (selectBranchBtn) {
+            selectBranchBtn.addEventListener('click', () => {
+                if (selectedBranch && !isCheckoutPage) {
+                    selectBranch(selectedBranch.id);
                 }
             });
         }

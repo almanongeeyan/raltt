@@ -9,6 +9,7 @@ require_once '../connection/connection.php';
 $branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
 
 // Get orders from database
+
 $orders = [];
 $orderStats = [
     'total' => 0,
@@ -19,11 +20,12 @@ $orderStats = [
     'completed' => 0,
     'cancelled' => 0,
     'otw' => 0,
-    'to_receive' => 0
+    'to_receive' => 0 // Kept for stats, but removed from gcash flow
 ];
 
 try {
     // Build query based on branch access
+    // Add is_hidden support and deduplicate orders by order_reference
     if ($branch_id) {
         $query = "SELECT o.*, b.branch_name, u.full_name as customer_name, u.phone_number as customer_phone, u.email as customer_email
                   FROM orders o 
@@ -45,30 +47,18 @@ try {
 
     $rawOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // FIXED: Only hide completed/cancelled orders from previous days
+    // Use rawOrders directly, no deduplication
+    $orders = $rawOrders;
+
+    // Only show orders for today or future (not hidden after 11:59PM)
     $today = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('Y-m-d');
-    $orders = array_filter($rawOrders, function($order) use ($today) {
+    $orders = array_filter($orders, function($order) use ($today) {
         $orderDate = (new DateTime($order['order_date'], new DateTimeZone('Asia/Manila')))->format('Y-m-d');
-        $orderStatus = $order['order_status'];
-        
-        // Show orders from today regardless of status
-        if ($orderDate === $today) {
-            return true;
-        }
-        
-        // For previous days, only show if status is NOT completed or cancelled
-        if ($orderDate < $today) {
-            return !in_array($orderStatus, ['completed', 'cancelled']);
-        }
-        
-        // Future dates (if any) - show all
-        return true;
+        // Only show orders for today or future
+        return $orderDate >= $today;
     });
 
-    // Re-index array to ensure it's a proper sequential array
-    $orders = array_values($orders);
-
-    // Get order items for each order and calculate stats
+    // Get order items for each order
     foreach ($orders as &$order) {
         $itemsQuery = "SELECT oi.*, p.product_name, p.product_image 
                        FROM order_items oi 
@@ -85,7 +75,7 @@ try {
         }
         $order['items'] = $items;
 
-        // Count stats for all visible orders
+        // Only count stats for today or future
         $orderStats['total']++;
         if (isset($orderStats[$order['order_status']])) {
             $orderStats[$order['order_status']]++;
@@ -120,23 +110,29 @@ function formatPaymentMethod($method) {
     return $methodMap[$method] ?? $method;
 }
 
+// **FIXED LOGIC as per user request**
 function getStatusFlow($paymentMethod, $currentStatus) {
     $paymentMethod = strtolower($paymentMethod);
     $flow = [];
     
+    // Define base flows based on user request
     if ($paymentMethod === 'pick_up') {
         $flow = ['pending', 'processing', 'ready_for_pickup', 'completed'];
     } elseif ($paymentMethod === 'gcash') {
+        // **FIX #3: 'to_receive' REMOVED from gcash flow**
         $flow = ['paid', 'processing', 'otw', 'completed'];
     } elseif ($paymentMethod === 'cod') {
         $flow = ['pending', 'processing', 'otw', 'completed'];
-    }
+    } 
+    // 'cancelled' button and default flow removed
 
+    // Ensure the current status is always in the list, even if it's not in the 'default' flow
+    // (e.g., if it was manually set to 'cancelled')
     if (!in_array($currentStatus, $flow)) {
          $flow[] = $currentStatus;
     }
     
-    return $flow;
+    return $flow; // Return the flow in the specified order
 }
 ?>
 
@@ -194,6 +190,7 @@ function getStatusFlow($paymentMethod, $currentStatus) {
         .stats-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); }
         .filter-btn.active { background-color: #7d310a; color: white; }
         
+        /* **FIX #1: Modal styles (already correct for centering and overlay)** */
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
@@ -228,11 +225,12 @@ function getStatusFlow($paymentMethod, $currentStatus) {
         .order-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .status-update-btn { padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; transition: all 0.2s ease; background: #f8fafc; color: #374151; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; }
         
+        /* **FIX #4: Styles for sequential buttons** */
         .status-update-btn:not(:disabled):hover { background: #7d310a; color: white; border-color: #7d310a; transform: translateY(-1px); }
         .status-update-btn.active { background: #7d310a; color: white; border-color: #7d310a; }
         .status-update-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-        .status-update-btn.active:disabled { opacity: 1; }
-        .status-update-btn:not(.active):disabled { opacity: 0.4; }
+        .status-update-btn.active:disabled { opacity: 1; } /* Current and past statuses are fully opaque */
+        .status-update-btn:not(.active):disabled { opacity: 0.4; } /* Future statuses are dimmed */
         .status-update-btn:disabled:hover { background: #f8fafc; color: #374151; border-color: #e5e7eb; }
         .status-update-btn.active:disabled:hover { background: #7d310a; color: white; border-color: #7d310a; }
         
@@ -299,6 +297,7 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                                     if ($branch_id) {
                                         $this_branch_name = 'Unknown Branch';
                                         if (!empty($orders)) {
+                                            // Find the first order to display the branch name
                                             $first_order_with_name = array_filter($orders, function($o) { return !empty($o['branch_name']); });
                                             if (!empty($first_order_with_name)) {
                                                 $this_branch_name = htmlspecialchars(reset($first_order_with_name)['branch_name']);
@@ -364,15 +363,21 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                             <p class="text-gray-500">There are no orders for your branch at the moment.</p>
                         </div>
                     <?php else: ?>
+                        <?php
+                        // No need to filter here, already filtered above for today/future
+                        ?>
+                        
                         <?php foreach ($orders as $order): ?>
                             <?php
                             $statusClass = 'status-' . $order['order_status'];
                             $orderCardClass = 'order-card ' . $order['order_status'];
                             $paymentClass = 'payment-' . strtolower($order['payment_method']);
                             $statusFlow = getStatusFlow($order['payment_method'], $order['order_status']);
+                            // **FIX #4: Get index for sequential logic**
                             $currentStatusIndex = array_search($order['order_status'], $statusFlow);
+                            // Handle cases where status (like 'cancelled') might not be in the flow
                             if ($currentStatusIndex === false) {
-                                $currentStatusIndex = count($statusFlow) - 1;
+                                $currentStatusIndex = count($statusFlow) - 1; // Treat it as the last step
                             }
                             ?>
                             <div class="<?php echo $orderCardClass; ?> p-6 fade-in" id="order-<?php echo $order['order_id']; ?>" data-status="<?php echo $order['order_status']; ?>">
@@ -438,13 +443,14 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                                         <div class="mt-4">
                                             <h4 class="text-sm font-semibold text-gray-700 mb-2">Quick Status Update:</h4>
                                             <div class="flex flex-wrap gap-2" id="quick-status-<?php echo $order['order_id']; ?>">
+                                                <?php // **FIX #4: Sequential Button Logic** ?>
                                                 <?php foreach ($statusFlow as $index => $nextStatus): 
                                                     $isCurrent = ($index === $currentStatusIndex);
                                                     $isNext = ($index === $currentStatusIndex + 1);
                                                     $isPast = ($index < $currentStatusIndex);
                                                     
-                                                    $isDisabled = !$isNext;
-                                                    $isActive = ($isCurrent || $isPast);
+                                                    $isDisabled = !$isNext; // Only the 'next' button is enabled
+                                                    $isActive = ($isCurrent || $isPast); // 'Past' and 'Current' are active
                                                 ?>
                                                     <button class="status-update-btn <?php echo $isActive ? 'active' : ''; ?>" 
                                                             data-order-id="<?php echo $order['order_id']; ?>"
@@ -498,8 +504,8 @@ function getStatusFlow($paymentMethod, $currentStatus) {
     </div>
 
     <script>
-        // Global variables - FIXED: Ensure currentOrders is always an array
-        let currentOrders = <?php echo !empty($orders) ? json_encode($orders) : '[]'; ?>;
+        // Global variables
+        let currentOrders = <?php echo json_encode($orders); ?>;
         let currentFilter = 'all';
         let currentSearch = '';
 
@@ -510,16 +516,8 @@ function getStatusFlow($paymentMethod, $currentStatus) {
 
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // FIXED: Ensure currentOrders is always an array
-            if (!Array.isArray(currentOrders)) {
-                console.error('currentOrders is not an array, converting to array');
-                currentOrders = Object.values(currentOrders);
-            }
-            
             if(currentOrders.length > 0) {
                 console.log('Orders loaded into JavaScript:', currentOrders);
-            } else {
-                console.log('No orders loaded');
             }
             setupEventListeners();
         });
@@ -586,9 +584,7 @@ function getStatusFlow($paymentMethod, $currentStatus) {
             document.querySelectorAll('.order-card').forEach(card => {
                 const status = card.dataset.status;
                 const orderId = card.id.replace('order-', '');
-                
-                // FIXED: Use parseInt for order_id comparison
-                const order = currentOrders.find(o => parseInt(o.order_id) === parseInt(orderId));
+                const order = currentOrders.find(o => o.order_id == orderId);
                 
                 if (!order) {
                     card.style.display = 'none';
@@ -600,16 +596,16 @@ function getStatusFlow($paymentMethod, $currentStatus) {
 
                 // Check search filter
                 const searchMatch = (currentSearch === '') ||
-                    (order.order_reference && order.order_reference.toLowerCase().includes(currentSearch)) ||
-                    (order.customer_name && order.customer_name.toLowerCase().includes(currentSearch)) ||
-                    (order.customer_email && order.customer_email.toLowerCase().includes(currentSearch)) ||
-                    (order.items && Array.isArray(order.items) && order.items.some(item => 
-                        item.product_name && item.product_name.toLowerCase().includes(currentSearch)
+                    order.order_reference.toLowerCase().includes(currentSearch) ||
+                    order.customer_name.toLowerCase().includes(currentSearch) ||
+                    order.customer_email.toLowerCase().includes(currentSearch) ||
+                    (order.items && order.items.some(item => 
+                        item.product_name.toLowerCase().includes(currentSearch)
                     ));
 
                 if (statusMatch && searchMatch) {
                     card.style.display = 'block';
-                    card.classList.remove('fade-out');
+                    card.classList.remove('fade-out'); // Ensure it's not faded
                     hasVisibleOrders = true;
                 } else {
                     card.style.display = 'none';
@@ -626,11 +622,12 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                     </div>
                 `;
             } else if (currentOrders.length === 0 && initialNoOrdersMsg) {
-                initialNoOrdersMsg.style.display = 'block';
+                // If all orders are gone, show the initial message again
+                 initialNoOrdersMsg.style.display = 'block';
             }
         }
 
-        // Quick status update - FIXED: Proper array handling
+        // Quick status update
         function updateOrderStatus(orderId, newStatus, clickedButton) {
             console.log('Attempting to update order:', orderId, 'to status:', newStatus);
             
@@ -680,17 +677,15 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true 
                     });
                     
-                    // 4. Update the master 'currentOrders' JS object - FIXED: Proper array handling
-                    const orderIndex = currentOrders.findIndex(o => parseInt(o.order_id) === parseInt(orderId));
+                    // 4. Update the master 'currentOrders' JS object
+                    const orderIndex = currentOrders.findIndex(o => o.order_id == orderId);
                     if (orderIndex !== -1) {
                         currentOrders[orderIndex].order_status = newStatus;
                         currentOrders[orderIndex].updated_at = new Date().toISOString();
                     }
                     
                     // 5. Re-render the quick status buttons with new sequential logic
-                    if (orderIndex !== -1) {
-                        updateQuickStatusButtons(orderId, newStatus, currentOrders[orderIndex].payment_method);
-                    }
+                    updateQuickStatusButtons(orderId, newStatus, currentOrders[orderIndex].payment_method);
                     
                     // 6. Update stats cards
                     updateStats();
@@ -710,11 +705,12 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                     if (currentFilter !== 'all' && newStatus !== currentFilter) {
                         setTimeout(() => {
                             orderCard.classList.add('fade-out');
+                            // After fade-out, set to display:none
                             setTimeout(() => {
                                 orderCard.style.display = 'none';
-                                filterOrders();
+                                filterOrders(); // Re-run filter to check for "no results" msg
                             }, 500); 
-                        }, 1000);
+                        }, 1000); // Wait 1 sec before fading
                     }
                     
                 } else {
@@ -739,7 +735,7 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                 clickedButton.innerHTML = originalButtonText;
                 clickedButton.classList.remove('is-loading');
                 // Find the order's current status from the master list
-                const order = currentOrders.find(o => parseInt(o.order_id) === parseInt(orderId));
+                const order = currentOrders.find(o => o.order_id == orderId);
                 if (order) {
                     updateQuickStatusButtons(orderId, order.order_status, order.payment_method);
                 }
@@ -748,19 +744,16 @@ function getStatusFlow($paymentMethod, $currentStatus) {
         
         // Update statistics based on the global currentOrders array
         function updateStats() {
-            // FIXED: Ensure we're working with an array
-            const ordersArray = Array.isArray(currentOrders) ? currentOrders : Object.values(currentOrders);
-            
             const stats = {
-                total: ordersArray.length,
-                pending: ordersArray.filter(o => o.order_status === 'pending').length,
-                paid: ordersArray.filter(o => o.order_status === 'paid').length,
-                processing: ordersArray.filter(o => o.order_status === 'processing').length,
-                ready_for_pickup: ordersArray.filter(o => o.order_status === 'ready_for_pickup').length,
-                completed: ordersArray.filter(o => o.order_status === 'completed').length,
-                cancelled: ordersArray.filter(o => o.order_status === 'cancelled').length,
-                otw: ordersArray.filter(o => o.order_status === 'otw').length,
-                to_receive: ordersArray.filter(o => o.order_status === 'to_receive').length
+                total: currentOrders.length,
+                pending: currentOrders.filter(o => o.order_status === 'pending').length,
+                paid: currentOrders.filter(o => o.order_status === 'paid').length,
+                processing: currentOrders.filter(o => o.order_status === 'processing').length,
+                ready_for_pickup: currentOrders.filter(o => o.order_status === 'ready_for_pickup').length,
+                completed: currentOrders.filter(o => o.order_status === 'completed').length,
+                cancelled: currentOrders.filter(o => o.order_status === 'cancelled').length,
+                otw: currentOrders.filter(o => o.order_status === 'otw').length,
+                to_receive: currentOrders.filter(o => o.order_status === 'to_receive').length
             };
 
             document.getElementById('total-orders').textContent = stats.total;
@@ -768,7 +761,7 @@ function getStatusFlow($paymentMethod, $currentStatus) {
             document.getElementById('pickup-orders').textContent = stats.ready_for_pickup;
         }
 
-        // Update quick status buttons with sequential logic
+        // **FIX #4: Update quick status buttons with sequential logic**
         function updateQuickStatusButtons(orderId, newStatus, paymentMethod) {
             const quickStatusContainer = document.getElementById(`quick-status-${orderId}`);
             const statusFlow = getStatusFlow(paymentMethod, newStatus);
@@ -780,8 +773,8 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                 const isNext = (index === currentStatusIndex + 1);
                 const isPast = (index < currentStatusIndex);
                 
-                const isDisabled = !isNext;
-                const isActive = (isCurrent || isPast);
+                const isDisabled = !isNext; // Only the 'next' button is enabled
+                const isActive = (isCurrent || isPast); // 'Past' and 'Current' are active
                 
                 buttonsHTML += `
                     <button class="status-update-btn ${isActive ? 'active' : ''}" 
@@ -797,30 +790,34 @@ function getStatusFlow($paymentMethod, $currentStatus) {
             quickStatusContainer.innerHTML = buttonsHTML;
         }
 
+        // **FIXED LOGIC as per user request**
         // JS version of getStatusFlow to match PHP logic
         function getStatusFlow(paymentMethod, currentStatus) {
             const method = (paymentMethod || '').toLowerCase();
             let flow = [];
             
+            // Define base flows based on user request
             if (method === 'pick_up') {
                 flow = ['pending', 'processing', 'ready_for_pickup', 'completed'];
             } else if (method === 'gcash') {
+                // **FIX #3: 'to_receive' REMOVED from gcash flow**
                 flow = ['paid', 'processing', 'otw', 'completed'];
             } else if (method === 'cod') {
                 flow = ['pending', 'processing', 'otw', 'completed'];
             }
             
+            // Ensure the current status is always in the list
             if (!flow.includes(currentStatus)) {
                 flow.push(currentStatus);
             }
             
-            return flow;
+            return flow; // Return the flow in the specified order
         }
+
 
         // View order details with correct image handling
         function viewOrderDetails(orderId) {
-            // FIXED: Use parseInt for proper comparison
-            const order = currentOrders.find(o => parseInt(o.order_id) === parseInt(orderId));
+            const order = currentOrders.find(o => o.order_id == orderId);
             if (!order) return;
 
             const itemsHTML = (order.items || []).map(item => `
@@ -909,10 +906,10 @@ function getStatusFlow($paymentMethod, $currentStatus) {
 
         // Print order
         function printOrder(orderId) {
-            // FIXED: Use parseInt for proper comparison
-            const order = currentOrders.find(o => parseInt(o.order_id) === parseInt(orderId));
+            const order = currentOrders.find(o => o.order_id == orderId);
             if (!order) return;
             
+            // Using your project name
             const companyName = "Rich Anne Lea Tiles Trading";
 
             const printWindow = window.open('', '_blank');

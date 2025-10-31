@@ -51,11 +51,11 @@ try {
 } catch (Exception $e) {
   // fallback to static if DB fails
   $branches = [
-    [ 'id' => 1, 'name' => 'Deparo',   'lat' => 14.75243153, 'lng' => 121.01763335 ],
+    [ 'id' => 1, 'name' => 'Deparo',    'lat' => 14.75243153, 'lng' => 121.01763335 ],
     [ 'id' => 2, 'name' => 'Vanguard', 'lat' => 14.75920200, 'lng' => 121.06286101 ],
-    [ 'id' => 3, 'name' => 'Brixton',  'lat' => 14.76724928, 'lng' => 121.04104486 ],
-    [ 'id' => 4, 'name' => 'Samaria',  'lat' => 14.76580311, 'lng' => 121.06563606 ],
-    [ 'id' => 5, 'name' => 'Phase 1',  'lat' => 14.77682717, 'lng' => 121.04841432 ],
+    [ 'id' => 3, 'name' => 'Brixton',   'lat' => 14.76724928, 'lng' => 121.04104486 ],
+    [ 'id' => 4, 'name' => 'Samaria',   'lat' => 14.76580311, 'lng' => 121.06563606 ],
+    [ 'id' => 5, 'name' => 'Phase 1',   'lat' => 14.77682717, 'lng' => 121.04841432 ],
   ];
 }
 $user_branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
@@ -68,8 +68,25 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
 <!DOCTYPE html>
 <html lang="en">
     <head>
-    <!-- Custom styles for filter sidebar and controls -->
     <style>
+        .animate-move { animation: moveAnim 1.2s infinite alternate; }
+        @keyframes moveAnim { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+        .animate-fade { animation: fadeAnim 1.2s ease-in; }
+        @keyframes fadeAnim { from { opacity: 0; } to { opacity: 1; } }
+        .animate-slide { animation: slideAnim 1.1s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes slideAnim { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .animate-zoom { animation: zoomAnim 1.2s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes zoomAnim { from { transform: scale(0.8); opacity: 0.7; } to { transform: scale(1); opacity: 1; } }
+        .animate-bounce { animation: bounceAnim 1.2s infinite alternate; }
+        @keyframes bounceAnim { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+        .animate-tiles { animation: fadeAnim 1.2s ease-in; }
+        .selected-animate { animation: selectAnim 0.7s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes selectAnim {
+          0% { transform: scale(1) translateY(0); background: #7d310a; }
+          30% { transform: scale(1.1) translateY(-10px); background: #cf8756; }
+          60% { transform: scale(0.95) translateY(5px); background: #e8a56a; }
+          100% { transform: scale(1) translateY(0); background: #7d310a; }
+        }
       .scrollbar-hide {-ms-overflow-style:none;scrollbar-width:none;}
       .scrollbar-hide::-webkit-scrollbar{display:none;}
       @media (max-width:768px){.mobile-padding{padding-left:1rem;padding-right:1rem;}.mobile-margin{margin-left:1rem;margin-right:1rem;}.mobile-text-center{text-align:center;}.mobile-flex-col{flex-direction:column;}}
@@ -109,7 +126,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
   <script>
     // Toast notification function for cart addition
@@ -129,8 +145,8 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       return R * c;
     }
@@ -400,50 +416,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         },
       }
     </script>
-  <!-- Custom styles for filter sidebar and controls -->
-  <style>
-      /* Custom styles for better mobile responsiveness */
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      @media (max-width: 768px) {
-        .mobile-padding { padding-left: 1rem; padding-right: 1rem; }
-        .mobile-margin { margin-left: 1rem; margin-right: 1rem; }
-        .mobile-text-center { text-align: center; }
-        .mobile-flex-col { flex-direction: column; }
-      }
-      .featured-items-container { overflow: hidden; width: 100%; }
-      .featured-items { display: flex; transition: transform 0.5s ease; }
-      .featured-item { flex: 0 0 auto; margin: 0 16px; }
-      .featured-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #ccc; margin: 0 5px; cursor: pointer; transition: background-color 0.3s; }
-      .featured-dot.active { background-color: #7d310a; }
-      @keyframes float { 0%,100% { transform: rotate(40deg) translateY(0); } 50% { transform: rotate(40deg) translateY(-20px); } }
-
-      /* Modern toggle switch styles */
-      .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-      .switch input { display: none; }
-      .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e8e8e8; transition: .4s; border-radius: 24px; }
-      .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: .4s; border-radius: 50%; box-shadow: 0 2px 8px rgba(207,135,86,0.10); }
-      input:checked + .slider { background-color: #cf8756; }
-      input:checked + .slider:before { transform: translateX(20px); background-color: #7d310a; }
-      .slider.round { border-radius: 24px; }
-      .slider-thumb::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: #cf8756; border-radius: 50%; box-shadow: 0 2px 8px rgba(207,135,86,0.10); cursor: pointer; border: 2px solid #fff; }
-      .slider-thumb::-moz-range-thumb { width: 18px; height: 18px; background: #cf8756; border-radius: 50%; box-shadow: 0 2px 8px rgba(207,135,86,0.10); cursor: pointer; border: 2px solid #fff; }
-      @media (max-width: 768px) {
-        .switch { width: 38px; height: 20px; }
-        .slider:before { height: 14px; width: 14px; left: 3px; bottom: 3px; }
-        .slider-thumb::-webkit-slider-thumb { width: 14px; height: 14px; }
-        .slider-thumb::-moz-range-thumb { width: 14px; height: 14px; }
-      }
-      /* Category pill styles */
-      #tileCategoriesList label { display: flex; align-items: center; background: #f9f5f2; border-radius: 18px; padding: 7px 14px; font-weight: 600; color: #7d310a; cursor: pointer; border: 2px solid #e8a56a; transition: background .2s, color .2s, border .2s; margin-bottom: 0; }
-      #tileCategoriesList label input[type="checkbox"] { margin-right: 8px; accent-color: #cf8756; }
-      #tileCategoriesList label.selected { background: linear-gradient(90deg,#cf8756 0%,#e8a56a 100%); color: #fff; border-color: #cf8756; }
-  </style>
   </head>
 
   <body class="font-inter">
@@ -472,7 +444,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       });
     </script>
     
-    <!-- Branch Banner Carousel Section -->
     <?php
     // Fetch branch banners for the user's branch
     $branchBanners = [];
@@ -495,83 +466,149 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       }
     }
     ?>
-    <section class="relative w-full min-h-screen h-screen flex items-center justify-center overflow-hidden p-0 m-0 bg-gradient-to-br from-primary/90 to-secondary/80">
-      <div class="absolute inset-0 w-full h-full z-0">
-        <div id="branchBannerCarousel" class="relative w-full h-full min-h-screen min-w-full overflow-hidden group">
-          
-          <?php if (!empty($branchBanners)): ?>
-            <?php foreach ($branchBanners as $i => $banner): ?>
-              <div class="carousel-slide absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-700 ease-in-out <?php echo $i === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'; ?>" data-slide="<?php echo $i; ?>" style="width:100vw;max-width:1280px;aspect-ratio:16/9;">
-                <?php if ($banner['banner_image']): ?>
-                  <img src="<?php echo htmlspecialchars($banner['banner_image']); ?>" alt="Branch Banner <?php echo $i+1; ?>" class="w-full h-full object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-1000 rounded-xl" style="width:100%;height:100%;aspect-ratio:16/9;max-width:1280px;max-height:720px;" />
-                <?php else: ?>
-                  <div class="w-full h-full flex items-center justify-center bg-gray-300 text-gray-500 text-2xl font-bold rounded-xl" style="aspect-ratio:16/9;">No Image</div>
-                <?php endif; ?>
-              </div>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <div class="w-full h-full flex items-center justify-center bg-gray-300 text-gray-500 text-2xl font-bold rounded-xl" style="aspect-ratio:16/9;">No Banners Available</div>
-          <?php endif; ?>
-          <!-- Carousel Controls -->
-          <?php if (count($branchBanners) > 1): ?>
-          <button id="carouselPrev" class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-primary text-primary hover:text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition-all z-30 border-2 border-primary/30">
-            <i class="fas fa-chevron-left text-xl md:text-2xl"></i>
-          </button>
-          <button id="carouselNext" class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-primary text-primary hover:text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition-all z-30 border-2 border-primary/30">
-            <i class="fas fa-chevron-right text-xl md:text-2xl"></i>
-          </button>
-          <?php endif; ?>
-          <!-- Carousel Dots -->
-          <?php if (count($branchBanners) > 1): ?>
-          <div class="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-30">
-            <?php foreach ($branchBanners as $i => $banner): ?>
-              <span class="carousel-dot w-4 h-4 md:w-5 md:h-5 rounded-full bg-white border-2 border-primary cursor-pointer transition-all <?php echo $i === 0 ? 'bg-primary' : 'bg-white'; ?>" data-dot="<?php echo $i; ?>"></span>
-            <?php endforeach; ?>
-          </div>
-          <?php endif; ?>
+    
+    <section class="relative w-full overflow-hidden">
+        <div class="flex flex-col md:flex-row min-h-[70vh] md:min-h-[550px] md:h-[70vh]">
+            
+            <div class="w-full md:w-1/2 lg:w-3/5 flex flex-col justify-center p-8 md:p-12 lg:p-16 text-white z-10 bg-dark">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-black mb-4 animate-slide">
+                    Transform Your Space
+                    <span class="block text-accent">With Premium Tiles</span>
+                </h1>
+                <p class="text-lg md:text-xl text-white/80 mb-8 max-w-lg animate-fade" style="animation-delay: 0.2s;">
+                    Discover our extensive collection of high-quality tiles for every room in your home or business.
+                </p>
+
+                <form action="search_results.php" method="GET" class="w-full max-w-md mb-8 animate-zoom" style="animation-delay: 0.4s;">
+                    <div class="relative flex w-full bg-white rounded-lg shadow-lg overflow-hidden">
+                        <input 
+                            type="search" 
+                            name="query" 
+                            placeholder="Search for tiles, designs, or products..." 
+                            class="flex-grow w-full px-5 py-3 text-textdark text-base placeholder-textlight focus:outline-none"
+                            aria-label="Search products"
+                        />
+                        <button 
+                            type="submit" 
+                            class="bg-secondary text-white px-5 py-3 hover:bg-accent transition-colors duration-300"
+                            aria-label="Submit search"
+                        >
+                            <i class="fas fa-search text-xl"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="flex flex-col sm:flex-row gap-4 animate-fade" style="animation-delay: 0.6s;">
+                    <a href="#premium-tiles" class="flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-white font-bold rounded-lg shadow-md hover:bg-accent transition-all duration-300 transform hover:-translate-y-1">
+                        <i class="fas fa-shopping-cart"></i>
+                        Shop Now
+                    </a>
+                    <a href="#tile-categories-display" class="flex items-center justify-center gap-2 px-6 py-3 bg-white text-primary font-bold rounded-lg shadow-md hover:bg-light transition-all duration-300 transform hover:-translate-y-1">
+                        <i class="fas fa-th-large"></i>
+                        Browse Categories
+                    </a>
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 lg:w-2/5 relative h-[300px] md:h-auto bg-dark">
+                <div id="branchBannerCarousel" class="absolute inset-0 w-full h-full overflow-hidden group">
+                    
+                    <?php if (!empty($branchBanners)): ?>
+                        <?php foreach ($branchBanners as $i => $banner): ?>
+                            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-in-out <?php echo $i === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'; ?>" data-slide="<?php echo $i; ?>">
+                                <?php if ($banner['banner_image']): ?>
+                                    <img src="<?php echo htmlspecialchars($banner['banner_image']); ?>" alt="Branch Banner <?php echo $i+1; ?>" class="w-full h-full object-cover object-center" />
+                                <?php else: ?>
+                                    <div class="w-full h-full flex items-center justify-center bg-dark text-white/50 text-2xl font-bold">No Image</div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="absolute inset-0 w-full h-full bg-dark flex items-center justify-center">
+                            <h2 class="text-white/80 text-3xl font-bold p-8 text-center">Rich Anne Lea Tiles Trading</h2>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (count($branchBanners) > 1): ?>
+                    <button id="carouselPrev" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-primary rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shadow-lg transition-all z-30">
+                        <i class="fas fa-chevron-left text-lg md:text-xl"></i>
+                    </button>
+                    <button id="carouselNext" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-primary rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shadow-lg transition-all z-30">
+                        <i class="fas fa-chevron-right text-lg md:text-xl"></i>
+                    </button>
+                    <?php endif; ?>
+
+                    <?php if (count($branchBanners) > 1): ?>
+                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+                        <?php foreach ($branchBanners as $i => $banner): ?>
+                        <span class="carousel-dot w-3 h-3 rounded-full bg-white/70 border-2 border-white/50 cursor-pointer transition-all <?php echo $i === 0 ? 'bg-white' : 'bg-white/70'; ?>" data-dot="<?php echo $i; ?>"></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
-      </div>
-      <!-- Removed duplicate style block for filter and animation -->
-      <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          const slides = document.querySelectorAll('#branchBannerCarousel .carousel-slide');
-          const dots = document.querySelectorAll('#branchBannerCarousel .carousel-dot');
-          let current = 0;
-          let timer = null;
-          function showSlide(idx) {
-            slides.forEach((slide, i) => {
-              slide.classList.toggle('opacity-100', i === idx);
-              slide.classList.toggle('z-10', i === idx);
-              slide.classList.toggle('opacity-0', i !== idx);
-              slide.classList.toggle('z-0', i !== idx);
-            });
-            dots.forEach((dot, i) => {
-              dot.classList.toggle('bg-primary', i === idx);
-              dot.classList.toggle('bg-white', i !== idx);
-            });
-            current = idx;
-          }
-          function nextSlide() {
-            showSlide((current + 1) % slides.length);
-          }
-          function prevSlide() {
-            showSlide((current - 1 + slides.length) % slides.length);
-          }
-          if (slides.length > 1) {
-            document.getElementById('carouselNext').onclick = nextSlide;
-            document.getElementById('carouselPrev').onclick = prevSlide;
-            dots.forEach((dot, i) => {
-              dot.onclick = () => showSlide(i);
-            });
-            timer = setInterval(nextSlide, 5000);
-            document.getElementById('branchBannerCarousel').addEventListener('mouseenter', () => clearInterval(timer));
-            document.getElementById('branchBannerCarousel').addEventListener('mouseleave', () => { timer = setInterval(nextSlide, 5000); });
-          }
-        });
-      </script>
     </section>
 
-    <!-- Recommendation Items Section -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const carousel = document.getElementById('branchBannerCarousel');
+        if (!carousel) return; 
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+        const prevBtn = document.getElementById('carouselPrev');
+        const nextBtn = document.getElementById('carouselNext');
+        let current = 0;
+        let timer = null;
+        
+        if (slides.length === 0) return; 
+
+        function showSlide(idx) {
+          slides.forEach((slide, i) => {
+            slide.classList.toggle('opacity-100', i === idx);
+            slide.classList.toggle('z-10', i === idx);
+            slide.classList.toggle('opacity-0', i !== idx);
+            slide.classList.toggle('z-0', i !== idx);
+          });
+          dots.forEach((dot, i) => {
+            dot.classList.toggle('bg-white', i === idx); 
+            dot.classList.toggle('bg-white/70', i !== idx); 
+          });
+          current = idx;
+        }
+
+        function nextSlide() {
+          showSlide((current + 1) % slides.length);
+        }
+
+        function prevSlide() {
+          showSlide((current - 1 + slides.length) % slides.length);
+        }
+
+        function startTimer() {
+            clearInterval(timer); 
+            timer = setInterval(nextSlide, 5000);
+        }
+
+        function resetTimer() {
+            startTimer();
+        }
+
+        if (slides.length > 1) {
+          if (nextBtn) nextBtn.onclick = () => { nextSlide(); resetTimer(); };
+          if (prevBtn) prevBtn.onclick = () => { prevSlide(); resetTimer(); };
+          
+          dots.forEach((dot, i) => {
+            dot.onclick = () => { showSlide(i); resetTimer(); };
+          });
+
+          startTimer(); 
+          
+          carousel.addEventListener('mouseenter', () => clearInterval(timer));
+          carousel.addEventListener('mouseleave', () => startTimer());
+        }
+      });
+    </script>
     <?php
     // --- AI-powered recommendation system (Local Python Flask API) ---
     $recommendedProducts = [];
@@ -629,7 +666,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       }
     }
     ?>
-    <!-- AI-powered Recommendation Modal Section -->
     <section class="relative bg-gradient-to-br from-light via-white to-accent/30 text-textdark py-12 md:py-20 text-center mobile-padding overflow-x-hidden">
       <div class="mb-8">
         <span class="block text-base md:text-[1.1rem] font-medium tracking-wider text-secondary mb-2 animate-fade">AI-powered Recommendations</span>
@@ -642,11 +678,8 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         <?php if (!empty($recommendedProducts)): ?>
           <div id="recommendationGridJS" class="flex flex-wrap items-center justify-center gap-6 md:gap-10 w-full"></div>
           <script>
-            // User preferences: 1st, 2nd, 3rd place
             const recommendedProducts = <?php echo json_encode($recommendedProducts); ?>;
-            // Simulate user preferences (replace with actual)
             const userPreferences = window.USER_PREFERENCES || ['minimalist','floral','modern'];
-            // 1st: 3 tiles, 2nd: 2 tiles, 3rd: 1 tile
             const preferenceCounts = [3,2,1];
             const grid = document.getElementById('recommendationGridJS');
             function getProductsByPreference(prefId, count) {
@@ -655,17 +688,15 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             }
             function renderRandomProducts() {
               grid.innerHTML = '';
-        let cards = [];
+              let cards = [];
               for (let i = 0; i < userPreferences.length; i++) {
                 const prefId = userPreferences[i];
                 const count = preferenceCounts[i];
                 cards = cards.concat(getProductsByPreference(prefId, count));
               }
-              // If no cards found, fallback to all recommended products
               if (cards.length === 0) {
                 cards = recommendedProducts.slice().sort(() => Math.random() - 0.5).slice(0, 6);
               }
-              // Shuffle all selected cards for animation
               cards = cards.sort(() => Math.random() - 0.5);
               cards.forEach((prod, idx) => {
                 const card = document.createElement('div');
@@ -682,7 +713,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                     ${prod.name ?? prod.product_name}
                   </div>
                   <div class="text-md md:text-[1.15rem] font-extrabold text-secondary mb-3 text-center animate-fade">
-                    ₱${prod.price ?? prod.product_price}
+                    ₱${parseFloat(prod.price ?? prod.product_price).toFixed(2)}
                   </div>
                   <div class="flex gap-2 mt-2 w-full justify-center">
                     <button class="bg-primary text-white px-5 py-2 rounded-full font-semibold shadow hover:bg-secondary transition-all duration-200 text-sm flex items-center gap-2 view-product-btn" data-product-id="${prod.product_id}"><i class="fa fa-eye"></i> View</button>
@@ -690,7 +721,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                   </div>
                 `;
                 grid.appendChild(card);
-                // Add event listener for View buttons
+                
                 grid.querySelectorAll('.view-product-btn').forEach(btn => {
                   btn.addEventListener('click', function(e) {
                     const productId = btn.getAttribute('data-product-id');
@@ -699,7 +730,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                     }
                   });
                 });
-                // Add event listener for Add to Cart buttons
+                
                 grid.querySelectorAll('.add-to-cart-btn').forEach(btn => {
                   btn.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -710,7 +741,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                     document.getElementById('recommendationQuantity').value = 1;
                     const recQtyModal = document.getElementById('recommendationQtyModal');
                     const modalBox = document.getElementById('recommendationQtyModalBox');
-                    // Reset modal state before showing
+                    
                     recQtyModal.classList.remove('hidden');
                     recQtyModal.style.display = 'flex';
                     recQtyModal.style.opacity = '1';
@@ -728,7 +759,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             }
             renderRandomProducts();
             setInterval(() => {
-              // Animate out
               Array.from(grid.children).forEach(card => {
                 card.classList.remove('fade-in');
                 card.classList.add('fade-out');
@@ -770,7 +800,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           }, 700);
         }
         function savePreference(productId) {
-          // AJAX call to save user preference
           fetch('save_recommendations.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -797,7 +826,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         }
       </script>
       <div class="pointer-events-none absolute inset-0 z-0 opacity-10 bg-[url('../images/user/landingpagetile1.png')] bg-no-repeat bg-right-bottom bg-contain"></div>
-  <!-- Add to Cart Modal for Recommendations -->
   <div id="recommendationQtyModal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay-product hidden">
     <div id="recommendationQtyModalBox" class="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm mx-4 relative border border-gray-200 scale-95 opacity-0 transition-all duration-300 modal-animate">
       <button type="button" id="closeRecommendationQtyModal" class="absolute top-4 right-4 text-gray-400 hover:text-primary-product text-lg focus:outline-none">
@@ -813,20 +841,18 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         <div>
           <label for="recommendationQuantity" class="block text-sm font-semibold text-primary mb-2">Quantity</label>
           <input type="number" name="quantity" id="recommendationQuantity" min="1" value="1" required 
-             class="w-full px-3 py-2 rounded-lg border-2 border-primary focus:border-secondary focus:ring-2 focus:ring-primary/20 text-base font-bold text-primary bg-white transition-all duration-200">
+            class="w-full px-3 py-2 rounded-lg border-2 border-primary focus:border-secondary focus:ring-2 focus:ring-primary/20 text-base font-bold text-primary bg-white transition-all duration-200">
         </div>
         <button type="submit" id="submitRecommendationAddToCart" class="w-full py-3 rounded-xl font-bold text-base transition-all duration-200 shadow-xl flex items-center justify-center gap-2" style="background: linear-gradient(90deg, #cf8756 0%, #e8a56a 100%); color: #fff;">
           <i class="fa fa-cart-plus"></i> <span style="color: #fff; font-weight: 600;">Add to Cart</span>
         </button>
       </form>
     </div>
-   
+    
   </div>
     
     </section>
     <script>
-
- // Modal animation styles
     const modalAnimStyle = document.createElement('style');
     modalAnimStyle.innerHTML = `
       #recommendationQtyModal {
@@ -857,7 +883,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                   modalBox.style.opacity = '1';
                   modalBox.style.transform = 'scale(1)';
                 }, 10);
-      // Add to Cart Modal logic for Recommendations
     document.addEventListener('DOMContentLoaded', function() {
       var recQtyModal = document.getElementById('recommendationQtyModal');
       var closeRecBtn = document.getElementById('closeRecommendationQtyModal');
@@ -880,9 +905,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           }, 250);
         });
       }
-      // Close modal on outside click
-      // Prevent outside click from closing modal
-      // AJAX submit for add to cart
+
       if (addToCartForm) {
         addToCartForm.addEventListener('submit', function(e) {
           e.preventDefault();
@@ -894,7 +917,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           .then(res => res.json())
           .then(data => {
             if (data.success) {
-                            // Close modal and reset styles
               recQtyModal.classList.add('hidden');
               recQtyModal.style.display = 'none';
               recQtyModal.style.opacity = '0';
@@ -929,12 +951,10 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         });
       }
     });
-    // Recommended products from PHP
     window.recommendedProducts = <?php echo json_encode($recommendedProducts); ?>;
     </script>
 
-    <!-- Tile Selection Section -->
-    <section class="bg-dark text-white py-12 md:py-20 text-center relative overflow-hidden mobile-padding">
+    <section id="tile-categories-display" class="bg-dark text-white py-12 md:py-20 text-center relative overflow-hidden mobile-padding">
       <div class="relative z-10">
         <div class="mb-8">
           <span class="block text-base md:text-[1.1rem] font-medium tracking-wider text-textlight mb-2">Explore Our Collection</span>
@@ -944,7 +964,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           </div>
         </div>
         <div class="flex flex-nowrap justify-start md:justify-center gap-4 md:gap-5 py-5 w-full overflow-x-auto scrollbar-hide px-2 md:px-0 tile-selection">
-          <!-- Minimalist -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/minimalist.png" alt="Minimalist" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -955,7 +974,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
-          <!-- Floral -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/floral.jpg" alt="Floral" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -966,7 +984,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
-          <!-- Black and White -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/b&w.jpg" alt="Black and White" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -977,7 +994,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
-          <!-- Modern -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/modern.jpg" alt="Modern" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -988,7 +1004,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
-          <!-- Rustic -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/rustic.jpg" alt="Rustic" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -999,7 +1014,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               <button class="inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-primary text-white rounded-full font-semibold text-xs shadow-md w-full max-w-[140px] md:max-w-[160px] mx-auto transition-all duration-300 hover:bg-secondary hover:-translate-y-1"> <i class="fa fa-search text-xs"></i> Explore Now</button>
             </div>
           </div>
-          <!-- Geometric -->
           <div class="bg-white rounded-2xl overflow-hidden shadow-tile transition-all duration-300 relative min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex flex-col border border-gray-100 cursor-pointer hover:shadow-lg hover:-translate-y-2 hover:scale-105">
             <div class="h-[120px] md:h-[150px] overflow-hidden relative flex-shrink-0">
               <img src="../images/user/geometric.jpg" alt="Geometric" class="w-full h-full object-cover bg-gray-100 transition-transform duration-500" />
@@ -1015,14 +1029,12 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       <div class="absolute inset-0 z-0 pointer-events-none opacity-30" style="background:linear-gradient(45deg,rgba(125,49,10,0.05) 25%,transparent 25%),linear-gradient(-45deg,rgba(125,49,10,0.05) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(125,49,10,0.05) 75%),linear-gradient(-45deg,transparent 75%,rgba(125,49,10,0.05) 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0px;"></div>
     </section>
 
-    <!-- Products Section -->
-  <section id="premium-tiles" class="bg-light py-12 md:py-16 px-4 md:px-[5vw] text-textdark relative overflow-hidden">
+    <section id="premium-tiles" class="bg-light py-12 md:py-16 px-4 md:px-[5vw] text-textdark relative overflow-hidden">
   <div class="flex gap-6 md:gap-8 max-w-full md:max-w-[1500px] mx-auto flex-col md:flex-row relative z-10">
         <div class="w-full md:flex-[0_0_280px] bg-white p-6 md:p-8 rounded-2xl shadow-lg h-fit relative z-10 md:mb-0 mb-6">
             <h3 class="text-xl md:text-2xl font-extrabold text-primary mb-2 tracking-tight">Best For</h3>
             <div id="bestForCategoriesList" class="flex flex-wrap gap-2 mb-4">
-              <!-- Best For categories will be loaded here dynamically -->
-            </div>
+              </div>
             <h3 class="text-xl md:text-2xl font-extrabold text-primary mb-2 tracking-tight">Tile Type</h3>
             <div class="flex flex-col gap-3 mb-4">
               <div class="flex items-center justify-between bg-light rounded-lg px-3 py-2">
@@ -1039,8 +1051,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                   <span class="slider round"></span>
                 </label>
               </div>
-              <!-- 'Other' removed from Tile Type -->
-            </div>
+              </div>
             <h3 class="text-xl md:text-2xl font-extrabold text-primary mb-2 tracking-tight">Price Range</h3>
             <div class="flex flex-col gap-4 mb-2">
               <div class="flex items-center justify-between mb-2">
@@ -1063,7 +1074,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                 </label>
               </div>
             </div>
-          
+            
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex justify-between items-center mb-5 flex-col md:flex-row gap-3 md:gap-0">
@@ -1086,11 +1097,9 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             </div>
           </div>
           <div id="premiumTilesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            <!-- Products will be loaded here dynamically -->
-          </div>
+            </div>
           <div id="premiumTilesPagination" class="flex justify-center items-center mt-8 gap-2">
-            <!-- Pagination will be generated here -->
-          </div>
+            </div>
         </div>
       </div>
       <div class="pointer-events-none absolute left-0 right-0 bottom-0 h-[120px] w-full z-0" style="background: linear-gradient(to bottom, #ffece2 0%, #f8f5f2 100%);"></div>
@@ -1103,7 +1112,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     let allProducts = [];
     let filteredProducts = [];
 
-    // Initialize price range slider
     function initPriceRangeSlider() {
       const minSlider = document.getElementById('price-min');
       const maxSlider = document.getElementById('price-max');
@@ -1129,9 +1137,8 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       maxSlider.addEventListener('touchmove', updateMaxValue);
     }
 
-    // Filter products based on selected criteria
     function filterProducts() {
-  const selectedBestFor = Array.from(document.querySelectorAll('input[name="best_for"]:checked')).map(cb => cb.value);
+      const selectedBestFor = Array.from(document.querySelectorAll('input[name="best_for"]:checked')).map(cb => cb.value);
       const isPopular = document.querySelector('input[name="popular"]').checked;
       const isBestSeller = document.querySelector('input[name="bestseller"]').checked;
       const minPrice = parseInt(document.getElementById('price-min').value);
@@ -1139,29 +1146,26 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       const sortBy = document.getElementById('sortProducts').value;
 
       filteredProducts = allProducts.filter(product => {
-        // Filter by Best For category
         if (selectedBestFor.length > 0) {
           if (!product.best_for_ids || !product.best_for_ids.some(id => selectedBestFor.includes(id.toString()))) {
             return false;
           }
         }
-        // Filter by popularity/bestseller
         if (isPopular && !product.is_popular) {
           return false;
         }
         if (isBestSeller && !product.is_best_seller) {
           return false;
         }
-        // Filter by 'Other Products' toggle
         const isOther = document.querySelector('input[name="other"]').checked;
         if (isOther) {
           return product.product_type === 'other';
         } else if (product.product_type === 'other') {
-          // Hide 'other' products unless toggle is checked
           return false;
         }
-        // Filter by price
-        const price = parseInt(product.product_price);
+        
+        // --- FIX: Use parseFloat for accurate decimal comparison ---
+        const price = parseFloat(product.product_price);
         if (price < minPrice || price > maxPrice) {
           return false;
         }
@@ -1177,10 +1181,10 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           filteredProducts.sort((a, b) => b.product_name.localeCompare(a.product_name));
           break;
         case 'price_asc':
-          filteredProducts.sort((a, b) => parseInt(a.product_price) - parseInt(b.product_price));
+          filteredProducts.sort((a, b) => parseFloat(a.product_price) - parseFloat(b.product_price));
           break;
         case 'price_desc':
-          filteredProducts.sort((a, b) => parseInt(b.product_price) - parseInt(a.product_price));
+          filteredProducts.sort((a, b) => parseFloat(b.product_price) - parseFloat(a.product_price));
           break;
       }
 
@@ -1189,7 +1193,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       renderPagination();
     }
 
-    // Render products for current page
     function renderProducts() {
       const grid = document.getElementById('premiumTilesGrid');
       if (!grid) return;
@@ -1219,6 +1222,12 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           badge = '<span class="absolute top-4 left-4 bg-accent text-white px-3 py-1 rounded text-xs font-bold uppercase z-10">Other</span>';
         }
 
+        // --- FIX: Format price to 2 decimal places ---
+        const priceFormatted = parseFloat(product.product_price).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
         div.innerHTML = `
           ${badge}
           <div class="h-[200px] md:h-[250px] overflow-hidden relative">
@@ -1226,7 +1235,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           </div>
           <div class="p-4 md:p-5 text-center">
             <h3 class="text-base md:text-[1.1rem] font-bold text-gray-800 mb-1">${product.product_name}</h3>
-            <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱${parseInt(product.product_price).toLocaleString()}</div>
+            <div class="text-lg md:text-[1.25rem] font-extrabold text-secondary mb-4">₱${priceFormatted}</div>
             <div class="flex flex-col justify-center gap-2 w-full mt-2">
               <button class="view-product-btn w-full py-3 bg-primary text-white rounded-lg text-base font-bold transition-all hover:bg-secondary hover:-translate-y-1 shadow flex items-center justify-center gap-2"><i class="fa fa-eye text-base"></i> View Product</button>
             </div>
@@ -1235,7 +1244,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         grid.appendChild(div);
       });
     }
-    // Animation for product grid
+    
     function animateProductGrid() {
       const grid = document.getElementById('premiumTilesGrid');
       if (!grid) return;
@@ -1247,7 +1256,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       }, 600);
       renderProducts();
     }
-    // Add animation CSS
+    
     const styleAnim = document.createElement('style');
     styleAnim.innerHTML = `
       .fade-in-anim { animation: fadeInGrid 0.6s cubic-bezier(0.4,0,0.2,1); }
@@ -1257,7 +1266,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     `;
     document.head.appendChild(styleAnim);
 
-    // Render pagination controls
     function renderPagination() {
       const pagination = document.getElementById('premiumTilesPagination');
       if (!pagination) return;
@@ -1271,14 +1279,12 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       
       let html = '';
       
-      // Previous button
       if (currentPage > 1) {
         html += `<button class="pagination-btn prev bg-white border border-primary text-primary rounded-lg px-3 py-2 text-sm font-medium hover:bg-primary hover:text-white transition-all" data-page="${currentPage - 1}">
           <i class="fas fa-chevron-left mr-1"></i> Previous
         </button>`;
       }
       
-      // Page numbers
       const maxVisiblePages = 5;
       let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
       let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -1295,7 +1301,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         }
       }
       
-      // Next button
       if (currentPage < totalPages) {
         html += `<button class="pagination-btn next bg-white border border-primary text-primary rounded-lg px-3 py-2 text-sm font-medium hover:bg-primary hover:text-white transition-all" data-page="${currentPage + 1}">
           Next <i class="fas fa-chevron-right ml-1"></i>
@@ -1304,7 +1309,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       
       pagination.innerHTML = html;
       
-      // Add event listeners to pagination buttons
       document.querySelectorAll('.pagination-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           currentPage = parseInt(this.getAttribute('data-page'));
@@ -1315,7 +1319,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       });
     }
 
-    // Dynamically load all tile designs for the modal and sidebar (filter)
     document.addEventListener('DOMContentLoaded', function() {
       fetch('processes/get_best_for_categories.php')
         .then(r => r.json())
@@ -1344,7 +1347,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         });
     });
 
-    // Dynamically load all products for the selected branch in Premium Tiles section
     document.addEventListener('DOMContentLoaded', function() {
       fetch('processes/get_premium_tiles.php')
         .then(r => r.json())
@@ -1356,13 +1358,10 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           renderPagination();
           initPriceRangeSlider();
           
-          // Add event listeners to filter controls
-          // Real-time filter: trigger on any change
           document.querySelectorAll('input[name="best_for"], input[name="popular"], input[name="bestseller"], input[name="other"], #price-min, #price-max, #sortProducts').forEach(el => {
             el.addEventListener('change', filterProducts);
           });
           document.getElementById('clearFilters').addEventListener('click', function() {
-            // Reset all filters
             document.querySelectorAll('input[name="best_for"]').forEach(cb => cb.checked = false);
             document.querySelector('input[name="popular"]').checked = false;
             document.querySelector('input[name="bestseller"]').checked = false;
@@ -1371,7 +1370,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             document.getElementById('price-min-value').textContent = '100';
             document.getElementById('price-max-value').textContent = '5000';
             document.getElementById('sortProducts').value = 'name_asc';
-            // Reset products
             filteredProducts = [...allProducts];
             currentPage = 1;
             renderProducts();
@@ -1384,18 +1382,20 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     </script>
 
     <script>
-      // Only use recommended products from the database
       const featuredItems = (window.recommendedProducts && window.recommendedProducts.length > 0)
         ? window.recommendedProducts.map(item => ({
             img: item.product_image || '../images/user/tile1.jpg',
             title: item.product_name,
-            price: '₱' + parseInt(item.product_price).toLocaleString(),
+            // --- FIX: Format price to 2 decimal places ---
+            price: '₱' + parseFloat(item.product_price).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }),
             category: item.category_name || '',
             product: item
           }))
         : [];
 
-      // Carousel logic with improved design and mobile responsiveness
       const featuredItemsPerPage = () => {
         if (window.innerWidth <= 640) return 1;
         if (window.innerWidth <= 900) return 2;
@@ -1494,7 +1494,6 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         }
       }
 
-      // Touch/swipe support for mobile
       function handleTouchStart(e) {
         touchStartX = e.touches[0].clientX;
       }
@@ -1517,13 +1516,13 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         const prevBtn = document.querySelector('.carousel-btn.prev');
         if (nextBtn) nextBtn.addEventListener('click', nextFeatured);
         if (prevBtn) prevBtn.addEventListener('click', prevFeatured);
-        // Touch events
+        
         const container = document.querySelector('.featured-items-container');
         if (container) {
           container.addEventListener('touchstart', handleTouchStart, {passive:true});
           container.addEventListener('touchend', handleTouchEnd, {passive:true});
         }
-        // Resize
+        
         let resizeTimer;
         window.addEventListener('resize', function() {
           clearTimeout(resizeTimer);
@@ -1532,7 +1531,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             initCarousel();
           }, 250);
         });
-        // Category filter buttons
+        
         const categoryButtons = document.querySelectorAll('.tile-selection .bg-white button');
         categoryButtons.forEach(button => {
           button.addEventListener('click', function() {
@@ -1540,7 +1539,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             window.location.href = design + '_products.php';
           });
         });
-        // View Product buttons
+        
         document.body.addEventListener('click', function(e) {
           if (e.target.closest('.view-product-btn')) {
             e.preventDefault();
@@ -1551,7 +1550,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
               const prod = window.recommendedProducts && window.recommendedProducts[idx] ? window.recommendedProducts[idx] : null;
               if (prod && prod.product_id) productId = prod.product_id;
             } else {
-              const card = btn.closest('.bg-white');
+              const card = btn.closest('.bg-white[data-product-id], .recommendation-item[data-product-id], .product-tile-anim[data-product-id]');
               if (card) productId = card.getAttribute('data-product-id');
             }
             if (productId) {
@@ -1563,23 +1562,4 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       });
     </script>
   </body>
-      <style>
-        .animate-move { animation: moveAnim 1.2s infinite alternate; }
-        @keyframes moveAnim { from { transform: translateY(0); } to { transform: translateY(-10px); } }
-        .animate-fade { animation: fadeAnim 1.2s ease-in; }
-        @keyframes fadeAnim { from { opacity: 0; } to { opacity: 1; } }
-        .animate-slide { animation: slideAnim 1.1s cubic-bezier(0.4,0,0.2,1); }
-        @keyframes slideAnim { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .animate-zoom { animation: zoomAnim 1.2s cubic-bezier(0.4,0,0.2,1); }
-        @keyframes zoomAnim { from { transform: scale(0.8); opacity: 0.7; } to { transform: scale(1); opacity: 1; } }
-        .animate-bounce { animation: bounceAnim 1.2s infinite alternate; }
-        @keyframes bounceAnim { from { transform: translateY(0); } to { transform: translateY(-6px); } }
-        .animate-tiles { animation: fadeAnim 1.2s ease-in; }
-        .selected-animate { animation: selectAnim 0.7s cubic-bezier(0.4,0,0.2,1); }
-        @keyframes selectAnim {
-          0% { transform: scale(1) translateY(0); background: #7d310a; }
-          30% { transform: scale(1.1) translateY(-10px); background: #cf8756; }
-          60% { transform: scale(0.95) translateY(5px); background: #e8a56a; }
-          100% { transform: scale(1) translateY(0); background: #7d310a; }
-        }
-      </style>
+</html>

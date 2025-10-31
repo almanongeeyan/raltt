@@ -1,14 +1,15 @@
-<?php
-include 'includes/header.php';
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tile Recommendation - Rich Anne Tiles</title>
+    <title>3D Tile Visualizer - Rich Anne Tiles</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -53,6 +54,7 @@ include 'includes/header.php';
                         'float': 'float 6s ease-in-out infinite',
                         'fade-in': 'fadeIn 0.8s ease-out',
                         'slide-up': 'slideUp 0.8s ease-out',
+                        'rotate': 'rotate 20s linear infinite',
                     }
                 }
             }
@@ -120,6 +122,10 @@ include 'includes/header.php';
             animation: float 6s ease-in-out infinite;
         }
         
+        .rotating-element {
+            animation: rotate 20s linear infinite;
+        }
+        
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-12px); }
@@ -135,6 +141,11 @@ include 'includes/header.php';
             to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
         .stats-card {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -148,28 +159,23 @@ include 'includes/header.php';
             z-index: 0;
         }
         
-        .style-card {
-            transition: all 0.3s ease;
-            aspect-ratio: 1 / 1;
-        }
-        
-        .style-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(237, 102, 49, 0.2);
-        }
-        
-        .selection-badge {
-            background: linear-gradient(135deg, #FFD700 0%, #FFEF8A 100%);
-            border: 2px solid white;
-        }
-        
-        .ai-preview {
+        .visualizer-preview {
             background: linear-gradient(135deg, rgba(254, 248, 246, 0.8) 0%, rgba(253, 240, 236, 0.6) 100%);
             border: 2px solid rgba(237, 102, 49, 0.3);
+        }
+        
+        .tile-mockup {
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
     </style>
 </head>
 <body class="font-sans text-accent-700 bg-white overflow-x-hidden">
+    <?php include 'includes/header.php'; ?>
 
     <!-- Hero Section -->
     <section class="min-h-screen pt-16 pb-12 px-6 lg:px-12 gradient-bg flex items-center relative overflow-hidden section-spacing">
@@ -181,24 +187,25 @@ include 'includes/header.php';
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
             <div class="order-2 lg:order-1 text-center lg:text-left animate-fade-in">
                 <div class="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full mb-6 border border-primary-200">
-                    <i class="fa-solid fa-robot text-primary-600 text-lg"></i>
-                    <span class="text-sm font-medium text-accent-600">Smart Personalization</span>
+                    <i class="fa-solid fa-rotate text-primary-600 text-lg"></i>
+                    <span class="text-sm font-medium text-accent-600">3D Interactive Experience</span>
                 </div>
                 
                 <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                    <span class="text-gradient">AI Tile Recommendation</span> 
-                    <span class="block mt-2 text-accent-900">Personalized Just For You</span>
+                    <span class="text-gradient">3D Tile Visualizer</span> 
+                    <span class="block mt-2 text-accent-900">Examine Every Detail in 3D</span>
                 </h1>
                 
                 <p class="text-lg md:text-xl text-accent-600 mb-10 leading-relaxed max-w-2xl">
-                    Our intelligent AI learns your unique style preferences to recommend the perfect tiles. 
-                    Simply select your top 3 favorite styles and let our algorithm do the magic.
+                    Rotate, zoom, and explore our premium tile collection from every angle. 
+                    Our 3D visualizer lets you examine textures, finishes, and patterns 
+                    in stunning detail before making your selection.
                 </p>
                 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-                    <a href="user_login_form.php"  class="btn-primary px-8 py-4 text-lg font-semibold text-white rounded-xl inline-flex items-center justify-center group">
-                        <i class="fa-solid fa-star mr-3"></i>
-                        Get Personalized Recommendations
+                    <a href="user_login_form.php" class="btn-primary px-8 py-4 text-lg font-semibold text-white rounded-xl inline-flex items-center justify-center group">
+                        <i class="fa-solid fa-rotate mr-3"></i>
+                        Try Our Visualizer
                         <i class="fa-solid fa-arrow-right ml-3 transition-transform group-hover:translate-x-1"></i>
                     </a>
                     <a href="#how-it-works" class="btn-secondary px-8 py-4 text-lg font-semibold rounded-xl inline-flex items-center justify-center">
@@ -210,49 +217,55 @@ include 'includes/header.php';
                 <!-- Stats -->
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-lg">
                     <div class="text-center stats-card p-5 rounded-xl shadow-soft card-hover floating-element">
-                        <div class="text-2xl md:text-3xl font-bold text-primary-600 mb-1">95%</div>
-                        <div class="text-accent-600 text-sm font-medium">Accuracy Rate</div>
+                        <div class="text-2xl md:text-3xl font-bold text-primary-600 mb-1">500+</div>
+                        <div class="text-accent-600 text-sm font-medium">Tile Designs</div>
                     </div>
                     <div class="text-center stats-card p-5 rounded-xl shadow-soft card-hover floating-element" style="animation-delay: 1s;">
-                        <div class="text-2xl md:text-3xl font-bold text-primary-600 mb-1">6</div>
-                        <div class="text-accent-600 text-sm font-medium">Style Categories</div>
+                        <div class="text-2xl md:text-3xl font-bold text-primary-600 mb-1">360°</div>
+                        <div class="text-accent-600 text-sm font-medium">Full Rotation</div>
                     </div>
                     <div class="text-center stats-card p-5 rounded-xl shadow-soft card-hover floating-element col-span-2 md:col-span-1" style="animation-delay: 2s;">
-                        <div class="text-2xl md:text-3xl font-bold text-primary-600 mb-1">Instant</div>
-                        <div class="text-accent-600 text-sm font-medium">Results</div>
+                        <div class="text-2xl md:text-3xl font-bold text-primary-600 mb-1">HD</div>
+                        <div class="text-accent-600 text-sm font-medium">Textures</div>
                     </div>
                 </div>
             </div>
 
             <div class="order-1 lg:order-2 flex justify-center lg:justify-end animate-slide-up">
                 <div class="relative">
-                    <div class="ai-preview rounded-3xl p-6">
-                        <div class="w-full max-w-md aspect-[4/3] bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl overflow-hidden relative border-2 border-primary-300 p-4">
-                            <!-- Mock AI Recommendation Interface -->
-                            <div class="grid grid-cols-3 gap-3 h-full">
-                                <!-- Style Cards Preview -->
-                                <div class="style-card bg-white rounded-lg shadow-md border border-primary-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-border-all text-primary-600 text-xl"></i>
-                                </div>
-                                <div class="style-card bg-white rounded-lg shadow-md border border-primary-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-seedling text-primary-600 text-xl"></i>
-                                </div>
-                                <div class="style-card bg-white rounded-lg shadow-md border border-primary-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-palette text-primary-600 text-xl"></i>
-                                </div>
-                                <div class="style-card bg-white rounded-lg shadow-md border border-primary-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-cube text-primary-600 text-xl"></i>
-                                </div>
-                                <div class="style-card bg-white rounded-lg shadow-md border border-primary-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-shapes text-primary-600 text-xl"></i>
+                    <div class="visualizer-preview rounded-3xl p-6">
+                        <div class="w-full max-w-md aspect-square bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl overflow-hidden relative border-2 border-primary-300">
+                            <!-- 3D Visualizer Mockup -->
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-48 h-48 bg-white rounded-xl shadow-lg overflow-hidden rotating-element">
+                                    <div class="tile-mockup w-full h-full flex items-center justify-center">
+                                        <div class="text-center">
+                                            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                                <i class="fa-solid fa-rotate text-primary-600"></i>
+                                            </div>
+                                            <p class="text-xs text-accent-600 font-medium">Drag to Rotate</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <!-- Progress Bar -->
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <div class="bg-gray-200 rounded-full h-2.5">
-                                    <div class="bg-primary-600 h-2.5 rounded-full transition-all duration-500" style="width: 66%"></div>
+                            <!-- Control Elements -->
+                            <div class="absolute bottom-4 left-4 flex gap-2">
+                                <div class="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center">
+                                    <i class="fa-solid fa-rotate text-primary-600 text-sm"></i>
                                 </div>
+                                <div class="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center">
+                                    <i class="fa-solid fa-magnifying-glass-plus text-primary-600 text-sm"></i>
+                                </div>
+                                <div class="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center">
+                                    <i class="fa-solid fa-arrows-left-right text-primary-600 text-sm"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Rotation Indicator -->
+                            <div class="absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-accent-700 flex items-center gap-1">
+                                <i class="fa-solid fa-rotate text-primary-600"></i>
+                                <span>3D View</span>
                             </div>
                         </div>
                     </div>
@@ -270,9 +283,9 @@ include 'includes/header.php';
         <div class="max-w-7xl mx-auto px-6 lg:px-12">
             <div class="text-center mb-16 animate-fade-in">
                 <h2 class="font-heading text-3xl md:text-4xl font-bold text-accent-900 mb-4">
-                    How AI Recommendation Works
+                    How Our 3D Visualizer Works
                 </h2>
-                <p class="text-lg text-accent-600 max-w-2xl mx-auto">Our intelligent system learns your preferences in three simple steps to deliver perfect tile recommendations.</p>
+                <p class="text-lg text-accent-600 max-w-2xl mx-auto">Examine tiles from every angle in three simple steps.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -281,9 +294,9 @@ include 'includes/header.php';
                     <div class="feature-icon w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <div class="text-primary-600 text-2xl font-bold">1</div>
                     </div>
-                    <h3 class="text-xl font-semibold text-accent-900 mb-4">Select Your Top 3 Styles</h3>
+                    <h3 class="text-xl font-semibold text-accent-900 mb-4">Select a Tile</h3>
                     <p class="text-accent-600 leading-relaxed">
-                        Choose from 6 distinct tile style categories. Pick your top 3 favorites in order of preference.
+                        Browse our collection and choose any tile to examine in our 3D visualizer.
                     </p>
                 </div>
 
@@ -292,9 +305,9 @@ include 'includes/header.php';
                     <div class="feature-icon w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <div class="text-primary-600 text-2xl font-bold">2</div>
                     </div>
-                    <h3 class="text-xl font-semibold text-accent-900 mb-4">AI Analysis</h3>
+                    <h3 class="text-xl font-semibold text-accent-900 mb-4">Rotate & Explore</h3>
                     <p class="text-accent-600 leading-relaxed">
-                        Our algorithm analyzes your preferences against thousands of tile designs to understand your unique style.
+                        Drag to rotate the tile 3D and examine it from every possible angle.
                     </p>
                 </div>
 
@@ -303,89 +316,89 @@ include 'includes/header.php';
                     <div class="feature-icon w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <div class="text-primary-600 text-2xl font-bold">3</div>
                     </div>
-                    <h3 class="text-xl font-semibold text-accent-900 mb-4">Get Personalized Results</h3>
+                    <h3 class="text-xl font-semibold text-accent-900 mb-4">Zoom for Detail</h3>
                     <p class="text-accent-600 leading-relaxed">
-                        Receive curated tile recommendations that perfectly match your selected style preferences.
+                        Zoom in to examine textures, finishes, and intricate details up close.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Style Categories Section -->
+    <!-- Features Section -->
     <section class="py-16 bg-accent-50 section-spacing">
         <div class="max-w-7xl mx-auto px-6 lg:px-12">
             <div class="text-center mb-16 animate-fade-in">
                 <h2 class="font-heading text-3xl md:text-4xl font-bold text-accent-900 mb-4">
-                    Available Style Categories
+                    Visualizer Features
                 </h2>
-                <p class="text-lg text-accent-600 max-w-2xl mx-auto">Choose from our carefully curated tile style categories to help our AI understand your preferences.</p>
+                <p class="text-lg text-accent-600 max-w-2xl mx-auto">Examine tiles like never before with our advanced 3D viewer.</p>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                <!-- Minimalist -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <!-- Feature 1 -->
                 <div class="bg-white rounded-2xl p-6 text-center card-hover border border-accent-100 shadow-soft animate-slide-up">
                     <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-border-all text-2xl text-primary-600"></i>
+                        <i class="fa-solid fa-rotate text-2xl text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Minimalist</h3>
+                    <h3 class="text-lg font-semibold text-accent-900 mb-3">3D Rotation</h3>
                     <p class="text-accent-600 text-sm leading-relaxed">
-                        Clean lines, simple patterns, and understated elegance
+                        Examine tiles from every angle with smooth, intuitive rotation controls
                     </p>
                 </div>
 
-                <!-- Floral -->
+                <!-- Feature 2 -->
                 <div class="bg-white rounded-2xl p-6 text-center card-hover border border-accent-100 shadow-soft animate-slide-up" style="animation-delay: 0.1s">
                     <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-seedling text-2xl text-primary-600"></i>
+                        <i class="fa-solid fa-magnifying-glass text-2xl text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Floral</h3>
+                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Zoom In Detail</h3>
                     <p class="text-accent-600 text-sm leading-relaxed">
-                        Nature-inspired patterns with botanical and flower motifs
+                        Get up close with high-resolution textures and intricate pattern details
                     </p>
                 </div>
 
-                <!-- Black & White -->
+                <!-- Feature 3 -->
                 <div class="bg-white rounded-2xl p-6 text-center card-hover border border-accent-100 shadow-soft animate-slide-up" style="animation-delay: 0.2s">
                     <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-palette text-2xl text-primary-600"></i>
+                        <i class="fa-solid fa-sun text-2xl text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Black & White</h3>
+                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Lighting Effects</h3>
                     <p class="text-accent-600 text-sm leading-relaxed">
-                        Classic monochrome patterns with timeless appeal
+                        See how light interacts with different finishes and textures
                     </p>
                 </div>
 
-                <!-- Modern -->
+                <!-- Feature 4 -->
                 <div class="bg-white rounded-2xl p-6 text-center card-hover border border-accent-100 shadow-soft animate-slide-up" style="animation-delay: 0.3s">
                     <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-cube text-2xl text-primary-600"></i>
+                        <i class="fa-solid fa-gauge-high text-2xl text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Modern</h3>
+                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Real-time Rendering</h3>
                     <p class="text-accent-600 text-sm leading-relaxed">
-                        Contemporary designs with sleek and innovative patterns
+                        Instant response with no loading delays as you rotate and zoom
                     </p>
                 </div>
 
-                <!-- Rustic -->
+                <!-- Feature 5 -->
                 <div class="bg-white rounded-2xl p-6 text-center card-hover border border-accent-100 shadow-soft animate-slide-up" style="animation-delay: 0.4s">
                     <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-mountain text-2xl text-primary-600"></i>
+                        <i class="fa-solid fa-mobile-screen-button text-2xl text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Rustic</h3>
+                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Mobile Friendly</h3>
                     <p class="text-accent-600 text-sm leading-relaxed">
-                        Natural textures and earthy tones with vintage charm
+                        Touch-friendly controls for seamless use on smartphones and tablets
                     </p>
                 </div>
 
-                <!-- Geometric -->
+                <!-- Feature 6 -->
                 <div class="bg-white rounded-2xl p-6 text-center card-hover border border-accent-100 shadow-soft animate-slide-up" style="animation-delay: 0.5s">
                     <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-shapes text-2xl text-primary-600"></i>
+                        <i class="fa-solid fa-layer-group text-2xl text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Geometric</h3>
+                    <h3 class="text-lg font-semibold text-accent-900 mb-3">Multiple Finishes</h3>
                     <p class="text-accent-600 text-sm leading-relaxed">
-                        Bold shapes, angles, and mathematical precision in design
+                        Compare how the same tile looks with different finish options
                     </p>
                 </div>
             </div>
@@ -398,27 +411,27 @@ include 'includes/header.php';
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div class="animate-fade-in">
                     <h2 class="font-heading text-3xl md:text-4xl font-bold text-accent-900 mb-6">
-                        Why Use AI Recommendations?
+                        Why Use Our 3D Visualizer?
                     </h2>
                     
                     <div class="space-y-6">
                         <div class="flex items-start gap-4">
                             <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-bolt text-primary-600"></i>
+                                <i class="fa-solid fa-eye text-primary-600"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-semibold text-accent-900 mb-2">Save Time</h3>
-                                <p class="text-accent-600">No more endless browsing - get personalized results instantly</p>
+                                <h3 class="text-lg font-semibold text-accent-900 mb-2">Examine Details</h3>
+                                <p class="text-accent-600">See textures, edges, and surface details that photos can't capture</p>
                             </div>
                         </div>
                         
                         <div class="flex items-start gap-4">
                             <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-check-circle text-primary-600"></i>
+                                <i class="fa-solid fa-rotate text-primary-600"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-semibold text-accent-900 mb-2">Perfect Matches</h3>
-                                <p class="text-accent-600">95% accuracy in recommending tiles that match your style preferences</p>
+                                <h3 class="text-lg font-semibold text-accent-900 mb-2">Full Perspective</h3>
+                                <p class="text-accent-600">Understand how tiles look from all angles, not just the front</p>
                             </div>
                         </div>
                         
@@ -427,18 +440,18 @@ include 'includes/header.php';
                                 <i class="fa-solid fa-lightbulb text-primary-600"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-semibold text-accent-900 mb-2">Discover New Styles</h3>
-                                <p class="text-accent-600">Find tiles you might have missed with traditional browsing</p>
+                                <h3 class="text-lg font-semibold text-accent-900 mb-2">Light Interaction</h3>
+                                <p class="text-accent-600">See how different finishes react to light from various directions</p>
                             </div>
                         </div>
                         
                         <div class="flex items-start gap-4">
                             <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <i class="fa-solid fa-chart-line text-primary-600"></i>
+                                <i class="fa-solid fa-cube text-primary-600"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-semibold text-accent-900 mb-2">Smart Learning</h3>
-                                <p class="text-accent-600">The more you use it, the better it understands your preferences</p>
+                                <h3 class="text-lg font-semibold text-accent-900 mb-2">Better Decisions</h3>
+                                <p class="text-accent-600">Make confident choices with complete visual information</p>
                             </div>
                         </div>
                     </div>
@@ -448,25 +461,29 @@ include 'includes/header.php';
                     <div class="bg-white rounded-3xl p-8 max-w-md w-full border border-accent-100 shadow-medium">
                         <div class="text-center mb-6">
                             <div class="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fa-solid fa-robot text-3xl text-primary-600"></i>
+                                <i class="fa-solid fa-rotate text-3xl text-primary-600"></i>
                             </div>
-                            <h3 class="text-2xl font-bold text-accent-900 mb-2">Ready to Discover?</h3>
-                            <p class="text-accent-600">Get personalized tile recommendations in minutes</p>
+                            <h3 class="text-2xl font-bold text-accent-900 mb-2">Ready to Explore?</h3>
+                            <p class="text-accent-600">Start examining our tiles in 3D detail</p>
                         </div>
                         
                         <div class="space-y-4">
+                            <a href="user_login_form.php" class="btn-primary w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-play"></i>
+                                Launch Visualizer
+                            </a>
                             
-                            <a href="user_login_form.php" class="btn-secondary w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3">
+                            <a href="products_view.php" class="btn-secondary w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3">
                                 <i class="fa-solid fa-grid"></i>
-                                Login Now
+                                Browse Tile Collection
                             </a>
                         </div>
                         
                         <div class="mt-6 p-4 bg-primary-50 rounded-xl border border-primary-200">
                             <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-clock text-primary-600"></i>
+                                <i class="fa-solid fa-mobile-screen-button text-primary-600"></i>
                                 <p class="text-primary-700 text-sm">
-                                    <strong>Takes only 30 seconds</strong> to select your top 3 styles
+                                    <strong>Works on all devices</strong> - Desktop, tablet, and mobile
                                 </p>
                             </div>
                         </div>
@@ -490,7 +507,6 @@ include 'includes/header.php';
                 }
             });
         });
-
 
         // Add scroll animations
         const observerOptions = {
@@ -516,8 +532,7 @@ include 'includes/header.php';
             el.style.animationPlayState = 'running';
         });
     </script>
+
+    <?php include 'includes/footer.php'; ?>
 </body>
 </html>
-<?php
-include 'includes/footer.php';
-?>

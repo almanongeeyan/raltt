@@ -8,7 +8,6 @@
     <title>Manage Banners</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Cropper.js CSS & JS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
@@ -42,10 +41,9 @@
             }
         }
     </style>
-    <!-- Cropper Modal -->
     <div id="cropper-modal" class="modal fixed inset-0 flex items-center justify-center hidden cropper-modal-custom">
         <div class="bg-white rounded-lg shadow-xl p-6 m-4 max-w-2xl w-full flex flex-col items-center">
-            <h2 class="text-lg font-bold mb-4 text-gray-800">Crop Banner to 1920x1080</h2>
+            <h2 class="text-lg font-bold mb-4 text-gray-800">Crop Banner to 1080x1080</h2>
             <div class="w-full flex justify-center items-center mb-4">
                 <img id="cropper-image" src="" class="max-h-96 max-w-full rounded shadow" alt="Cropper Preview"/>
             </div>
@@ -143,7 +141,6 @@
         </div>
     </div>
     
-    <!-- Confirmation Modal (for delete/change) -->
     <div id="confirm-modal" class="modal fixed inset-0 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-2xl shadow-2xl p-8 m-4 max-w-md w-full flex flex-col items-center relative">
             <div id="confirm-modal-icon" class="rounded-full p-4 mb-4 flex items-center justify-center" style="background: #fef2f2;">
@@ -227,9 +224,9 @@
                     }
                 });
 
-            // Helper: check if image is 1920x1080
-            function is1920x1080(img) {
-                return img.naturalWidth === 1920 && img.naturalHeight === 1080;
+            // Helper: check if image is 1080x1080
+            function is1080x1080(img) {
+                return img.naturalWidth === 1080 && img.naturalHeight === 1080;
             }
 
             // Show cropper modal
@@ -241,19 +238,19 @@
                 cropperImage.onload = function() {
                     if (cropper) cropper.destroy();
                     cropper = new Cropper(cropperImage, {
-                        aspectRatio: 16 / 9,
+                        aspectRatio: 1 / 1, // Changed to 1:1
                         viewMode: 1,
                         autoCropArea: 1,
-                        minCropBoxWidth: 192,
+                        minCropBoxWidth: 108, // Changed
                         minCropBoxHeight: 108,
                         ready() {
-                            // Set crop box to 1920x1080 if possible
+                            // Set crop box to 1080x1080 if possible
                             const imgData = cropper.getImageData();
-                            const scale = imgData.naturalWidth / 1920;
-                            if (imgData.naturalWidth >= 1920 && imgData.naturalHeight >= 1080) {
+                            const scale = imgData.naturalWidth / 1080; // Changed
+                            if (imgData.naturalWidth >= 1080 && imgData.naturalHeight >= 1080) { // Changed
                                 cropper.setCropBoxData({
-                                    width: 1920 * scale,
-                                    height: 1080 * scale
+                                    width: 1080 * scale, // Changed
+                                    height: 1080 * scale // Changed
                                 });
                             }
                         }
@@ -275,8 +272,8 @@
             cropperCancel.addEventListener('click', hideCropperModal);
             cropperConfirm.addEventListener('click', function() {
                 if (cropper && cropperCallback) {
-                    // Get cropped image as DataURL (1920x1080)
-                    const croppedDataUrl = cropper.getCroppedCanvas({width:1920, height:1080}).toDataURL('image/jpeg', 0.95);
+                    // Get cropped image as DataURL (1080x1080)
+                    const croppedDataUrl = cropper.getCroppedCanvas({width:1080, height:1080}).toDataURL('image/jpeg', 0.95); // Changed
                     cropperCallback(croppedDataUrl);
                 }
                 hideCropperModal();
@@ -300,7 +297,7 @@
                             // Create temp image to check size
                             const tempImg = new window.Image();
                             tempImg.onload = function() {
-                                if (is1920x1080(tempImg)) {
+                                if (is1080x1080(tempImg)) { // Changed
                                     // Use as is
                                     setBannerImage(slot, e.target.result);
                                 } else {
@@ -428,19 +425,6 @@
                 });
             });
 
-            // Modal button event listeners
-            cancelDeleteBtn.addEventListener('click', () => {
-                deleteModal.classList.add('hidden');
-                currentSlotToDelete = null;
-            });
-
-            confirmDeleteBtn.addEventListener('click', () => {
-                if (currentSlotToDelete) {
-                    deleteBanner(currentSlotToDelete);
-                }
-                deleteModal.classList.add('hidden');
-                currentSlotToDelete = null;
-            });
         });
     </script>
 
