@@ -671,7 +671,7 @@ if ($user_id) {
                                     echo '<div class="orders-tab-content flex ' . $flexClass . '" id="' . $tab . '" style="' . $displayStyle . '">';
                                     if (!empty($groupedOrders)) {
                                         foreach ($groupedOrders as $order) {
-                                            echo '<div class="orders-drawer p-4 mb-4 rounded-lg border border-gray-200 shadow-sm animate-fade-in">';
+                                            echo '<a href="order_confirmation.php?order_reference=' . urlencode($order['order_reference']) . '" class="orders-drawer p-4 mb-4 rounded-lg border border-gray-200 shadow-sm animate-fade-in" style="display:block;text-decoration:none;">';
                                             echo '<div class="flex flex-wrap justify-between items-center mb-3">';
                                             echo '<span class="order-ref font-semibold text-xs text-primary">Order Ref: ' . htmlspecialchars($order['order_reference']) . '</span>';
                                             echo '<span class="date text-xs text-textlight">' . date('F j, Y', strtotime($order['order_date'])) . '</span>';
@@ -703,13 +703,13 @@ if ($user_id) {
                                                         if ($cancelCount >= 3 || strtolower($order['order_status']) === 'processing') {
                                                             echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-gray-400 text-white text-xs font-semibold shadow cursor-not-allowed" disabled>Cancel</button>';
                                                         } else {
-                                                            echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-red-500 text-white text-xs font-semibold shadow hover:bg-red-600 transition" onclick="openCancelModal(' . htmlspecialchars(json_encode($order['order_reference'])) . ')">Cancel</button>';
+                                                            echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-red-500 text-white text-xs font-semibold shadow hover:bg-red-600 transition" onclick="openCancelModal(' . htmlspecialchars(json_encode($order['order_reference'])) . ');event.preventDefault();event.stopPropagation();">Cancel</button>';
                                                         }
                                                         echo '</div>';
                                                     }
                                                 echo '</div>';
                                             }
-                                            echo '</div>';
+                                            echo '</a>';
                                             // Modal and JS moved outside PHP
                                         }
                                     } else {

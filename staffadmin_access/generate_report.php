@@ -143,16 +143,16 @@ if ($format == 'excel') {
     $overviewSheet = $spreadsheet->getActiveSheet();
     $overviewSheet->setTitle('Overview');
 
-    $stmt = $db_connection->prepare('SELECT SUM(o.total_amount) AS revenue FROM orders o WHERE o.branch_id = :branch_id');
+    $stmt = $db_connection->prepare('SELECT SUM(o.total_amount) AS revenue FROM orders o WHERE o.branch_id = :branch_id AND o.order_status = "completed"');
     $stmt->execute(['branch_id' => $branch_id]);
     $total_revenue = $stmt->fetchColumn() ?: 0;
-    $stmt = $db_connection->prepare('SELECT COUNT(*) FROM orders WHERE branch_id = :branch_id');
+    $stmt = $db_connection->prepare('SELECT COUNT(*) FROM orders WHERE branch_id = :branch_id AND order_status = "completed"');
     $stmt->execute(['branch_id' => $branch_id]);
     $orders_count = $stmt->fetchColumn() ?: 0;
-    $stmt = $db_connection->prepare('SELECT COUNT(DISTINCT o.user_id) FROM orders o WHERE o.branch_id = :branch_id');
+    $stmt = $db_connection->prepare('SELECT COUNT(DISTINCT o.user_id) FROM orders o WHERE o.branch_id = :branch_id AND o.order_status = "completed"');
     $stmt->execute(['branch_id' => $branch_id]);
     $customers_count = $stmt->fetchColumn() ?: 0;
-    $stmt = $db_connection->prepare('SELECT SUM(oi.quantity) FROM order_items oi INNER JOIN orders o ON oi.order_id = o.order_id WHERE o.branch_id = :branch_id');
+    $stmt = $db_connection->prepare('SELECT SUM(oi.quantity) FROM order_items oi INNER JOIN orders o ON oi.order_id = o.order_id WHERE o.branch_id = :branch_id AND o.order_status = "completed"');
     $stmt->execute(['branch_id' => $branch_id]);
     $products_sold = $stmt->fetchColumn() ?: 0;
 
@@ -181,7 +181,7 @@ if ($format == 'excel') {
     $overviewSheet->getColumnDimension('B')->setAutoSize(true);
 
     $category_headers = ['Category', 'Units Sold'];
-    $stmt = $db_connection->prepare('SELECT tc.classification_name, SUM(oi.quantity) AS sold FROM order_items oi INNER JOIN products p ON oi.product_id = p.product_id INNER JOIN product_classifications pc ON p.product_id = pc.product_id INNER JOIN tile_classifications tc ON pc.classification_id = tc.classification_id INNER JOIN orders o ON oi.order_id = o.order_id WHERE o.branch_id = :branch_id GROUP BY tc.classification_id ORDER BY sold DESC LIMIT 6');
+    $stmt = $db_connection->prepare('SELECT tc.classification_name, SUM(oi.quantity) AS sold FROM order_items oi INNER JOIN products p ON oi.product_id = p.product_id INNER JOIN product_classifications pc ON p.product_id = pc.product_id INNER JOIN tile_classifications tc ON pc.classification_id = tc.classification_id INNER JOIN orders o ON oi.order_id = o.order_id WHERE o.branch_id = :branch_id AND o.order_status = "completed" GROUP BY tc.classification_id ORDER BY sold DESC LIMIT 6');
     $stmt->execute(['branch_id' => $branch_id]);
     $category_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -202,7 +202,7 @@ if ($format == 'excel') {
     populateSheet($overviewSheet, $category_data, $category_headers, 3, 4);
 
     $design_headers = ['Design', 'Units Sold', 'Revenue'];
-    $stmt = $db_connection->prepare('SELECT td.design_name, SUM(oi.quantity) AS sold, SUM(oi.quantity * p.product_price) AS revenue FROM order_items oi INNER JOIN products p ON oi.product_id = p.product_id INNER JOIN product_designs pd ON p.product_id = pd.product_id INNER JOIN tile_designs td ON pd.design_id = td.design_id INNER JOIN orders o ON oi.order_id = o.order_id WHERE o.branch_id = :branch_id GROUP BY td.design_id ORDER BY sold DESC LIMIT 5');
+    $stmt = $db_connection->prepare('SELECT td.design_name, SUM(oi.quantity) AS sold, SUM(oi.quantity * p.product_price) AS revenue FROM order_items oi INNER JOIN products p ON oi.product_id = p.product_id INNER JOIN product_designs pd ON p.product_id = pd.product_id INNER JOIN tile_designs td ON pd.design_id = td.design_id INNER JOIN orders o ON oi.order_id = o.order_id WHERE o.branch_id = :branch_id AND o.order_status = "completed" GROUP BY td.design_id ORDER BY sold DESC LIMIT 5');
     $stmt->execute(['branch_id' => $branch_id]);
     $design_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -225,7 +225,7 @@ if ($format == 'excel') {
     // --- Sheet 2: Predictive Data (Recent 1000 Orders) ---
     $predictiveSheet = $spreadsheet->createSheet();
     $predictive_headers = [];
-    $predictiveStmt = $db_connection->query("SELECT * FROM orders ORDER BY order_id DESC LIMIT 1000");
+    $predictiveStmt = $db_connection->query("SELECT * FROM orders WHERE order_status = 'completed' ORDER BY order_id DESC LIMIT 1000");
     $predictiveData = $predictiveStmt->fetchAll(PDO::FETCH_ASSOC);
     if (!empty($predictiveData)) {
         $predictive_headers = array_keys($predictiveData[0]);
@@ -242,7 +242,7 @@ if ($format == 'excel') {
     $stmt = $db_connection->prepare('
         SELECT MONTH(o.order_date) as month_num, MONTHNAME(o.order_date) as month_name, SUM(o.total_amount) as revenue, COUNT(DISTINCT o.order_id) as orders
         FROM orders o 
-        WHERE o.branch_id = :branch_id AND YEAR(o.order_date) = :year
+        WHERE o.branch_id = :branch_id AND YEAR(o.order_date) = :year AND o.order_status = "completed"
         GROUP BY month_num, month_name
         ORDER BY month_num ASC
     ');
@@ -270,7 +270,7 @@ if ($format == 'excel') {
     $stmt = $db_connection->prepare('
         SELECT DAY(o.order_date) as day, SUM(o.total_amount) as revenue, COUNT(DISTINCT o.order_id) as orders
         FROM orders o 
-        WHERE o.branch_id = :branch_id AND MONTH(o.order_date) = :month AND YEAR(o.order_date) = :year
+        WHERE o.branch_id = :branch_id AND MONTH(o.order_date) = :month AND YEAR(o.order_date) = :year AND o.order_status = "completed"
         GROUP BY DAY(o.order_date)
         ORDER BY day ASC
     ');
@@ -335,7 +335,7 @@ if ($format == 'excel') {
         FROM orders o 
         INNER JOIN users u ON o.user_id = u.id
         INNER JOIN branches b ON o.branch_id = b.branch_id
-        WHERE o.order_date BETWEEN :start_date AND :end_date
+        WHERE o.order_date BETWEEN :start_date AND :end_date AND o.order_status = "completed"
         ORDER BY o.order_date DESC
     ');
     $stmt->execute([

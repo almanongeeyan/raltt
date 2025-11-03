@@ -786,13 +786,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderBranchList(pos.coords, true);
                 },
                 (error) => {
-                    let errorMessage = 'Location access denied. Please enable location services to change branches.';
-                    if (error.code === error.TIMEOUT) {
-                        errorMessage = 'Location request timed out. Please try again.';
-                    }
-                    updateLocationStatus(errorMessage, 'error');
-                    renderBranchList(null, true); // Still enable branch selection without location
-                },
+    let errorMessage = 'Location access denied. Please enable location services to change branches.';
+    if (error.code === error.TIMEOUT) {
+        errorMessage = 'Location request timed out. Please try again.';
+    }
+    updateLocationStatus(errorMessage, 'error');
+    renderBranchList(null, false); // Disable branch selection if no location
+    if (selectBranchBtn) {
+        selectBranchBtn.disabled = true;
+        selectBranchBtn.textContent = 'Enable Location to Select';
+    }
+},
                 { 
                     timeout: 10000,
                     enableHighAccuracy: false 

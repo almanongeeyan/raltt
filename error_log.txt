@@ -147,3 +147,43 @@ Stack trace:
 #1 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(327): PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf->save('php://output')
 #2 {main}
   thrown in C:\xampp\htdocs\raltt\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf.php on line 22
+[31-Oct-2025 08:46:08 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.order_date' in 'where clause' in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:157
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(157): PDO->prepare('SELECT COUNT(*)...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 157
+[31-Oct-2025 08:46:13 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.order_date' in 'where clause' in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:157
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(157): PDO->prepare('SELECT COUNT(*)...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 157
+[02-Nov-2025 01:35:15 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.order_date' in 'where clause' in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:155
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(155): PDO->prepare('SELECT COUNT(*)...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 155
+[02-Nov-2025 01:35:21 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.order_date' in 'where clause' in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:155
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(155): PDO->prepare('SELECT COUNT(*)...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 155
+[02-Nov-2025 01:35:22 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.order_date' in 'where clause' in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:155
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(155): PDO->prepare('SELECT COUNT(*)...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 155
+[02-Nov-2025 01:35:27 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.order_date' in 'where clause' in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:155
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(155): PDO->prepare('SELECT COUNT(*)...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 155
+[02-Nov-2025 01:35:31 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.order_date' in 'where clause' in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:155
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(155): PDO->prepare('SELECT COUNT(*)...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 155
+[02-Nov-2025 01:37:50 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.order_date' in 'where clause' in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php:184
+Stack trace:
+#0 C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php(184): PDO->prepare('SELECT COUNT(*)...')
+#1 {main}
+  thrown in C:\xampp\htdocs\raltt\staffadmin_access\generate_report.php on line 184

@@ -16,8 +16,9 @@ require_once '../vendor/autoload.php';
 // Include the database connection file
 require_once 'connection.php';
 
-// Set the Google Client ID
-$clientID = '1043599229897-c7t8ir646mn4i1abs79eeg51r4hu4j66.apps.googleusercontent.com';
+
+// Get Google Client ID from environment variable or fallback to default
+$clientID = getenv('GOOGLE_CLIENT_ID') ?: '1043599229897-c7t8ir646mn4i1abs79eeg51r4hu4j66.apps.googleusercontent.com';
 
 // Set the content type for the response
 header('Content-Type: application/json');

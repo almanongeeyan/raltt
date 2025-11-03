@@ -1158,8 +1158,29 @@ if ($user_id > 0) {
                     }
                 })
                 .catch(() => alert('Order failed. Please try again.'));
+            } else if (method === 'gcash') {
+                e.preventDefault();
+                const formData = new FormData(paymentForm);
+                // Add total amount and user info to formData
+                formData.append('amount', currentTotal);
+                formData.append('user_fullname', document.getElementById('displayFullName').textContent);
+                formData.append('user_phone', document.getElementById('displayContactNumber').textContent);
+                formData.append('user_email', ''); // Add email if available
+                fetch('processes/paymongo_gcash.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.checkout_url) {
+                        window.location.href = data.checkout_url;
+                    } else {
+                        alert('GCash payment failed: ' + (data.message || 'Please try again.'));
+                    }
+                })
+                .catch(() => alert('GCash payment failed. Please try again.'));
             }
-            // else, allow normal submit (for GCash)
+            // else, allow normal submit for other methods
         });
         
         closeModal.addEventListener('click', function() {

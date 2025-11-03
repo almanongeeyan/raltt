@@ -13,9 +13,16 @@ $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 0;
 $order = null;
 $order_items = [];
 if ($user_id > 0) {
-    $stmt = $conn->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC LIMIT 1");
-    $stmt->execute([$user_id]);
-    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    $order_reference_param = isset($_GET['order_reference']) ? $_GET['order_reference'] : null;
+    if ($order_reference_param) {
+        $stmt = $conn->prepare("SELECT * FROM orders WHERE user_id = ? AND order_reference = ? LIMIT 1");
+        $stmt->execute([$user_id, $order_reference_param]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    } else {
+        $stmt = $conn->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC LIMIT 1");
+        $stmt->execute([$user_id]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
     if ($order) {
         $order_id = $order['order_id'];
         $order_reference = $order['order_reference'];
@@ -36,7 +43,7 @@ if ($user_id > 0) {
         // Set branch variables to avoid undefined variable warning
         $branch_name = 'Main Branch';
         $branch_address = '123 Main Street, Quezon City, Metro Manila';
-        echo '<div style="padding:2em;text-align:center;color:red;font-size:1.2em;">Error: No recent order found.<br>Please go back to your cart and try again.</div>';
+        echo '<div style="padding:2em;text-align:center;color:red;font-size:1.2em;">Error: Order not found.<br>Please go back to your cart or order history and try again.</div>';
         exit();
     }
     // Get user info
