@@ -68,12 +68,22 @@ try {
 	$db_connection->beginTransaction();
 
 	// 1. Set has_used_referral_code = 'TRUE' and add 5 coins to user
-	$stmt = $db_connection->prepare('UPDATE users SET has_used_referral_code = "TRUE", referral_coins = referral_coins + 5 WHERE id = ?');
+	$stmt = $db_connection->prepare('UPDATE users SET has_used_referral_code = 1, referral_coins = referral_coins + 5 WHERE id = ?');
 	$stmt->execute([$user_id]);
 
 	// 2. Add 10 coins to owner
 	$stmt = $db_connection->prepare('UPDATE users SET referral_coins = referral_coins + 10 WHERE id = ?');
 	$stmt->execute([$owner['id']]);
+
+	// 3. Add notification for user who claimed referral
+	$notifMsgUser = "You claimed a referral code and received 5 coins!";
+	$stmt = $db_connection->prepare('INSERT INTO user_notifications (user_id, notification_type, notification_message) VALUES (?, "REFERRAL_CLAIMED", ?)');
+	$stmt->execute([$user_id, $notifMsgUser]);
+
+	// 4. Add notification for code owner
+	$notifMsgOwner = "Your referral code was claimed by another user. You received 10 coins!";
+	$stmt = $db_connection->prepare('INSERT INTO user_notifications (user_id, notification_type, notification_message) VALUES (?, "REFERRAL_CLAIMED", ?)');
+	$stmt->execute([$owner['id'], $notifMsgOwner]);
 
 	$db_connection->commit();
 

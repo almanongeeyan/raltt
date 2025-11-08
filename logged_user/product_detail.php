@@ -35,12 +35,13 @@ if ($product_id > 0) {
     $branch_id = isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 1;
     // Fetch main product for branch
     $stmt = $conn->prepare('
-        SELECT p.*, 
-               GROUP_CONCAT(DISTINCT td.design_name) as designs,
-               GROUP_CONCAT(DISTINCT ts.size_name) as sizes,
-               GROUP_CONCAT(DISTINCT tf.finish_name) as finishes,
-               GROUP_CONCAT(DISTINCT tc.classification_name) as classifications,
-               GROUP_CONCAT(DISTINCT tbf.best_for_name) as best_for
+     SELECT p.*, 
+         GROUP_CONCAT(DISTINCT td.design_name) as designs,
+         GROUP_CONCAT(DISTINCT ts.size_name) as sizes,
+         GROUP_CONCAT(DISTINCT tf.finish_name) as finishes,
+         GROUP_CONCAT(DISTINCT tc.classification_name) as classifications,
+         GROUP_CONCAT(DISTINCT tbf.best_for_name) as best_for,
+         pb.stock_count as stock_count
         FROM products p
         LEFT JOIN product_branches pb ON p.product_id = pb.product_id
         LEFT JOIN product_designs pd ON p.product_id = pd.product_id
@@ -74,11 +75,13 @@ if ($product_id > 0) {
             $product['product_image'] = '../images/user/tile1.jpg';
         }
         // Convert comma-separated values to arrays
-        $product['designs'] = $product['designs'] ? explode(',', $product['designs']) : [];
+    $product['designs'] = $product['designs'] ? explode(',', $product['designs']) : [];
         $product['sizes'] = $product['sizes'] ? explode(',', $product['sizes']) : [];
         $product['finishes'] = $product['finishes'] ? explode(',', $product['finishes']) : [];
         $product['classifications'] = $product['classifications'] ? explode(',', $product['classifications']) : [];
         $product['best_for'] = $product['best_for'] ? explode(',', $product['best_for']) : [];
+    // Ensure stock_count is available and numeric
+    $product['stock_count'] = isset($product['stock_count']) ? intval($product['stock_count']) : 0;
         
         // Fetch product reviews
         $review_stmt = $conn->prepare('
@@ -297,6 +300,64 @@ include '../includes/headeruser.php';
         .modal-overlay-product {
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
+        }
+        /* Modal box and stock badge styles */
+        .modal-box {
+            transform: translateY(6px) scale(0.98);
+            opacity: 0;
+            transition: transform 220ms ease, opacity 220ms ease;
+            background: linear-gradient(145deg, #ffffff, #f9f9f9);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .modal-box.show {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        .modal-box input[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+            -webkit-appearance: textfield;
+        }
+        .modal-box input[type="number"]::-webkit-outer-spin-button,
+        .modal-box input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .quantity-btn {
+            transition: all 0.2s ease;
+            padding: 4px;
+            border-radius: 50%;
+        }
+        .quantity-btn:not(:disabled):hover {
+            transform: scale(1.15);
+            background: rgba(125,49,10,0.1);
+        }
+        .quantity-btn:disabled {
+            cursor: not-allowed;
+        }
+        .stock-badge {
+            font-size: 0.85rem;
+            padding: 0.45rem 0.65rem;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #fff7ed, #fff1e6);
+            border: 1px solid rgba(125,49,10,0.1);
+            color: #7d310a;
+            box-shadow: 0 4px 12px rgba(125,49,10,0.08);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .stock-badge.out {
+            background: linear-gradient(145deg, #fff5f5, #fff1f1);
+            color: #b91c1c;
+            border-color: rgba(185,28,28,0.15);
+            box-shadow: 0 4px 12px rgba(185,28,28,0.08);
+        }
+        .stock-badge i {
+            font-size: 0.9em;
+            margin-top: -1px;
         }
         
         /* Product-specific color variables */
@@ -790,21 +851,45 @@ include '../includes/headeruser.php';
 
             <!-- Quantity Modal -->
             <div id="qtyModal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay-product hidden">
-                <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm mx-4 relative border border-gray-200">
+                <div id="qtyModalBox" class="modal-box bg-white rounded-xl shadow-lg p-6 w-full max-w-sm mx-4 relative border border-gray-200">
                     <button type="button" id="closeQtyModal" class="absolute top-4 right-4 text-gray-400 hover:text-primary-product text-lg focus:outline-none">
                         <i class="fa fa-times"></i>
                     </button>
-                    <h2 class="text-lg font-semibold text-primary-product mb-4 flex items-center gap-2">
+                    <h2 class="text-lg font-semibold text-primary-product mb-2 flex items-center gap-2">
                         <i class="fa fa-shopping-cart"></i> Add to Cart
                     </h2>
+                    <p class="text-sm text-gray-500 mb-4">Select quantity to add to your cart. We'll reserve items in your cart until checkout.</p>
                     <form action="processes/add_to_cart.php" method="POST" class="space-y-4" id="addToCartForm">
                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                         <input type="hidden" name="branch_id" value="<?php echo isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 1; ?>">
                         <div>
                             <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-                            <input type="number" name="quantity" id="quantity" min="1" value="1" required 
-                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-primary-product focus:ring-2 focus:ring-primary/20 text-sm font-medium text-primary-product bg-white transition-all duration-200">
+                            <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-3 relative">
+                        <div class="flex-1 relative">
+                            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                <button type="button" class="quantity-btn decrease text-gray-400 hover:text-primary-product focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" <?php echo $product['stock_count'] <= 0 ? 'disabled' : ''; ?>>
+                                    <i class="fas fa-minus-circle"></i>
+                                </button>
+                                <button type="button" class="quantity-btn increase text-gray-400 hover:text-primary-product focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" <?php echo $product['stock_count'] <= 0 ? 'disabled' : ''; ?>>
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                            </div>
+                            <input type="number" name="quantity" id="quantity" min="1" value="<?php echo $product['stock_count'] > 0 ? 1 : 0; ?>" required 
+                                max="<?php echo $product['stock_count']; ?>" <?php echo $product['stock_count'] <= 0 ? 'disabled' : ''; ?>
+                                class="w-full pl-3 pr-20 py-2 rounded-lg border border-gray-300 focus:border-primary-product focus:ring-2 focus:ring-primary/20 text-sm font-medium text-primary-product bg-white transition-all duration-200">
                         </div>
+                        <div id="quantityLeft" class="stock-badge flex-shrink-0 <?php echo $product['stock_count'] <= 0 ? 'out' : ''; ?>" aria-live="polite">
+                            <i class="fas <?php echo $product['stock_count'] > 0 ? 'fa-box text-primary-product' : 'fa-box-open text-red-600'; ?> mr-1"></i>
+                            <?php echo $product['stock_count'] > 0 ? 'Qty left: ' . $product['stock_count'] : 'Out of stock'; ?>
+                        </div>
+                    </div>
+                    <div id="qtyError" class="text-sm text-red-600 hidden flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Requested quantity exceeds available stock.</span>
+                    </div>
+                </div>
+            </div>
                         <button type="submit" id="submitAddToCart" class="w-full py-3 bg-primary-product text-white rounded-lg font-semibold text-sm transition-all duration-200 hover:bg-primary/90 shadow-lg flex items-center justify-center gap-2">
                             <i class="fa fa-cart-plus"></i> Add to Cart
                         </button>
@@ -850,7 +935,7 @@ include '../includes/headeruser.php';
                             
                             <!-- Overlay on hover -->
                             <div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-3">
-                                <a href="product-detail.php?id=<?php echo $related['product_id']; ?>" 
+                                <a href="product_detail.php?id=<?php echo $related['product_id']; ?>" 
                                    class="bg-white text-primary-product px-4 py-1.5 rounded-lg font-medium text-xs transition-all hover:bg-primary-product hover:text-white">
                                     View Details
                                 </a>
@@ -952,33 +1037,143 @@ include '../includes/headeruser.php';
         // Quantity Modal logic & AJAX add to cart
         document.addEventListener('DOMContentLoaded', function() {
             var qtyModal = document.getElementById('qtyModal');
+            var qtyModalBox = document.getElementById('qtyModalBox');
             var openBtn = document.getElementById('openQtyModal');
             var closeBtn = document.getElementById('closeQtyModal');
             var addToCartForm = document.getElementById('addToCartForm');
-            
-            if (openBtn && qtyModal) {
-                openBtn.addEventListener('click', function() {
-                    qtyModal.classList.remove('hidden');
-                });
+            var quantityInput = document.getElementById('quantity');
+            var quantityLeftEl = document.getElementById('quantityLeft');
+            var qtyError = document.getElementById('qtyError');
+            var submitBtn = document.getElementById('submitAddToCart');
+
+            function openModal() {
+                if (!qtyModal) return;
+                qtyModal.classList.remove('hidden');
+                // show animated box slightly after overlay
+                setTimeout(function() {
+                    qtyModalBox && qtyModalBox.classList.add('show');
+                }, 10);
+                // reset quantity
+                if (quantityInput) {
+                    quantityInput.value = <?php echo $product['stock_count'] > 0 ? 1 : 0; ?>;
+                    var max = parseInt(quantityInput.getAttribute('max') || '0', 10);
+                    quantityInput.setAttribute('max', max);
+                    quantityLeftEl && (quantityLeftEl.textContent = <?php echo $product['stock_count']; ?> > 0 ? 'Qty left: ' + <?php echo $product['stock_count']; ?> : 'Out of stock');
+                    // update submit state
+                    if (<?php echo $product['stock_count']; ?> <= 0) {
+                        submitBtn && (submitBtn.disabled = true);
+                        qtyError && (qtyError.classList.remove('hidden'), qtyError.textContent = 'This product is currently out of stock.');
+                    } else {
+                        submitBtn && (submitBtn.disabled = false);
+                        qtyError && qtyError.classList.add('hidden');
+                    }
+                }
             }
-            
-            if (closeBtn && qtyModal) {
-                closeBtn.addEventListener('click', function() {
+
+            function closeModal() {
+                if (!qtyModal) return;
+                qtyModalBox && qtyModalBox.classList.remove('show');
+                // wait for animation
+                setTimeout(function() {
                     qtyModal.classList.add('hidden');
-                });
+                }, 220);
             }
-            
+
+            if (openBtn && qtyModal) {
+                openBtn.addEventListener('click', openModal);
+            }
+
+            if (closeBtn && qtyModal) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+
             // Close modal on outside click
             qtyModal && qtyModal.addEventListener('click', function(e) {
                 if (e.target === qtyModal) {
-                    qtyModal.classList.add('hidden');
+                    closeModal();
                 }
             });
+
+            // Validate quantity input against available stock live
+            if (quantityInput) {
+                quantityInput.addEventListener('input', function() {
+                    var val = parseInt(quantityInput.value || '0', 10);
+                    var max = parseInt(quantityInput.getAttribute('max') || '0', 10);
+                    if (isNaN(val) || val < 1) {
+                        quantityInput.value = 1;
+                        val = 1;
+                    }
+                    if (val > max) {
+                        qtyError && (qtyError.classList.remove('hidden'), qtyError.textContent = 'Requested quantity exceeds available stock.');
+                        submitBtn && (submitBtn.disabled = true);
+                    } else {
+                        qtyError && qtyError.classList.add('hidden');
+                        submitBtn && (submitBtn.disabled = false);
+                    }
+                });
+            }
+
+            // Handle quantity buttons
+            const decreaseBtn = document.querySelector('.quantity-btn.decrease');
+            const increaseBtn = document.querySelector('.quantity-btn.increase');
+
+            if (decreaseBtn && increaseBtn && quantityInput) {
+                decreaseBtn.addEventListener('click', () => {
+                    const currentValue = parseInt(quantityInput.value || '0', 10);
+                    if (currentValue > 1) {
+                        quantityInput.value = currentValue - 1;
+                        quantityInput.dispatchEvent(new Event('input'));
+                    }
+                });
+
+                increaseBtn.addEventListener('click', () => {
+                    const currentValue = parseInt(quantityInput.value || '0', 10);
+                    const max = parseInt(quantityInput.getAttribute('max') || '0', 10);
+                    if (currentValue < max) {
+                        quantityInput.value = currentValue + 1;
+                        quantityInput.dispatchEvent(new Event('input'));
+                    }
+                });
+
+                // Update button states on quantity change
+                function updateButtonStates() {
+                    const val = parseInt(quantityInput.value || '0', 10);
+                    const max = parseInt(quantityInput.getAttribute('max') || '0', 10);
+                    
+                    decreaseBtn.disabled = val <= 1;
+                    increaseBtn.disabled = val >= max;
+                    
+                    decreaseBtn.style.opacity = val <= 1 ? '0.5' : '1';
+                    increaseBtn.style.opacity = val >= max ? '0.5' : '1';
+
+                    submitBtn.disabled = val > max || val < 1;
+                    submitBtn.style.opacity = (val > max || val < 1) ? '0.5' : '1';
+                    
+                    if (val > max) {
+                        quantityInput.classList.add('border-red-500');
+                        qtyError.classList.remove('hidden');
+                    } else {
+                        quantityInput.classList.remove('border-red-500');
+                        qtyError.classList.add('hidden');
+                    }
+                }
+
+                quantityInput.addEventListener('input', updateButtonStates);
+                updateButtonStates(); // Initial state
+            }
 
             // AJAX submit for add to cart
             if (addToCartForm) {
                 addToCartForm.addEventListener('submit', function(e) {
                     e.preventDefault();
+                    // final validation before submit
+                    var qty = parseInt(quantityInput ? quantityInput.value || '0' : '0', 10);
+                    var max = parseInt(quantityInput ? quantityInput.getAttribute('max') || '0' : '0', 10);
+                    if (qty > max) {
+                        qtyError && (qtyError.classList.remove('hidden'), qtyError.textContent = 'Requested quantity exceeds available stock.');
+                        return;
+                    }
+
                     var formData = new FormData(addToCartForm);
                     fetch('processes/add_to_cart.php', {
                         method: 'POST',
@@ -987,9 +1182,8 @@ include '../includes/headeruser.php';
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            qtyModal.classList.add('hidden');
+                            closeModal();
                             showToast('Product Successfully Added to your Cart');
-                            
                             // Update the heatmap data after successful add to cart
                             updateHeatmapData();
                         } else {

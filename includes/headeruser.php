@@ -77,12 +77,10 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
         :root {
             --color-gold: #cf8756;
             --color-gold-dark: #b88b4a;
         }
-
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #111827; 
@@ -95,7 +93,34 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
         .text-gold { color: var(--color-gold); }
         .border-gold { border-color: var(--color-gold); }
         .bg-gold { background-color: var(--color-gold); }
-        
+        /* Notification bell styles */
+        .fa-bell { transition: color 0.2s; }
+        #notif-bell-btn:hover .fa-bell { color: #fff7e6; }
+        #notif-bell-btn .animate-pulse {
+            animation: pulse 1.2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(239,68,68,0.0); }
+        }
+        #notif-dropdown {
+            min-width: 320px;
+            max-width: 400px;
+            background: #23272f;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.08);
+            z-index: 9999;
+        }
+        #notif-dropdown ul { padding: 0; margin: 0; list-style: none; }
+        #notif-dropdown li { cursor: pointer; border-radius: 0.5rem; }
+        #notif-dropdown li.bg-gold\/10 { background: rgba(207,135,86,0.10); }
+        #notif-dropdown li:hover { background: rgba(207,135,86,0.18); }
+        #notif-dropdown .text-gold { color: var(--color-gold); }
+        #notif-dropdown .font-bold { font-weight: 700; }
+        #notif-dropdown .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        #notif-dropdown .custom-scrollbar::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; }
+        /* ...existing code... */
         /* Burger menu animation */
         .burger-line { 
             transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); 
@@ -109,7 +134,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
         .burger.open .burger-line:nth-child(3) { 
             transform: rotate(45deg) translate(-5px, -6px); 
         }
-
         /* Smooth transitions for overlays */
         .fade-in { 
             animation: fadeIn 0.3s ease-out forwards; 
@@ -125,7 +149,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             from { opacity: 1; } 
             to { opacity: 0; } 
         }
-
         /* Custom scrollbar for modal */
         .custom-scrollbar::-webkit-scrollbar { 
             width: 8px; 
@@ -138,7 +161,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             background: #6b7280; 
             border-radius: 10px; 
         }
-        
         /* Branch item styles */
         .branch-item {
             transition: all 0.3s ease;
@@ -165,7 +187,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             transform: none !important;
             box-shadow: none !important;
         }
-
         /* Draggable overlay style */
         #branch-location-overlay {
             cursor: grab;
@@ -173,7 +194,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
         #branch-location-overlay.dragging {
             cursor: grabbing;
         }
-
         /* Navigation link styles */
         .nav-link { 
             display: flex; 
@@ -193,13 +213,11 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             width: 1.5rem; 
             text-align: center; 
         }
-
         /* Loading overlay */
         #page-loading-overlay {
             background: rgba(17, 24, 39, 0.9);
             backdrop-filter: blur(8px);
         }
-
         /* Google Maps container */
         #branch-map {
             height: 300px;
@@ -208,7 +226,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         /* Branch info card */
         .branch-info-card {
             background: rgba(255, 255, 255, 0.05);
@@ -217,7 +234,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             margin-top: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         /* Branch selection modal */
         .branch-modal-content {
             max-height: 85vh;
@@ -225,14 +241,12 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             display: flex;
             flex-direction: column;
         }
-
         .branch-modal-body {
             overflow-y: auto;
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-
         /* Map iframe styling */
         .branch-map-iframe {
             border: none;
@@ -240,20 +254,16 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
             width: 100%;
             height: 100%;
         }
-
         @media (max-width: 768px) {
             .branch-modal-content {
                 max-height: 90vh;
             }
-            
             .branch-modal-body {
                 flex-direction: column;
             }
-            
             #branch-map {
                 height: 250px;
             }
-            
             .branch-modal-body > div {
                 width: 100% !important;
                 border-right: none !important;
@@ -295,8 +305,101 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
         </nav>
 
         <!-- User Actions -->
+        <?php
+        // Fetch notifications for the logged-in user
+        $notifications = [];
+        $unread_count = 0;
+        if (isset($_SESSION['user_id']) && isset($db_connection)) {
+            try {
+                $stmt = $db_connection->prepare("SELECT * FROM user_notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 10");
+                $stmt->execute([$_SESSION['user_id']]);
+                $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $unread_count = 0;
+                foreach ($notifications as $n) {
+                    if (!$n['is_read']) $unread_count++;
+                }
+            } catch (Exception $e) {
+                // Optionally log error
+            }
+        }
+        ?>
         <div class="flex items-center gap-4 z-50">
-
+            <!-- Notification Bell -->
+            <div class="relative group">
+                <button id="notif-bell-btn" class="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors focus:outline-none">
+                    <i class="fa fa-bell text-gold text-xl"></i>
+                    <span id="notif-unread-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 animate-pulse shadow-lg" style="display:none;"></span>
+                </button>
+                <!-- Dropdown -->
+                <div id="notif-dropdown" class="hidden group-hover:block absolute right-0 top-full mt-2 w-96 max-w-xs bg-gray-800 rounded-xl shadow-2xl border border-white/10 py-2 z-50">
+                    <div class="px-4 py-2 border-b border-white/10 flex items-center justify-between">
+                        <span class="font-bold text-gold text-lg">Notifications</span>
+                        <span id="notif-unread-label" class="text-xs text-red-400 font-semibold" style="display:none;"></span>
+                    </div>
+                    <div id="notif-list-container">
+                        <div class="px-4 py-6 text-center text-white/70">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <script>
+            // Real-time notification polling and mark-as-read
+            function fetchNotifications() {
+                fetch('../connection/get_user_notifications.php')
+                    .then(res => res.json())
+                    .then(data => {
+                        const notifList = document.getElementById('notif-list-container');
+                        const unreadCountEl = document.getElementById('notif-unread-count');
+                        const unreadLabel = document.getElementById('notif-unread-label');
+                        let unreadCount = 0;
+                        if (Array.isArray(data.notifications) && data.notifications.length > 0) {
+                            var html = '<ul class="max-h-80 overflow-y-auto custom-scrollbar divide-y divide-white/10">';
+                            data.notifications.forEach(function(notif) {
+                                if (!notif.is_read) unreadCount++;
+                                var icon = 'fa-info-circle', color = 'text-gold';
+                                switch (notif.notification_type) {
+                                    case 'ORDER_STATUS': icon = 'fa-box'; color = 'text-blue-400'; break;
+                                    case 'REFERRAL_CLAIMED': icon = 'fa-gift'; color = 'text-green-400'; break;
+                                    case 'TICKET_UPDATE': icon = 'fa-ticket-alt'; color = 'text-yellow-400'; break;
+                                    case 'MARKETING': icon = 'fa-bullhorn'; color = 'text-pink-400'; break;
+                                }
+                                html += '<li class="px-4 py-3 flex gap-3 items-start ' + (!notif.is_read ? 'bg-gold/10' : '') + ' hover:bg-gold/20 transition-colors">' +
+                                    '<div class="mt-1"><i class="fas ' + icon + ' ' + color + ' text-lg"></i></div>' +
+                                    '<div class="flex-1 min-w-0">' +
+                                        '<div class="text-sm font-semibold text-white/90 mb-1">' + notif.notification_message + '</div>' +
+                                        '<div class="text-xs text-white/50 flex gap-2 items-center">' +
+                                            '<span>' + notif.notification_type.replace(/_/g, ' ').toLowerCase() + '</span>' +
+                                            '<span>&middot;</span>' +
+                                            '<span>' + notif.created_at + '</span>' +
+                                            (!notif.is_read ? '<span class="ml-2 text-gold font-bold">New</span>' : '') +
+                                        '</div>' +
+                                    '</div>' +
+                                '</li>';
+                            });
+                            html += '</ul>';
+                            notifList.innerHTML = html;
+                        } else {
+                            notifList.innerHTML = '<div class="px-4 py-6 text-center text-white/70">No notifications yet.</div>';
+                        }
+                        if (unreadCount > 0) {
+                            unreadCountEl.textContent = unreadCount;
+                            unreadCountEl.style.display = '';
+                            unreadLabel.textContent = unreadCount + ' unread';
+                            unreadLabel.style.display = '';
+                        } else {
+                            unreadCountEl.style.display = 'none';
+                            unreadLabel.style.display = 'none';
+                        }
+                    });
+            }
+            // Poll every 10 seconds
+            setInterval(fetchNotifications, 10000);
+            fetchNotifications();
+            // Mark as read when dropdown is opened
+            document.getElementById('notif-bell-btn').addEventListener('click', function() {
+                fetch('../connection/mark_notifications_read.php')
+                    .then(() => setTimeout(fetchNotifications, 500));
+            });
+            </script>
             <!-- User Dropdown -->
             <div class="hidden lg:block relative group">
                 <button class="flex items-center gap-2 p-2 rounded-lg hover:bg-white/10 transition-colors">
@@ -322,7 +425,6 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
                     </a>
                 </div>
             </div>
-
             <!-- Mobile Menu Toggle -->
             <button id="mobile-menu-toggle" class="lg:hidden burger flex flex-col justify-center items-center w-10 h-10 z-[100]">
                 <span class="burger-line w-6 h-0.5 bg-white mb-1.5 rounded-full"></span>
@@ -444,8 +546,43 @@ function log_branch_change($user_id, $branch_id, $db_connection) {
 </div>
 
 <script>
-// Main Application
+// Notification Bell Dropdown (show on click for mobile/desktop)
 document.addEventListener('DOMContentLoaded', () => {
+    // Notification dropdown logic
+    const notifBellBtn = document.getElementById('notif-bell-btn');
+    const notifDropdown = document.getElementById('notif-dropdown');
+    if (notifBellBtn && notifDropdown) {
+        let dropdownOpen = false;
+        const openDropdown = () => {
+            notifDropdown.classList.remove('hidden');
+            dropdownOpen = true;
+        };
+        const closeDropdown = () => {
+            notifDropdown.classList.add('hidden');
+            dropdownOpen = false;
+        };
+        notifBellBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (dropdownOpen) {
+                closeDropdown();
+            } else {
+                openDropdown();
+                // Mark notifications as read (AJAX)
+                fetch('../connection/mark_notifications_read.php', { method: 'POST' });
+                // Optionally, remove badge
+                const badge = notifBellBtn.querySelector('span');
+                if (badge) badge.style.display = 'none';
+            }
+        });
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (dropdownOpen && !notifDropdown.contains(e.target) && e.target !== notifBellBtn) {
+                closeDropdown();
+            }
+        });
+    }
+
+    // ...existing code...
     const { branches, userBranch, isCheckoutPage } = window.RALTT_DATA;
 
     // Google Maps embed URLs for each branch

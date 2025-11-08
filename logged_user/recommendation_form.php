@@ -17,6 +17,10 @@ if (isset($_SESSION['user_id'])) {
 
 <?php if ($showRecommendationModal): ?>
 
+<script>
+    window.CURRENT_USER_ID = <?php echo isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 'null'; ?>;
+</script>
+
 <div id="ralttVideoOverlay" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.95);align-items:center;justify-content:center;">
     <video id="ralttVideoPlayer" src="../images/raltt.mp4" style="max-width:90vw;max-height:90vh;outline:none;box-shadow:0 0 40px #000;" playsinline preload="auto"></video>
 </div>
@@ -103,18 +107,16 @@ if (isset($_SESSION['user_id'])) {
 </style>
 
 <script>
-// --- NEW DATA STRUCTURE ---
-// Add 'image_url' for static images (high performance)
-// Add 'video_url' (optional) to use a looping video (higher performance impact)
+// --- THIS IS THE FIX ---
+// The 'id' fields are now numbers (1, 2, 3...) to match your
+// 'tile_designs' table's primary key, which is likely an INT.
 const tileDesigns = [
-    { id: 'minimalist', name: 'Minimalist', icon: 'fa-border-all', image_url: '../images/user/minimalist.png', video_url: '../images/minimalist.mp4' },
-    { id: 'floral', name: 'Floral', icon: 'fa-seedling', image_url: '../images/user/floral.jpg', video_url: '../images/floral.mp4' },
-    { id: 'black_white', name: 'Black & White', icon: 'fa-palette', image_url: '../images/user/b&w.jpg', video_url: '../images/blackandwhite.mp4' },
-    { id: 'modern', name: 'Modern', icon: 'fa-cube', image_url: '../images/user/modern.jpg', video_url: '../images/modern.mp4' },
-    { id: 'rustic', name: 'Rustic', icon: 'fa-mountain', image_url: '../images/user/rustic.jpg', video_url: '../images/rustic.mp4' },
-    { id: 'geometric', name: 'Geometric', icon: 'fa-shapes', image_url: '../images/user/geometric.jpg', video_url: '../images/geometric.mp4' }
-    // --- EXAMPLE WITH VIDEO ---
-    // { id: 'modern', name: 'Modern', icon: 'fa-cube', video_url: '../videos/modern_tiles.mp4' }
+    { id: 1, name: 'Minimalist', icon: 'fa-border-all', image_url: '../images/user/minimalist.png', video_url: '../images/minimalist.mp4' },
+    { id: 2, name: 'Floral', icon: 'fa-seedling', image_url: '../images/user/floral.jpg', video_url: '../images/floral.mp4' },
+    { id: 3, name: 'Black & White', icon: 'fa-palette', image_url: '../images/user/b&w.jpg', video_url: '../images/blackandwhite.mp4' },
+    { id: 4, name: 'Modern', icon: 'fa-cube', image_url: '../images/user/modern.jpg', video_url: '../images/modern.mp4' },
+    { id: 5, name: 'Rustic', icon: 'fa-mountain', image_url: '../images/user/rustic.jpg', video_url: '../images/rustic.mp4' },
+    { id: 6, name: 'Geometric', icon: 'fa-shapes', image_url: '../images/user/geometric.jpg', video_url: '../images/geometric.mp4' }
 ];
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -146,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tileDesigns.forEach(design => {
             const categoryElement = document.createElement('div');
             categoryElement.className = 'category-option relative rounded-xl shadow-xl cursor-pointer overflow-hidden group border-2 border-gray-200 hover:border-primary transition-all duration-300';
-            categoryElement.dataset.id = design.id;
+            categoryElement.dataset.id = design.id; // This will now be a number
 
             // Disabled if maxSelections reached and not selected
             if (selectedCategories.length >= maxSelections && !selectedCategories.includes(design.id)) {
@@ -157,14 +159,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (selectedCategories.includes(design.id)) {
                 mediaHtml = `
                     <video class="bg-media absolute inset-0 w-full h-full object-cover rounded-xl border-2 border-primary shadow-2xl" 
-                        src="${design.video_url}" 
-                        autoplay loop muted playsinline>
+                           src="${design.video_url}" 
+                           autoplay loop muted playsinline>
                     </video>
                 `;
             } else {
                 mediaHtml = `
                     <div class="bg-media absolute inset-0 w-full h-full bg-cover bg-center rounded-xl border-2 border-white shadow-lg group-hover:scale-105 transition-transform duration-300" 
-                        style="background-image: url('${design.image_url}')"></div>
+                         style="background-image: url('${design.image_url}')"></div>
                 `;
             }
 
@@ -205,40 +207,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (video.paused) video.play();
             });
         }, 100);
-        // After initial render, keep videos playing and do not restart
-        setTimeout(() => {
-            document.querySelectorAll('.category-option video').forEach(video => {
-                video.muted = true;
-                video.loop = true;
-                video.autoplay = true;
-                video.playsInline = true;
-                if (video.paused) video.play();
-            });
-        }, 100);
     }
 
-    function swapImagesForVideos() {
-        selectedCategories.forEach(categoryId => {
-            const design = tileDesigns.find(d => d.id === categoryId);
-            const categoryElement = document.querySelector(`.category-option[data-id="${categoryId}"]`);
-            if (design && categoryElement) {
-                // Replace image with video
-                const mediaDiv = categoryElement.querySelector('.bg-media');
-                if (mediaDiv && design.video_url) {
-                    const video = document.createElement('video');
-                    video.className = 'bg-media absolute inset-0 w-full h-full object-cover rounded-xl border-2 border-white shadow-lg';
-                    video.src = design.video_url;
-                    video.autoplay = true;
-                    video.loop = true;
-                    video.muted = true;
-                    video.playsInline = true;
-                    mediaDiv.replaceWith(video);
-                }
-            }
-        });
-    }
-
-    function toggleCategory(categoryId) {
+    function toggleCategory(categoryId) { // categoryId will be a number now
         const categoryElement = document.querySelector(`.category-option[data-id="${categoryId}"]`);
         if (categoryElement.classList.contains('disabled')) return;
 
@@ -249,52 +220,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Select
             selectedCategories.push(categoryId);
         }
-        updateSelectionBadges();
+        
         updateSelectionProgress();
-        updateOptionClickability();
-        // Re-render categories to swap image/video
+        // Re-render categories to swap image/video and show/hide 'disabled' state
         populateCategories();
     }
-
-    function updateSelectionBadges() {
-        document.querySelectorAll('.category-option').forEach(opt => {
-            const badge = opt.querySelector('.selection-badge');
-            const idx = selectedCategories.indexOf(opt.dataset.id);
-            
-            if (idx !== -1) {
-                let label = '';
-                let bg = '';
-                if (idx === 0) { label = '1st'; bg = 'linear-gradient(135deg,#FFD700,#FFEF8A)'; } // gold
-                else if (idx === 1) { label = '2nd'; bg = 'linear-gradient(135deg,#C0C0C0,#E0E0E0)'; } // silver
-                else if (idx === 2) { label = '3rd'; bg = 'linear-gradient(135deg,#cd7f32,#e3b778)'; } // bronze
-                
-                badge.textContent = label;
-                badge.style.background = bg;
-                badge.style.color = '#333'; // Darker text for better readability on light gradients
-                badge.style.border = '2px solid #fff';
-            } else {
-                badge.textContent = '';
-                badge.style.background = 'none';
-                badge.style.border = 'none';
-            }
-        });
-    }
-
-    function updateOptionClickability() {
-        const allOptions = document.querySelectorAll('.category-option');
-        if (selectedCategories.length >= maxSelections) {
-            allOptions.forEach(opt => {
-                if (!selectedCategories.includes(opt.dataset.id)) {
-                    opt.classList.add('disabled');
-                }
-            });
-        } else {
-            allOptions.forEach(opt => {
-                opt.classList.remove('disabled');
-            });
-        }
-    }
-
+    
     function ordinal(n) {
         if (n === 1) return '1st';
         if (n === 2) return '2nd';
@@ -350,9 +281,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const formData = new URLSearchParams();
-            formData.append('categories', JSON.stringify(selectedCategories));
+            // selectedCategories will now be an array of numbers, e.g., [1, 4, 5]
+            formData.append('categories', JSON.stringify(selectedCategories)); 
 
-            const response = await fetch('processes/save_recommendations.php', {
+            // 1. Check if user_id exists
+            if (!window.CURRENT_USER_ID) {
+                throw new Error('User is not logged in. Cannot save preferences.');
+            }
+            // 2. Add user_id to the data
+            formData.append('user_id', window.CURRENT_USER_ID);
+
+            // 3. Change URL to point to your new Flask server
+            const response = await fetch('http://localhost:5000/save_preferences', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -360,8 +300,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             });
 
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.statusText}`);
+            // 4. Get the JSON response from Flask
+            const result = await response.json();
+
+            // 5. Check if Flask reported an error
+            if (!response.ok || !result.success) {
+                // If Flask sent an error, show it
+                throw new Error(result.message || 'An error occurred from the server.');
             }
             
             // Success!
@@ -371,7 +316,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } catch (error) {
             console.error('Submission error:', error);
-            msgDiv.innerHTML = 'An error occurred. Please try again.';
+            // Show the error message from Flask (or JS) to the user
+            msgDiv.innerHTML = error.message;
             msgDiv.style.color = '#b91c1c'; // Red
             msgDiv.style.background = '#fee2e2'; // Light red
             msgDiv.style.borderColor = '#fca5a5'; // Red border
@@ -383,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Unskippable Video Overlay Logic (Unchanged, just cleaned) ---
+    // --- Unskippable Video Overlay Logic (Unchanged) ---
     function showRalttVideoOverlay() {
         const overlay = document.getElementById('ralttVideoOverlay');
         const video = document.getElementById('ralttVideoPlayer');
@@ -393,14 +339,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = 'hidden';
         overlay.focus();
         
-        // Prevent all user interaction
         video.controls = false;
         video.currentTime = 0;
-        video.muted = false; // You can try 'true' if autoplay fails, then unmute on click
+        video.muted = false;
         video.setAttribute('disablePictureInPicture', 'true');
         video.setAttribute('controlsList', 'nodownload nofullscreen noremoteplayback');
 
-        // Add event listeners to enforce "unskippable"
         video.addEventListener('contextmenu', preventDefaultAction);
         video.addEventListener('seeking', preventSeeking);
         video.addEventListener('pause', preventPause);
@@ -408,24 +352,19 @@ document.addEventListener('DOMContentLoaded', function() {
         video.onended = function() {
             overlay.style.display = 'none';
             document.body.style.overflow = '';
-            // Clean up listeners
             video.removeEventListener('contextmenu', preventDefaultAction);
             video.removeEventListener('seeking', preventSeeking);
             video.removeEventListener('pause', preventPause);
             overlay.onkeydown = null;
-            // Reload the page after video ends
             window.location.reload();
         };
         
-        // Prevent keyboard controls (Space, Arrow keys, etc.)
         overlay.tabIndex = 0;
         overlay.onkeydown = preventDefaultAction;
 
-        // Play the video
         video.load();
         video.play().catch(error => {
             console.warn("Video autoplay was blocked. User interaction may be required.", error);
-            // As a fallback, you might show a "Click to play" button
             video.muted = true;
             video.play();
         });
@@ -440,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function preventSeeking(e) {
-        // This forces the video to stay at its current time if user tries to seek
         const video = e.target;
         video.currentTime = Math.max(0, Math.min(video.currentTime, video.duration));
     }
@@ -458,8 +396,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     populateCategories();
-    updateOptionClickability();
-    updateSelectionBadges();
     
     const checkInterval = setInterval(checkShowRecommendationModal, 1000);
     setTimeout(() => clearInterval(checkInterval), 30000); // Stop checking after 30s

@@ -6,8 +6,9 @@ if (!isset($_SESSION['logged_in'])) {
     exit();
 }
 
-include 'referral_form.php';
-include 'recommendation_form.php'; 
+// THIS LINE IS THE KEY: It now includes the modified form
+include 'recommendation_form.php';
+include 'referral_form.php'; 
 
 $showRecommendationModal = false;
 if (isset($_SESSION['user_id'])) {
@@ -51,7 +52,7 @@ try {
 } catch (Exception $e) {
   // fallback to static if DB fails
   $branches = [
-    [ 'id' => 1, 'name' => 'Deparo',    'lat' => 14.75243153, 'lng' => 121.01763335 ],
+    [ 'id' => 1, 'name' => 'Deparo',   'lat' => 14.75243153, 'lng' => 121.01763335 ],
     [ 'id' => 2, 'name' => 'Vanguard', 'lat' => 14.75920200, 'lng' => 121.06286101 ],
     [ 'id' => 3, 'name' => 'Brixton',   'lat' => 14.76724928, 'lng' => 121.04104486 ],
     [ 'id' => 4, 'name' => 'Samaria',   'lat' => 14.76580311, 'lng' => 121.06563606 ],
@@ -183,6 +184,32 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     }
     // When user branch is set, try to show distance only beside branch if geolocation is available
     document.addEventListener('DOMContentLoaded', function() {
+      // Quantity controls logic
+      function updateQtyControls() {
+        const qtyInput = document.getElementById('recommendationQuantity');
+        const qtyLeft = parseInt(document.getElementById('qtyLeftValue').textContent) || 0;
+        const minusBtn = document.getElementById('qtyMinusBtn');
+        const plusBtn = document.getElementById('qtyPlusBtn');
+        const submitBtn = document.getElementById('submitRecommendationAddToCart');
+        minusBtn.disabled = qtyLeft < 1 || qtyInput.value <= 1;
+        plusBtn.disabled = qtyLeft < 1 || qtyInput.value >= qtyLeft;
+        submitBtn.disabled = qtyLeft < 1 || qtyInput.value < 1 || qtyInput.value > qtyLeft;
+      }
+      document.getElementById('qtyMinusBtn').addEventListener('click', function() {
+        const qtyInput = document.getElementById('recommendationQuantity');
+        if (qtyInput.value > 1) qtyInput.value--;
+        updateQtyControls();
+      });
+      document.getElementById('qtyPlusBtn').addEventListener('click', function() {
+        const qtyInput = document.getElementById('recommendationQuantity');
+        const qtyLeft = parseInt(document.getElementById('qtyLeftValue').textContent) || 0;
+        if (qtyInput.value < qtyLeft) qtyInput.value++;
+        updateQtyControls();
+      });
+      document.getElementById('recommendationQuantity').addEventListener('input', function() {
+        updateQtyControls();
+      });
+      updateQtyControls();
       if (window.USER_BRANCH && window.USER_BRANCH.id && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(pos) {
           const userLat = pos.coords.latitude, userLng = pos.coords.longitude;
@@ -219,15 +246,15 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
           const isSelected = window.USER_BRANCH && window.USER_BRANCH.id === b.id;
           if (isSelected) {
             html += `<div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;font-size:16px;font-weight:600;border:none;outline:none;cursor:default;border-radius:12px;box-shadow:0 2px 12px 0 rgba(207,135,86,0.10);background:linear-gradient(90deg,#7d310a 0%,#cf8756 100%);color:#fff;gap:10px;opacity:1;position:relative;">
-              <span><i class="fa fa-map-marker-alt" style="margin-right:7px;color:#fff;"></i>${b.name} Branch</span>
-              <span style='font-size:13px;color:#fff;background:rgba(207,135,86,0.95);padding:2px 10px 2px 10px;border-radius:8px;${dist?'':'opacity:0.5;'}'>${dist}</span>
-              <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#fff;font-size:18px;"><i class='fa fa-check-circle'></i></span>
-            </div>`;
+                <span><i class="fa fa-map-marker-alt" style="margin-right:7px;color:#fff;"></i>${b.name} Branch</span>
+                <span style='font-size:13px;color:#fff;background:rgba(207,135,86,0.95);padding:2px 10px 2px 10px;border-radius:8px;${dist?'':'opacity:0.5;'}'>${dist}</span>
+                <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#fff;font-size:18px;"><i class='fa fa-check-circle'></i></span>
+              </div>`;
           } else {
             html += `<button data-branch="${b.id}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;font-size:16px;font-weight:600;border:none;outline:none;cursor:pointer;border-radius:12px;transition:background .18s,color .18s,box-shadow .18s;margin:0;background:#f9f5f2;color:#7d310a;gap:10px;" onmouseover="this.style.background='linear-gradient(90deg,#cf8756 0%,#e8a56a 100%)';this.style.color='#fff'" onmouseout="this.style.background='#f9f5f2';this.style.color='#7d310a'">
-              <span><i class="fa fa-map-marker-alt" style="margin-right:7px;color:#cf8756;"></i>${b.name} Branch</span>
-              <span style='font-size:13px;color:#fff;background:rgba(207,135,86,0.95);padding:2px 10px 2px 10px;border-radius:8px;${dist?'':'opacity:0.5;'}'>${dist}</span>
-            </button>`;
+                <span><i class="fa fa-map-marker-alt" style="margin-right:7px;color:#cf8756;"></i>${b.name} Branch</span>
+                <span style='font-size:13px;color:#fff;background:rgba(207,135,86,0.95);padding:2px 10px 2px 10px;border-radius:8px;${dist?'':'opacity:0.5;'}'>${dist}</span>
+              </button>`;
           }
       });
       html += `</div>
@@ -611,6 +638,7 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
     </script>
     <?php
     // --- AI-powered recommendation system (Local Python Flask API) ---
+    // THIS CODE IS ALREADY CORRECTLY SET UP TO TALK TO FLASK
     $recommendedProducts = [];
     function getAIRecommendations($user_id) {
       $apiUrl = 'http://localhost:5000/recommend';
@@ -642,16 +670,22 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         $designStmt->execute([$user_id]);
         $userDesigns = $designStmt->fetchAll(PDO::FETCH_COLUMN);
         if ($userDesigns) {
-          $designWeights = [0=>4, 1=>2, 2=>1];
+          $designCounts = [0 => 4, 1 => 3, 2 => 1];
           $usedProductIds = [];
           foreach ($userDesigns as $i => $designId) {
-            $limit = $designWeights[$i] ?? 1;
-            $prodStmt = $conn->prepare('SELECT p.product_id, p.product_name, p.product_price, p.product_description, p.product_image, td.design_name FROM products p JOIN product_designs pd ON p.product_id = pd.product_id JOIN tile_designs td ON pd.design_id = td.design_id JOIN product_branches pb ON p.product_id = pb.product_id WHERE pd.design_id = ? AND pb.branch_id = ? AND p.is_archived = 0 LIMIT ?');
+            $count = $designCounts[$i] ?? 1;
+            // Fetch all products for this design and branch
+            $prodStmt = $conn->prepare('SELECT p.product_id, p.product_name, p.product_price, p.product_description, p.product_image, td.design_name, pd.design_id FROM products p JOIN product_designs pd ON p.product_id = pd.product_id JOIN tile_designs td ON pd.design_id = td.design_id JOIN product_branches pb ON p.product_id = pb.product_id WHERE pd.design_id = ? AND pb.branch_id = ? AND p.is_archived = 0');
             $prodStmt->bindValue(1, $designId, PDO::PARAM_INT);
             $prodStmt->bindValue(2, $branch_id, PDO::PARAM_INT);
-            $prodStmt->bindValue(3, $limit, PDO::PARAM_INT);
             $prodStmt->execute();
-            foreach ($prodStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $allProducts = $prodStmt->fetchAll(PDO::FETCH_ASSOC);
+            // Shuffle for randomness
+            if (count($allProducts) > 1) {
+              shuffle($allProducts);
+            }
+            $added = 0;
+            foreach ($allProducts as $row) {
               if (in_array($row['product_id'], $usedProductIds)) continue;
               $usedProductIds[] = $row['product_id'];
               if (!empty($row['product_image'])) {
@@ -660,6 +694,8 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                 $row['product_image'] = null;
               }
               $recommendedProducts[] = $row;
+              $added++;
+              if ($added >= $count) break;
             }
           }
         }
@@ -682,22 +718,37 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
             const userPreferences = window.USER_PREFERENCES || ['minimalist','floral','modern'];
             const preferenceCounts = [3,2,1];
             const grid = document.getElementById('recommendationGridJS');
-            function getProductsByPreference(prefId, count) {
-              const filtered = recommendedProducts.filter(prod => (prod.design_id === prefId || prod.design === prefId || prod.design_name === prefId));
-              return filtered.sort(() => Math.random() - 0.5).slice(0, count);
+            function getProductsByPreference(prefId, count, usedIds) {
+              // Only pick products not already used, and shuffle using Fisher-Yates
+              const filtered = recommendedProducts.filter(prod => (prod.design_id === prefId || prod.design === prefId || prod.design_name === prefId) && !usedIds.has(prod.product_id));
+              // Fisher-Yates shuffle for true randomness
+              for (let i = filtered.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+              }
+              return filtered.slice(0, count);
             }
             function renderRandomProducts() {
               grid.innerHTML = '';
               let cards = [];
+              let usedIds = new Set();
+              // 4 from 1st, 3 from 2nd, 1 from 3rd preference
+              const counts = [4, 3, 1];
               for (let i = 0; i < userPreferences.length; i++) {
                 const prefId = userPreferences[i];
-                const count = preferenceCounts[i];
-                cards = cards.concat(getProductsByPreference(prefId, count));
+                const count = counts[i] || 1;
+                const picks = getProductsByPreference(prefId, count, usedIds);
+                picks.forEach(p => usedIds.add(p.product_id));
+                cards = cards.concat(picks);
               }
-              if (cards.length === 0) {
-                cards = recommendedProducts.slice().sort(() => Math.random() - 0.5).slice(0, 6);
+              // If less than 8, fill with random products not already used
+              if (cards.length < 8) {
+                const remaining = recommendedProducts.filter(prod => !usedIds.has(prod.product_id));
+                const fill = remaining.sort(() => Math.random() - 0.5).slice(0, 8 - cards.length);
+                cards = cards.concat(fill);
               }
-              cards = cards.sort(() => Math.random() - 0.5);
+              // Always show exactly 8 (if available)
+              cards = cards.slice(0, 8).sort(() => Math.random() - 0.5);
               cards.forEach((prod, idx) => {
                 const card = document.createElement('div');
                 card.className = 'recommendation-item bg-white rounded-3xl shadow-2xl p-5 md:p-7 w-[240px] md:w-[280px] flex flex-col items-center border-2 border-transparent transition-all duration-500 group hover:shadow-3xl hover:-translate-y-2 hover:scale-105 hover:border-primary overflow-hidden relative fade-in';
@@ -732,16 +783,30 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
                 });
                 
                 grid.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-                  btn.addEventListener('click', function(e) {
+                  btn.addEventListener('click', async function(e) {
                     e.preventDefault();
                     const productId = btn.getAttribute('data-product-id');
                     const productName = btn.getAttribute('data-product-name');
+                    const branchId = document.getElementById('recommendationBranchId').value;
                     document.getElementById('recommendationProductId').value = productId;
                     document.getElementById('recommendationProductName').textContent = productName;
                     document.getElementById('recommendationQuantity').value = 1;
+                    // Fetch stock count for this product/branch
+                    let qtyLeft = 0;
+                    try {
+                      const res = await fetch(`/raltt/connection/get_product_stock.php?product_id=${productId}&branch_id=${branchId}`);
+                      const data = await res.json();
+                      qtyLeft = data.stock_count ?? 0;
+                    } catch (err) { qtyLeft = 0; }
+                    document.getElementById('qtyLeftValue').textContent = qtyLeft;
+                    document.getElementById('recommendationQuantity').max = qtyLeft > 0 ? qtyLeft : 1;
+                    // Enable/disable controls
+                    document.getElementById('submitRecommendationAddToCart').disabled = qtyLeft < 1;
+                    document.getElementById('qtyMinusBtn').disabled = qtyLeft < 1;
+                    document.getElementById('qtyPlusBtn').disabled = qtyLeft < 1;
+                    // Show modal
                     const recQtyModal = document.getElementById('recommendationQtyModal');
                     const modalBox = document.getElementById('recommendationQtyModalBox');
-                    
                     recQtyModal.classList.remove('hidden');
                     recQtyModal.style.display = 'flex';
                     recQtyModal.style.opacity = '1';
@@ -792,6 +857,44 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
         .animate-tiles { animation: fadeAnim 1.2s ease-in; }
       </style>
       <script>
+        function updateQtyControls() {
+        const qtyInput = document.getElementById('recommendationQuantity');
+        const qtyLeft = parseInt(document.getElementById('qtyLeftValue').textContent) || 0;
+        const minusBtn = document.getElementById('qtyMinusBtn');
+        const plusBtn = document.getElementById('qtyPlusBtn');
+        const submitBtn = document.getElementById('submitRecommendationAddToCart');
+        minusBtn.disabled = qtyLeft < 1 || qtyInput.value <= 1;
+        plusBtn.disabled = qtyLeft < 1 || qtyInput.value >= qtyLeft;
+        submitBtn.disabled = qtyLeft < 1 || qtyInput.value < 1 || qtyInput.value > qtyLeft;
+        if (submitBtn.disabled) {
+          submitBtn.classList.add('bg-gray-300');
+          submitBtn.classList.remove('bg-gradient-to-r');
+          submitBtn.style.background = '#e5e7eb';
+          submitBtn.style.color = '#888';
+          submitBtn.style.cursor = 'not-allowed';
+        } else {
+          submitBtn.classList.remove('bg-gray-300');
+          submitBtn.classList.add('bg-gradient-to-r');
+          submitBtn.style.background = 'linear-gradient(90deg, #cf8756 0%, #e8a56a 100%)';
+          submitBtn.style.color = '#fff';
+          submitBtn.style.cursor = 'pointer';
+        }
+      }
+      document.getElementById('qtyMinusBtn').addEventListener('click', function() {
+        const qtyInput = document.getElementById('recommendationQuantity');
+        if (qtyInput.value > 1) qtyInput.value--;
+        updateQtyControls();
+      });
+      document.getElementById('qtyPlusBtn').addEventListener('click', function() {
+        const qtyInput = document.getElementById('recommendationQuantity');
+        const qtyLeft = parseInt(document.getElementById('qtyLeftValue').textContent) || 0;
+        if (qtyInput.value < qtyLeft) qtyInput.value++;
+        updateQtyControls();
+      });
+      document.getElementById('recommendationQuantity').addEventListener('input', function() {
+        updateQtyControls();
+      });
+      updateQtyControls();
         function animateSelection(btn, productId) {
           btn.classList.add('selected-animate');
           setTimeout(function() {
@@ -837,11 +940,17 @@ echo '<script>window.BRANCHES = ' . json_encode($branches) . '; window.USER_BRAN
       <div class="mb-2 text-base font-bold text-primary text-center" id="recommendationProductName"></div>
       <form action="processes/add_to_cart.php" method="POST" class="space-y-4" id="recommendationAddToCartForm">
         <input type="hidden" name="product_id" id="recommendationProductId" value="">
-        <input type="hidden" name="branch_id" value="<?php echo isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 1; ?>">
-        <div>
-          <label for="recommendationQuantity" class="block text-sm font-semibold text-primary mb-2">Quantity</label>
-          <input type="number" name="quantity" id="recommendationQuantity" min="1" value="1" required 
-            class="w-full px-3 py-2 rounded-lg border-2 border-primary focus:border-secondary focus:ring-2 focus:ring-primary/20 text-base font-bold text-primary bg-white transition-all duration-200">
+        <input type="hidden" name="branch_id" id="recommendationBranchId" value="<?php echo isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 1; ?>">
+        <div class="flex flex-col gap-2">
+          <label for="recommendationQuantity" class="block text-sm font-semibold text-primary mb-1">Quantity</label>
+          <div class="flex items-center gap-2">
+            <button type="button" id="qtyMinusBtn" class="px-3 py-2 rounded-lg border border-gray-300 bg-gray-100 text-primary font-bold text-lg hover:bg-gray-200 transition">-</button>
+            <input type="number" name="quantity" id="recommendationQuantity" min="1" value="1" required 
+              class="w-32 px-3 py-2 rounded-lg border-2 border-primary focus:border-secondary focus:ring-2 focus:ring-primary/20 text-base font-bold text-primary bg-white transition-all duration-200 text-center">
+      
+            <button type="button" id="qtyPlusBtn" class="px-3 py-2 rounded-lg border border-gray-300 bg-gray-100 text-primary font-bold text-lg hover:bg-gray-200 transition">+</button>
+            <span id="qtyLeftDisplay" class="ml-3 px-3 py-1 rounded bg-orange-50 text-orange-700 font-semibold text-sm border border-orange-200">Qty left: <span id="qtyLeftValue">...</span></span>
+          </div>
         </div>
         <button type="submit" id="submitRecommendationAddToCart" class="w-full py-3 rounded-xl font-bold text-base transition-all duration-200 shadow-xl flex items-center justify-center gap-2" style="background: linear-gradient(90deg, #cf8756 0%, #e8a56a 100%); color: #fff;">
           <i class="fa fa-cart-plus"></i> <span style="color: #fff; font-weight: 600;">Add to Cart</span>

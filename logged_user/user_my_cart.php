@@ -9,7 +9,7 @@ $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 0;
 function getCartItems($conn, $user_id) {
     $branch_id = isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 1;
     $stmt = $conn->prepare('
-        SELECT ci.cart_item_id, ci.product_id, ci.quantity, p.product_name, p.product_price, p.product_image, p.product_description
+        SELECT ci.cart_item_id, ci.product_id, ci.quantity, p.product_name, p.product_price, p.product_image, p.product_description, p.is_archived
         FROM cart_items ci
         JOIN products p ON ci.product_id = p.product_id
         JOIN product_branches pb ON p.product_id = pb.product_id
@@ -315,11 +315,13 @@ $summary = getCartSummary($cartItems);
                         </div>
                     <?php else: ?>
                         <?php foreach ($cartItems as $item): ?>
-                        <div class="cart-item bg-light border border-gray-100 p-4 md:py-4 md:px-0" data-cart-item-id="<?php echo $item['cart_item_id']; ?>">
+                        <div class="cart-item bg-light border border-gray-100 p-4 md:py-4 md:px-0 relative <?php echo ($item['is_archived'] ? 'archived-cart-item' : ''); ?>" 
+                            data-cart-item-id="<?php echo $item['cart_item_id']; ?>"
+                            data-product-id="<?php echo $item['product_id']; ?>">
                             <div class="md:grid md:grid-cols-12 md:gap-4 flex flex-wrap items-center">
                                 <div class="flex items-center space-x-4 md:col-span-5 w-full md:w-auto mb-3 md:mb-0">
                                     <label class="custom-checkbox flex items-center cursor-pointer">
-                                        <input type="checkbox" class="item-checkbox">
+                                        <input type="checkbox" class="item-checkbox" <?php echo ($item['is_archived'] ? 'disabled' : ''); ?>>
                                         <span class="checkmark"></span>
                                     </label>
                                     <div class="w-16 h-16 bg-cover bg-center rounded-lg overflow-hidden shadow-sm">
@@ -348,18 +350,53 @@ $summary = getCartSummary($cartItems);
                                 </div>
                                 <div class="md:col-span-2 flex justify-center mb-3 md:mb-0">
                                     <div class="flex items-center space-x-3 bg-white rounded-full py-1 px-3 shadow-sm" data-cart-item-id="<?php echo $item['cart_item_id']; ?>" data-unit-price="<?php echo $item['product_price']; ?>">
-                                        <button class="quantity-btn bg-light text-textdark hover:bg-secondary hover:text-white" data-action="decrease">-</button>
-                                        <input type="number" min="1" maxlength="4" class="font-semibold w-12 text-center quantity-value-input" style="color:#333;background:transparent;border:none;outline:none;" value="<?php echo $item['quantity']; ?>" data-cart-item-id="<?php echo $item['cart_item_id']; ?>">
-                                        <button class="quantity-btn bg-light text-textdark hover:bg-secondary hover:text-white" data-action="increase">+</button>
+                                        <button class="quantity-btn bg-light text-textdark hover:bg-secondary hover:text-white" data-action="decrease" <?php echo ($item['is_archived'] ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''); ?>>-</button>
+                                        <input type="number" min="1" maxlength="4" class="font-semibold w-12 text-center quantity-value-input" style="color:#333;background:transparent;border:none;outline:none;<?php echo ($item['is_archived'] ? 'background:#eee;pointer-events:none;' : ''); ?>" value="<?php echo $item['quantity']; ?>" data-cart-item-id="<?php echo $item['cart_item_id']; ?>" <?php echo ($item['is_archived'] ? 'disabled' : ''); ?>>
+                                        <button class="quantity-btn bg-light text-textdark hover:bg-secondary hover:text-white" data-action="increase" <?php echo ($item['is_archived'] ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''); ?>>+</button>
                                     </div>
                                 </div>
                                 <div class="desktop-only md:col-span-2 text-primary font-bold text-center mb-3 md:mb-0 item-total-price">
                                     ₱<?php echo number_format($item['product_price'] * $item['quantity'], 2); ?>
                                 </div>
                                 <div class="md:col-span-1 flex justify-center md:justify-end">
-                                    <button class="delete-btn text-textlight hover:text-red-500" data-cart-item-id="<?php echo $item['cart_item_id']; ?>" data-product-name="<?php echo htmlspecialchars($item['product_name']); ?>">
+                                    <button class="delete-btn text-textlight hover:text-red-500" data-cart-item-id="<?php echo $item['cart_item_id']; ?>" data-product-name="<?php echo htmlspecialchars($item['product_name']); ?>" <?php echo ($item['is_archived'] ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''); ?>>
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
+                                <?php if ($item['is_archived']): ?>
+                                    <div class="archived-overlay"></div>
+                                    <div class="archived-message">
+                                        <span>This product is archived and cannot be purchased</span>
+                                    </div>
+                                <?php endif; ?>
+    <style>
+        .archived-cart-item {
+            opacity: 0.7;
+            filter: grayscale(0.7);
+            pointer-events: none;
+        }
+        .archived-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(120,120,120,0.25);
+            z-index: 2;
+            border-radius: 12px;
+        }
+        .archived-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            background: rgba(80,80,80,0.92);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+        }
+    </style>
                                 </div>
                                 <!-- Mobile price and quantity section -->
                                 <div class="mobile-only mobile-price-quantity">
@@ -593,7 +630,9 @@ $summary = getCartSummary($cartItems);
 
             selectAll.addEventListener('change', function() {
                 getItemCheckboxes().forEach(checkbox => {
-                    checkbox.checked = selectAll.checked;
+                    if (!checkbox.disabled) {
+                        checkbox.checked = selectAll.checked;
+                    }
                 });
                 updateSelectionCount();
                 updateSummary();
@@ -632,15 +671,24 @@ $summary = getCartSummary($cartItems);
 
                 // Real-time update on input change (on blur or enter)
                 // Real-time update on input (while typing)
+                let inputTimeout;
                 quantityInput.addEventListener('input', function() {
+                    // Clear any existing timeout
+                    clearTimeout(inputTimeout);
+                    
                     // Enforce max 4 digits
                     if (quantityInput.value.length > 4) {
                         quantityInput.value = quantityInput.value.slice(0, 4);
                     }
                     let quantity = parseInt(quantityInput.value);
                     if (isNaN(quantity) || quantity < 1) quantity = 1;
-                    // Update summary and prices instantly, but don't send AJAX yet
-                    quantityInput.value = quantity;
+                    
+                    // Set a new timeout for the stock check
+                    inputTimeout = setTimeout(() => {
+                        updateQuantity(cartItemId, quantity, quantityInput, parent, unitPrice);
+                    }, 500); // Wait 500ms after typing stops
+                    
+                    // Update UI immediately for responsiveness
                     const cartItem = parent.closest('.cart-item');
                     const totalElement = cartItem.querySelector('.item-total-price');
                     if (totalElement) {
@@ -673,26 +721,55 @@ $summary = getCartSummary($cartItems);
                 });
             });
 
-            function updateQuantity(cartItemId, quantity, quantityInput, parent, unitPrice) {
-                // Update quantity and prices instantly
-                quantityInput.value = quantity;
+            async function updateQuantity(cartItemId, quantity, quantityInput, parent, unitPrice) {
                 const cartItem = parent.closest('.cart-item');
-                const totalElement = cartItem.querySelector('.item-total-price');
-                if (totalElement) {
-                    totalElement.textContent = '₱' + (unitPrice * quantity).toLocaleString(undefined, {minimumFractionDigits:2});
-                }
-                const mobilePriceDisplay = cartItem.querySelector('.mobile-only .text-primary');
-                if (mobilePriceDisplay) {
-                    mobilePriceDisplay.textContent = '₱' + (unitPrice * quantity).toLocaleString(undefined, {minimumFractionDigits:2});
-                }
-                updateSummary();
+                const productId = cartItem.getAttribute('data-product-id');
+                
+                // First check stock availability
+                try {
+                    const stockResponse = await fetch('processes/check_stock.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `product_id=${productId}`
+                    });
+                    const stockData = await stockResponse.json();
+                    
+                    if (stockData.success) {
+                        const stockCount = parseInt(stockData.stock_count);
+                        
+                        // If quantity exceeds stock, adjust it
+                        if (quantity > stockCount) {
+                            quantity = stockCount;
+                            showToast('Quantity adjusted to available stock');
+                        }
+                        
+                        // Update quantity input and UI
+                        quantityInput.value = quantity;
+                        quantityInput.setAttribute('max', stockCount);
+                        
+                        const totalElement = cartItem.querySelector('.item-total-price');
+                        if (totalElement) {
+                            totalElement.textContent = '₱' + (unitPrice * quantity).toLocaleString(undefined, {minimumFractionDigits:2});
+                        }
+                        
+                        const mobilePriceDisplay = cartItem.querySelector('.mobile-only .text-primary');
+                        if (mobilePriceDisplay) {
+                            mobilePriceDisplay.textContent = '₱' + (unitPrice * quantity).toLocaleString(undefined, {minimumFractionDigits:2});
+                        }
+                        
+                        updateSummary();
 
-                // Then update on server
-                fetch('processes/update_cart_quantity.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `cart_item_id=${cartItemId}&quantity=${quantity}`
-                });
+                        // Then update on server
+                        await fetch('processes/update_cart_quantity.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `cart_item_id=${cartItemId}&quantity=${quantity}`
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('Failed to update quantity');
+                }
             }
 
             // Dynamic summary calculation
@@ -724,17 +801,70 @@ $summary = getCartSummary($cartItems);
 
             // Checkout form handler
             document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-                // Collect selected cart item IDs
+                // Collect selected cart item IDs and check stock before allowing checkout
                 const selected = Array.from(document.querySelectorAll('.cart-item .item-checkbox:checked'))
-                    .map(cb => cb.closest('.cart-item').getAttribute('data-cart-item-id'));
-                
+                    .map(cb => cb.closest('.cart-item'));
+
                 if (selected.length === 0) {
                     e.preventDefault();
                     showToast('Please select at least one item to checkout');
                     return;
                 }
-                
-                document.getElementById('selected_cart_items').value = JSON.stringify(selected);
+
+                // Prevent default while we check stock
+                e.preventDefault();
+
+                // Check stock for all selected items before submitting
+                let stockCheckPromises = [];
+                let exceeded = false;
+                let exceededItems = [];
+
+                selected.forEach(cartItem => {
+                    const productId = cartItem.getAttribute('data-product-id');
+                    const cartItemId = cartItem.getAttribute('data-cart-item-id');
+                    const quantityInput = cartItem.querySelector('.quantity-value-input');
+                    const quantity = parseInt(quantityInput.value);
+                    stockCheckPromises.push(
+                        fetch('processes/check_stock.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `product_id=${productId}`
+                        })
+                        .then(res => res.json())
+                        .then(stockData => {
+                            const stockCount = parseInt(stockData.stock_count);
+                            if (quantity > stockCount) {
+                                exceeded = true;
+                                exceededItems.push({cartItem, cartItemId, quantityInput, stockCount});
+                            }
+                        })
+                    );
+                });
+
+                Promise.all(stockCheckPromises).then(() => {
+                    if (exceeded) {
+                        // For each exceeded item, update UI and backend
+                        exceededItems.forEach(({cartItemId, quantityInput, stockCount}) => {
+                            quantityInput.value = stockCount;
+                            quantityInput.setAttribute('max', stockCount);
+                            // Update backend
+                            fetch('processes/update_cart_quantity.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: `cart_item_id=${cartItemId}&quantity=${stockCount}`
+                            });
+                        });
+                        showToast('Some items exceeded available stock and were adjusted. Please review your cart.');
+                        updateSummary();
+                        return;
+                    } else {
+                        // All good, proceed with checkout
+                        const selectedIds = selected.map(item => item.getAttribute('data-cart-item-id'));
+                        document.getElementById('selected_cart_items').value = JSON.stringify(selectedIds);
+                        // Submit the form programmatically
+                        document.getElementById('checkoutForm').submit();
+                    }
+                });
             });
 
             // Initialize

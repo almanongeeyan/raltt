@@ -15,7 +15,7 @@ $branch_names = [
 
 // Get branch_id from session (set this during staff login)
 $branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
-$sidebar_logo = 'STAFF';
+$sidebar_logo = 'RALTT';
 if ($branch_id && isset($branch_names[$branch_id])) {
     $sidebar_logo = $branch_names[$branch_id];
     // Set branch_name in session for use in other pages (e.g., 'Phase 1 Branch')
@@ -420,53 +420,118 @@ if ($branch_id && isset($branch_names[$branch_id])) {
     <button class="menu-toggle" id="menuToggle">☰</button>
     
     <aside class="sidebar" id="sidebar">
+
         <div class="sidebar-content">
-            <div class="sidebar-top">
-                <div class="sidebar-header">
-                    <div class="sidebar-logo"><?php echo htmlspecialchars($sidebar_logo); ?></div>
-                    <div class="user-info">
-                        <p class="user-name">Rich Anne Lea</p>
-                        <p class="user-role"><strong>Tiles Trading</strong></p>
+            <!-- Top section: logo, user, nav -->
+            <div>
+                <div style="text-align:center; margin-bottom: 0; margin-top: 2px; line-height:1.1;">
+                    <div style="font-size:1.6rem; font-weight:900; color:#fff; letter-spacing:1px; margin-bottom:0; padding-bottom:0; line-height:1.1;">
+                        Rich Anne Lea
+                    </div>
+                    <div style="font-size:1.05rem; font-weight:700; color:#D5591A; letter-spacing:0.5px; margin-top:0; margin-bottom:0; line-height:1.1;">
+                        Tiles Trading
+                    </div>
+                    <br>
+                    <br>
+                    <div style="height:8px;"></div>
+                    <div class="sidebar-logo" style="margin-top:0; margin-bottom:0; font-size:2.2rem; font-weight:800; color:white; letter-spacing:1px; line-height:1.1;">
+                        <?php echo htmlspecialchars($sidebar_logo); ?>
                     </div>
                 </div>
-
-                <h2 class="dashboard-title">Admin Dashboard</h2>
-
-                <ul class="sidebar-nav">
+                <div class="user-info" style="margin-top:2px; margin-bottom:10px;">
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <p class="user-name" style="font-size:1.25rem;font-weight:800;color:#fff;margin-bottom:2px;letter-spacing:0.5px;">
+                            <?php
+                                $displayName = '';
+                                if (isset($_SESSION['full_name']) && strlen(trim($_SESSION['full_name'])) > 0) {
+                                    $displayName = trim($_SESSION['full_name']);
+                                } elseif (isset($_SESSION['admin_name']) && strlen(trim($_SESSION['admin_name'])) > 0) {
+                                    $displayName = trim($_SESSION['admin_name']);
+                                }
+                                echo $displayName !== '' ? htmlspecialchars($displayName) : 'User';
+                            ?>
+                        </p>
+                        <p class="user-role" style="font-size:0.95rem;font-weight:600;color:var(--sidebar-accent);margin-top:0;letter-spacing:0.5px;">
+                            <?php echo isset($_SESSION['user_role']) ? htmlspecialchars(ucfirst(strtolower($_SESSION['user_role']))) : 'Role'; ?>
+                        </p>
+                    </div>
+                </div>
+                <br>
+                <?php
+                $role = isset($_SESSION['user_role']) ? strtoupper($_SESSION['user_role']) : '';
+                $branch_id = null;
+                if (isset($_SESSION['branch_id']) && is_numeric($_SESSION['branch_id']) && intval($_SESSION['branch_id']) > 0) {
+                    $branch_id = intval($_SESSION['branch_id']);
+                } elseif (isset($_SESSION['user_id'])) {
+                    // Try to fetch branch_id from DB if not set in session
+                    try {
+                        $pdo = null;
+                        if (isset($db_connection)) {
+                            $pdo = $db_connection;
+                        } else {
+                            require_once dirname(__DIR__) . '/connection/connection.php';
+                            $pdo = $db_connection;
+                        }
+                        $stmt = $pdo->prepare('SELECT branch_id FROM users WHERE id = ? LIMIT 1');
+                        $stmt->execute([$_SESSION['user_id']]);
+                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                        if ($row && isset($row['branch_id']) && is_numeric($row['branch_id']) && intval($row['branch_id']) > 0) {
+                            $branch_id = intval($row['branch_id']);
+                            $_SESSION['branch_id'] = $branch_id;
+                        }
+                    } catch (Exception $e) {
+                        // Optionally log error
+                    }
+                }
+                if (!$branch_id) {
+                    echo '<h2 class="dashboard-title">No Branch Assigned</h2>';
+                    echo '<ul class="sidebar-nav"><li class="sidebar-nav-item"><span style="color:#fff;">Please contact admin to assign your branch.</span></li></ul>';
+                } else {
+                    echo '<h2 class="dashboard-title">';
+                    if ($role === 'ADMIN') {
+                        echo 'Admin Dashboard';
+                    } elseif ($role === 'CASHIER') {
+                        echo 'Cashier Dashboard';
+                    } elseif ($role === 'ENCODER') {
+                        echo 'Encoder Dashboard';
+                    } elseif ($role === 'DRIVER') {
+                        echo 'Driver Dashboard';
+                    } else {
+                        echo 'Dashboard';
+                    }
+                    echo '</h2>';
+                    echo '<ul class="sidebar-nav">';
+                    if ($role === 'ADMIN') {
+                ?>
                     <li class="sidebar-nav-item">
                         <a href="../staffadmin_access/admin_analytics.php" class="sidebar-nav-link">
-                            <!-- Dashboard Icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
                         <div class="sidebar-nav-link dropdown-menu-parent">
-                            <!-- Sales Icon -->
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17v-2a4 4 0 014-4h10a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                            <span>Sales</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 20v-2a4 4 0 014-4h0a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Accounts</span>
                             <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_orders.php" class="dropdown-link">
-                                    <!-- Orders Icon -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="2"/></svg>
-                                    <span>Orders</span>
+                                <a href="../staffadmin_access/admin_staff_accounts.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 20v-2a4 4 0 014-4h0a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Staff Account</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_transactions.php" class="dropdown-link">
-                                    <!-- Transactions Icon -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17v-6a5 5 0 00-10 0v6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                    <span>Transactions</span>
+                                <a href="../staffadmin_access/admin_customer_accounts.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 20v-2a4 4 0 014-4h8a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Customer Account</span>
                                 </a>
                             </li>
                         </ul>
                     </li>
                     <li class="sidebar-nav-item">
                         <div class="sidebar-nav-link dropdown-menu-parent">
-                            <!-- Reports Icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 17V9M15 17V13" stroke="currentColor" stroke-width="2"/></svg>
                             <span>Reports</span>
                             <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -474,14 +539,36 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_salesreports.php" class="dropdown-link">
-                                    <!-- Sales Reports Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-4M12 17v-7M17 17v-2" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Sales Reports</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_inventoryreports.php" class="dropdown-link">
-                                    <!-- Inventory Reports Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-2M12 17v-4M17 17v-6" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Inventory Reports</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php
+                } elseif ($role === 'CASHIER') {
+                ?>
+                    <li class="sidebar-nav-item">
+                        <div class="sidebar-nav-link dropdown-menu-parent">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 17V9M15 17V13" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Reports</span>
+                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/admin_salesreports.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-4M12 17v-7M17 17v-2" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Sales Reports</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/admin_inventoryreports.php" class="dropdown-link">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-2M12 17v-4M17 17v-6" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Inventory Reports</span>
                                 </a>
@@ -490,38 +577,27 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                     </li>
                     <li class="sidebar-nav-item">
                         <div class="sidebar-nav-link dropdown-menu-parent">
-                            <!-- Maintenance Icon -->
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7l-1-1-4 4 1 1a2 2 0 002.83 0l1.17-1.17a2 2 0 000-2.83zM3 17v2a2 2 0 002 2h2l9-9-4-4-9 9z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                            <span>Maintenance</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17v-2a4 4 0 014-4h10a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Sales</span>
                             <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                         </div>
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_addproduct.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
-                                    <!-- Products Icon -->
+                                <a href="../staffadmin_access/admin_orders.php" class="dropdown-link">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="2"/></svg>
-                                    <span>Products</span>
+                                    <span>Orders</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="../staffadmin_access/admin_addsupplier.php" class="dropdown-link">
-                                    <!-- Suppliers Icon -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 20v-2a4 4 0 014-4h0a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                    <span>Suppliers</span>
-                                </a>
-                            </li>
-                            <li class="dropdown-item">
-                                <a href="../staffadmin_access/adding_banners.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
-                                    <!-- Banner Icon -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="4,4 12,12 20,4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                    <span>Banner</span>
+                                <a href="../staffadmin_access/admin_transactions.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17v-6a5 5 0 00-10 0v6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Transaction</span>
                                 </a>
                             </li>
                         </ul>
                     </li>
                     <li class="sidebar-nav-item">
                         <div class="sidebar-nav-link dropdown-menu-parent">
-                            <!-- Inquiry Icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v4" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
                             <span>Inquiry</span>
                             <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -529,28 +605,78 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                         <ul class="dropdown-menu">
                             <li class="dropdown-item">
                                 <a href="../staffadmin_access/admin_customTickets.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
-                                    <!-- Customer Tickets Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 7V5a2 2 0 012-2h6a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
                                     <span>Customer Ticket</span>
                                 </a>
                             </li>
                             <li class="dropdown-item">
                                 <a href="../staffadmin_access/Customer_Ticket_History.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
-                                    <!-- Ticket History Icon -->
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8v4" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="16" r="1" fill="currentColor"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                     <span>Ticket History</span>
                                 </a>
                             </li>
                         </ul>
                     </li>
+                <?php
+                } elseif ($role === 'ENCODER') {
+                ?>
+                    <li class="sidebar-nav-item">
+                        <a href="../staffadmin_access/admin_orders.php" class="sidebar-nav-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17v-2a4 4 0 014-4h10a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <div class="sidebar-nav-link dropdown-menu-parent">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7l-1-1-4 4 1 1a2 2 0 002.83 0l1.17-1.17a2 2 0 000-2.83zM3 17v2a2 2 0 002 2h2l9-9-4-4-9 9z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Maintenance</span>
+                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/admin_addproduct.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 3v4M8 3v4" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Products</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/admin_addsupplier.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 20v-2a4 4 0 014-4h0a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Suppliers</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/adding_banners.php?branch_id=<?php echo urlencode($branch_id); ?>" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="4,4 12,12 20,4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Banners</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php
+                } elseif ($role === 'DRIVER') {
+                ?>
+                    <li class="sidebar-nav-item">
+                        <a href="../staffadmin_access/admin_orders.php" class="sidebar-nav-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17v-2a4 4 0 014-4h10a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                <?php
+                }
+                echo '</ul>';
+                }
+                ?>
             </div>
-
-            <a href="../connection/logout.php?redirect=index.php" class="logout-link">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h10V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10v-2H4V5z"/>
-                </svg>
-                <span>Logout</span>
-            </a>
+            <!-- Bottom section: logout only -->
+            <div>
+                <a href="../connection/logout.php?redirect=index.php" class="logout-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h10V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10v-2H4V5z"/>
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </div>
         </div>
     </aside>
 

@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $subtotal,
                     $max_coins_applicable,
                     'gcash',
-                    'pending',
+                    'paid',
                     $shipping
                 ]);
                 $order_id = $conn->lastInsertId();

@@ -17,8 +17,8 @@ $error_message = '';
 $branch_name_map = [];
 
 try {
-    // **FIX #1: Removed `u.address as customer_address` which was likely causing the error.**
-    $query_sql = "SELECT o.*, 
+    // Build the main query
+    $query_sql = "SELECT DISTINCT o.*, 
                          b.branch_name,
                          u.full_name as customer_name,
                          u.phone_number as customer_phone,
@@ -37,7 +37,7 @@ try {
         $params[] = $branch_id;
     } else {
         // Admin can see all branches. Fetch all branch names for the filter.
-        $branchStmt = $db_connection->query("SELECT branch_name FROM branches ORDER BY branch_name");
+        $branchStmt = $db_connection->query("SELECT DISTINCT branch_name FROM branches ORDER BY branch_name");
         $branch_name_map = $branchStmt->fetchAll(PDO::FETCH_COLUMN);
     }
     
@@ -45,10 +45,27 @@ try {
     
     $stmt = $db_connection->prepare($query_sql);
     $stmt->execute($params);
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $rawOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get order items for each order and update stats
-    foreach ($orders as &$order) {
+    // Process each order individually to avoid reference issues
+    foreach ($rawOrders as $orderData) {
+        // Create a new array for each order to avoid reference issues
+        $order = [
+            'order_id' => $orderData['order_id'],
+            'order_reference' => $orderData['order_reference'],
+            'order_date' => $orderData['order_date'],
+            'order_status' => $orderData['order_status'],
+            'total_amount' => $orderData['total_amount'],
+            'payment_method' => $orderData['payment_method'],
+            'shipping_fee' => $orderData['shipping_fee'],
+            'coins_redeemed' => $orderData['coins_redeemed'],
+            'branch_name' => $orderData['branch_name'],
+            'customer_name' => $orderData['customer_name'],
+            'customer_phone' => $orderData['customer_phone'],
+            'customer_email' => $orderData['customer_email']
+        ];
+        
+        // Get order items
         $itemsQuery = "SELECT oi.*, p.product_name 
                        FROM order_items oi 
                        JOIN products p ON oi.product_id = p.product_id 
@@ -57,6 +74,9 @@ try {
         $itemsStmt->execute([$order['order_id']]);
         
         $order['items'] = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Add to orders array
+        $orders[] = $order;
         
         // Count statuses
         $orderStats['total']++;
@@ -72,7 +92,6 @@ try {
     
 } catch (PDOException $e) {
     error_log("Database Error: " . $e->getMessage());
-    // This is the error message you are seeing.
     $error_message = "Unable to load transactions. Please try again later.";
 }
 ?>
@@ -85,7 +104,6 @@ try {
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Styles for your branded invoice */
         .watermark {
             position: absolute;
             top: 50%;
@@ -98,22 +116,22 @@ try {
             z-index: 0;
         }
         .receipt-header {
-            /* Styles from your code, preserved for your branding */
             background: linear-gradient(to bottom, #ffece2 0%, #f8f5f2 100%);
             border-radius: 16px 16px 0 0;
-            border-bottom: 2px solid #94481b/30;
-            box-shadow: 0 4px 12px rgba(148,72,27,0.05);
+            border-bottom: 2px solid rgba(148, 72, 27, 0.3);
+            box-shadow: 0 4px 12px rgba(148, 72, 27, 0.05);
         }
         .receipt-body {
-            border: 1px solid #94481b/20;
+            border: 1px solid rgba(148, 72, 27, 0.2);
             border-top: none;
             border-radius: 0 0 16px 16px;
-            box-shadow: 0 4px 12px rgba(148,72,27,0.02) inset;
+            box-shadow: 0 4px 12px rgba(148, 72, 27, 0.02) inset;
         }
-        /* Custom styles for sidebar integration */
         body { display: flex; min-height: 100vh; }
         .main-content-wrapper { flex: 1; padding-left: 0; transition: padding-left 0.3s ease; }
         @media (min-width: 768px) { .main-content-wrapper { padding-left: 250px; } }
+        .transaction-row { transition: all 0.3s ease; }
+        .transaction-row:hover { background-color: #f0f9ff; transform: translateY(-1px); }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -126,6 +144,7 @@ try {
                     <h1 class="text-3xl font-bold text-gray-800 flex items-center">
                         <i class="fas fa-clipboard-check mr-3 text-blue-600"></i>Transaction Dashboard
                     </h1>
+                    <p class="text-gray-600 mt-2">View completed and cancelled orders</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
@@ -159,7 +178,7 @@ try {
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
-                    <div id="filterText" class="mb-4 text-blue-700 font-semibold text-lg"></div>
+                    <div id="filterText" class="mb-4 text-blue-700 font-semibold text-lg">Showing all transactions</div>
                     <form id="filterForm" class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div class="flex flex-1 gap-2 flex-wrap">
                             <div class="relative flex-1 min-w-[200px]">
@@ -188,9 +207,9 @@ try {
                                 <option value="year">This Year</option>
                                 <option value="custom">Custom Range</option>
                             </select>
-                            <input type="date" id="dateStart" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" />
+                            <input type="date" id="dateStart" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none hidden" />
                             <span class="mx-1 text-gray-400 hidden" id="dateSeparator">-</span>
-                            <input type="date" id="dateEnd" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" />
+                            <input type="date" id="dateEnd" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none hidden" />
                         </div>
                     </form>
                 </div>
@@ -198,6 +217,11 @@ try {
                 <div class="bg-white rounded-xl shadow p-6 overflow-x-auto">
                     <?php if (!empty($error_message)): ?>
                         <div class="text-center p-6 bg-red-50 text-red-700 rounded-lg"><?php echo $error_message; ?></div>
+                    <?php elseif (empty($orders)): ?>
+                        <div class="text-center p-8">
+                            <i class="fas fa-box-open text-4xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500 text-lg">No transactions found.</p>
+                        </div>
                     <?php else: ?>
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead>
@@ -212,42 +236,34 @@ try {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100" id="transactionsTableBody">
-                                <?php if (empty($orders)): ?>
-                                    <tr id="no-orders-row">
-                                        <td colspan="7" class="px-4 py-6 text-center text-gray-500">
-                                            <i class="fas fa-box-open text-3xl text-gray-300 mb-2"></i>
-                                            <p>No transactions found.</p>
+                                <?php foreach ($orders as $index => $order): ?>
+                                    <tr class="transaction-row" 
+                                        data-customer="<?php echo htmlspecialchars(strtolower($order['customer_name'])); ?>"
+                                        data-status="<?php echo htmlspecialchars($order['order_status']); ?>"
+                                        data-branch="<?php echo htmlspecialchars($order['branch_name']); ?>"
+                                        data-date="<?php echo htmlspecialchars(date('Y-m-d', strtotime($order['order_date']))); ?>"
+                                        data-order-id="<?php echo htmlspecialchars($order['order_id']); ?>">
+                                        
+                                        <td class="px-4 py-3 font-semibold text-gray-700">#<?php echo htmlspecialchars($order['order_reference']); ?></td>
+                                        <td class="px-4 py-3 text-gray-500"><?php echo htmlspecialchars(date('Y-m-d', strtotime($order['order_date']))); ?></td>
+                                        <td class="px-4 py-3 text-gray-700"><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                                        <td class="px-4 py-3 text-gray-600"><?php echo htmlspecialchars($order['branch_name']); ?></td>
+                                        <td class="px-4 py-3 text-blue-600 font-bold">₱<?php echo number_format($order['total_amount'], 2); ?></td>
+                                        <td class="px-4 py-3">
+                                            <?php if ($order['order_status'] == 'completed'): ?>
+                                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">Completed</span>
+                                            <?php else: ?>
+                                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">Cancelled</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <button class="view-invoice-btn bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition"
+                                                    data-order-id="<?php echo htmlspecialchars($order['order_id']); ?>">
+                                                View
+                                            </button>
                                         </td>
                                     </tr>
-                                <?php else: ?>
-                                    <?php foreach ($orders as $order): ?>
-                                        <tr class="hover:bg-blue-50 transition transaction-row" 
-                                            data-customer="<?php echo htmlspecialchars(strtolower($order['customer_name'])); ?>"
-                                            data-status="<?php echo htmlspecialchars($order['order_status']); ?>"
-                                            data-branch="<?php echo htmlspecialchars($order['branch_name']); ?>"
-                                            data-date="<?php echo htmlspecialchars(date('Y-m-d', strtotime($order['order_date']))); ?>">
-                                            
-                                            <td class="px-4 py-3 font-semibold text-gray-700">#<?php echo htmlspecialchars($order['order_reference']); ?></td>
-                                            <td class="px-4 py-3 text-gray-500"><?php echo htmlspecialchars(date('Y-m-d', strtotime($order['order_date']))); ?></td>
-                                            <td class="px-4 py-3 text-gray-700"><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                                            <td class="px-4 py-3 text-gray-600"><?php echo htmlspecialchars($order['branch_name']); ?></td>
-                                            <td class="px-4 py-3 text-blue-600 font-bold">₱<?php echo number_format($order['total_amount'], 2); ?></td>
-                                            <td class="px-4 py-3">
-                                                <?php if ($order['order_status'] == 'completed'): ?>
-                                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">Completed</span>
-                                                <?php else: ?>
-                                                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">Cancelled</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                <button class="view-invoice-btn bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition"
-                                                        data-order='<?php echo htmlspecialchars(json_encode($order), ENT_QUOTES, 'UTF-8'); ?>'>
-                                                    View
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                                <?php endforeach; ?>
                                 <tr id="no-results-row" class="hidden">
                                     <td colspan="7" class="px-4 py-6 text-center text-gray-500">
                                         <i class="fas fa-search text-3xl text-gray-300 mb-2"></i>
@@ -273,10 +289,11 @@ try {
                     </div>
                 </div>
                 
-                <div id="invoiceModal" class="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-40 hidden p-4" style="z-index:2000;">
-                    <div class="bg-white rounded-2xl shadow-2xl border-4 border-white w-full max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 relative max-h-[90vh] overflow-y-auto" style="box-shadow: 0 8px 40px 8px rgba(148,72,27,0.10), 0 2px 8px 0 rgba(0,0,0,0.08); z-index:2100; margin:auto;">
+                <div id="invoiceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden p-4">
+                    <div class="bg-white rounded-2xl shadow-2xl border-4 border-white w-full max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 relative max-h-[90vh] overflow-y-auto" style="box-shadow: 0 8px 40px 8px rgba(148,72,27,0.10), 0 2px 8px 0 rgba(0,0,0,0.08);">
                         <div id="invoiceContent" class="relative overflow-hidden">
-                            </div>
+                            <!-- Invoice content will be loaded here -->
+                        </div>
                     </div>
                 </div>
 
@@ -286,7 +303,6 @@ try {
 
     <script>
     // --- Branch Info Map (for invoice header) ---
-    // This provides addresses for the branch names fetched from the DB
     const branchInfoMap = {
         'Brixton Branch': { address: 'Coaster St. Brixtonville Subdivision, Caloocan City' },
         'Samaria Branch': { address: 'St. Vincent Ferrer Ave. Samaria Corner, Tala, Caloocan City' },
@@ -294,6 +310,9 @@ try {
         'Deparo Branch': { address: '189 Deparo Road, Caloocan City' },
         'Phase 1 Branch': { address: 'Phase 1, Camarin Road, Caloocan City' }
     };
+
+    // Store orders data for JavaScript access
+    const ordersData = <?php echo json_encode($orders, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
 
     // --- DOM Elements for Filters ---
     const filterText = document.getElementById('filterText');
@@ -329,13 +348,13 @@ try {
 
     function updateDateInputs() {
         if (dateFilter.value === 'custom') {
-            dateStart.style.display = '';
-            dateSeparator.style.display = '';
-            dateEnd.style.display = '';
+            dateStart.classList.remove('hidden');
+            dateSeparator.classList.remove('hidden');
+            dateEnd.classList.remove('hidden');
         } else {
-            dateStart.style.display = 'none';
-            dateSeparator.style.display = 'none';
-            dateEnd.style.display = 'none';
+            dateStart.classList.add('hidden');
+            dateSeparator.classList.add('hidden');
+            dateEnd.classList.add('hidden');
         }
     }
     dateFilter.addEventListener('change', function() {
@@ -344,7 +363,7 @@ try {
         applyFilters();
     });
     
-    updateDateInputs(); // Initial state
+    updateDateInputs();
 
     function updateFilterText() {
         let text = '';
@@ -360,7 +379,6 @@ try {
         }
         filterText.textContent = text;
     }
-    updateFilterText(); // On page load
 
     // --- Main Client-Side Filter Logic ---
     function applyFilters() {
@@ -435,16 +453,19 @@ try {
     statusSelect.addEventListener('change', applyFilters);
     branchSelect.addEventListener('change', applyFilters);
 
-
     // --- Invoice Modal Logic ---
     const invoiceModal = document.getElementById('invoiceModal');
     const invoiceContent = document.getElementById('invoiceContent');
     
-    document.querySelectorAll('.view-invoice-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const order = JSON.parse(this.getAttribute('data-order'));
-            showInvoice(order);
-        });
+    // Event delegation for invoice buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('view-invoice-btn')) {
+            const orderId = e.target.getAttribute('data-order-id');
+            const order = ordersData.find(o => o.order_id == orderId);
+            if (order) {
+                showInvoice(order);
+            }
+        }
     });
     
     // Close modal on outside click
@@ -455,18 +476,17 @@ try {
     });
 
     function showInvoice(order) {
-        // --- Calculate Totals ---
+        // Calculate totals
         const subtotal = parseFloat(order.total_amount);
-        // Use database fields if they exist, otherwise default to 0
         const shippingFee = parseFloat(order.shipping_fee || 0);
         const discount = parseFloat(order.discount_amount || 0); 
         const grandTotal = subtotal + shippingFee - discount;
         
-        // --- Get Branch Info ---
+        // Get branch info
         const branchName = order.branch_name || 'Rich Anne Lea Tiles Trading';
         const branchAddress = branchInfoMap[branchName] ? branchInfoMap[branchName].address : 'Main Office Address, Caloocan City';
         
-        // --- Build Items Table ---
+        // Build items table
         let itemsHTML = '';
         if (order.items && order.items.length > 0) {
             order.items.forEach(item => {
@@ -491,7 +511,7 @@ try {
             `;
         }
         
-        // --- Get Payment Instructions ---
+        // Get payment instructions
         let paymentInstructions = 'Payment has been processed.';
         if (order.payment_method === 'gcash') {
             paymentInstructions = 'Payment was made via GCash.';
@@ -503,7 +523,7 @@ try {
             paymentInstructions = 'Payment was made upon pick-up at the branch.';
         }
         
-        // --- Render Modal HTML ---
+        // Render modal HTML
         invoiceContent.innerHTML = `
             <div class="watermark">INVOICE</div>
             <div class="receipt-header text-white p-8 relative">
@@ -523,7 +543,6 @@ try {
                     <div class="border-b border-dashed border-[#94481b]/20 pb-4 mb-4">
                         <h3 class="text-lg font-semibold text-gray-800 mb-2 tracking-wide">Bill To:</h3>
                         <div class="text-gray-700 font-medium">${order.customer_name}</div>
-                        <div class="text-gray-700">${order.address || 'N/A'}</div>
                         <div class="text-gray-700">Mobile: <span class="font-medium">${order.customer_phone || 'N/A'}</span></div>
                         <div class="text-gray-700">Email: <span class="font-medium">${order.customer_email || 'N/A'}</span></div>
                     </div>
@@ -531,7 +550,7 @@ try {
                         <h3 class="text-lg font-semibold text-gray-800 mb-2 tracking-wide">Payment Details:</h3>
                         <div class="flex items-center mb-1">
                             <span class="text-gray-700 mr-2">Method:</span>
-                            <span class="font-medium">${order.payment_method.toUpperCase()}</span>
+                            <span class="font-medium">${order.payment_method ? order.payment_method.toUpperCase() : 'N/A'}</span>
                         </div>
                         <div class="flex items-center mb-1">
                             <span class="text-gray-700 mr-2">Status:</span>
@@ -601,7 +620,7 @@ try {
         `;
         invoiceModal.classList.remove('hidden');
         
-        // Add event listener for the new close button
+        // Add event listener for the close button
         document.getElementById('closeInvoiceModal').addEventListener('click', () => {
             invoiceModal.classList.add('hidden');
         });
@@ -611,10 +630,8 @@ try {
         const printContent = document.getElementById('invoiceContent').innerHTML;
         const printWindow = window.open('', '_blank', 'height=800,width=800');
         printWindow.document.write('<html><head><title>Print Invoice</title>');
-        // Import Tailwind for printing
         printWindow.document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
         printWindow.document.write('<style>');
-        // Add your invoice styles here for printing
         printWindow.document.write(`
             .watermark { opacity: 0.05 !important; }
             .receipt-header { background: #fefaf8 !important; -webkit-print-color-adjust: exact; }
@@ -627,14 +644,13 @@ try {
         printWindow.document.write('<\/body><\/html>');
         printWindow.document.close();
         
-        // Use a timeout to ensure styles are loaded
         setTimeout(() => {
             printWindow.print();
             printWindow.close();
         }, 1000);
     }
 
-    // Optional: close modal on ESC
+    // Close modal on ESC
     window.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && !invoiceModal.classList.contains('hidden')) {
             invoiceModal.classList.add('hidden');

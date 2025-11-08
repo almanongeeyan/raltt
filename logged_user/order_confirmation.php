@@ -23,22 +23,60 @@ if ($user_id > 0) {
         $stmt->execute([$user_id]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
     if ($order) {
         $order_id = $order['order_id'];
         $order_reference = $order['order_reference'];
         $payment_method = $order['payment_method'] === 'pick_up' ? 'self-pickup' : $order['payment_method'];
-        $order_total = $order['original_subtotal'];
-        $shipping_fee = $order['shipping_fee'];
-        $final_total = $order['total_amount'];
-        $coins_redeemed = $order['coins_redeemed'];
+        // Normalize monetary fields and provide safe defaults
+        $order_total = isset($order['original_subtotal']) ? (float)$order['original_subtotal'] : 0.0;
+        $shipping_fee = isset($order['shipping_fee']) ? (float)$order['shipping_fee'] : 0.0;
+        $final_total = isset($order['total_amount']) ? (float)$order['total_amount'] : 0.0;
+        $coins_redeemed = isset($order['coins_redeemed']) ? (float)$order['coins_redeemed'] : 0.0;
         $order_date = $order['order_date'];
+        
         // Get order items
         $stmt = $conn->prepare("SELECT oi.*, p.product_name, p.product_image, p.product_description FROM order_items oi JOIN products p ON oi.product_id = p.product_id WHERE oi.order_id = ?");
         $stmt->execute([$order_id]);
         $order_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // Get branch info if available
-        $branch_name = isset($order['branch_name']) ? $order['branch_name'] : 'Main Branch';
-        $branch_address = isset($order['branch_address']) ? $order['branch_address'] : '123 Main Street, Quezon City, Metro Manila';
+        
+        // If subtotal or final total were not provided or are zero, compute them from order items as a fallback
+        $calculated_subtotal = 0.0;
+        foreach ($order_items as $oi) {
+            $calculated_subtotal += (float)$oi['unit_price'] * (int)$oi['quantity'];
+        }
+        if (empty($order_total) || $order_total <= 0) {
+            $order_total = $calculated_subtotal;
+        }
+        if (empty($final_total) || $final_total <= 0) {
+            // final_total = subtotal + shipping - coins (best-effort)
+            $final_total = $order_total + $shipping_fee - $coins_redeemed;
+        }
+        
+        // Get branch info if available (prefer branch_id lookup)
+        $branch_name = 'Main Branch';
+        $branch_address = '123 Main Street, Quezon City, Metro Manila';
+        $branch_phone = '+63 2 1234 5678';
+        
+        if (!empty($order['branch_id'])) {
+            try {
+                $bstmt = $conn->prepare('SELECT branch_name, branch_address, branch_phone FROM branches WHERE branch_id = ? LIMIT 1');
+                $bstmt->execute([(int)$order['branch_id']]);
+                $binfo = $bstmt->fetch(PDO::FETCH_ASSOC);
+                if ($binfo) {
+                    $branch_name = $binfo['branch_name'] ?: $branch_name;
+                    $branch_address = $binfo['branch_address'] ?: $branch_address;
+                    $branch_phone = $binfo['branch_phone'] ?: $branch_phone;
+                }
+            } catch (Exception $e) {
+                // fallback to any order-provided branch values
+                $branch_name = isset($order['branch_name']) ? $order['branch_name'] : $branch_name;
+                $branch_address = isset($order['branch_address']) ? $order['branch_address'] : $branch_address;
+            }
+        } else {
+            $branch_name = isset($order['branch_name']) ? $order['branch_name'] : $branch_name;
+            $branch_address = isset($order['branch_address']) ? $order['branch_address'] : $branch_address;
+        }
     } else {
         // Set branch variables to avoid undefined variable warning
         $branch_name = 'Main Branch';
@@ -46,6 +84,7 @@ if ($user_id > 0) {
         echo '<div style="padding:2em;text-align:center;color:red;font-size:1.2em;">Error: Order not found.<br>Please go back to your cart or order history and try again.</div>';
         exit();
     }
+    
     // Get user info
     $stmt = $conn->prepare("SELECT full_name, email, phone_number, house_address, full_address FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
@@ -58,6 +97,10 @@ if ($user_id > 0) {
     echo '<div style="padding:2em;text-align:center;color:red;font-size:1.2em;">Error: User not logged in.<br>Please log in again.</div>';
     exit();
 }
+
+// Determine if this is a receipt (paid) or invoice (unpaid)
+$is_receipt = $payment_method === 'gcash' || (isset($order['order_status']) && $order['order_status'] === 'completed');
+$is_unpaid_invoice = !$is_receipt && ($payment_method === 'cod' || $payment_method === 'self-pickup');
 ?>
 
 <!DOCTYPE html>
@@ -181,83 +224,6 @@ if ($user_id > 0) {
             .no-print {
                 display: none !important;
             }
-            
-            .receipt-header {
-                background: #7d310a !important;
-                color: white !important;
-                padding: 1rem !important;
-                text-align: center !important;
-            }
-            
-            .receipt-body {
-                padding: 1rem !important;
-                color: #333 !important;
-            }
-            
-            .receipt-footer {
-                padding: 1rem !important;
-                border-top: 2px dashed #ccc !important;
-                text-align: center !important;
-                color: #666 !important;
-            }
-            
-            .receipt-item {
-                border-bottom: 1px dashed #eee !important;
-                padding: 0.5rem 0 !important;
-            }
-            
-            .receipt-totals {
-                border-top: 2px solid #333 !important;
-                padding-top: 0.5rem !important;
-                margin-top: 0.5rem !important;
-            }
-        }
-
-        /* Receipt Styling */
-        .receipt-container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .receipt-header {
-            background: linear-gradient(135deg, #7d310a 0%, #cf8756 100%);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
-
-        .receipt-body {
-            padding: 1.5rem;
-            color: #333;
-        }
-
-        .receipt-footer {
-            padding: 1rem 1.5rem;
-            border-top: 2px dashed #ccc;
-            text-align: center;
-            color: #666;
-            font-size: 0.875rem;
-        }
-
-        .receipt-item {
-            border-bottom: 1px dashed #eee;
-            padding: 0.75rem 0;
-        }
-
-        .receipt-totals {
-            border-top: 2px solid #333;
-            padding-top: 1rem;
-            margin-top: 1rem;
-        }
-
-        .barcode {
-            font-family: 'Libre Barcode 39', monospace;
-            font-size: 2rem;
-            letter-spacing: 2px;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
@@ -398,7 +364,7 @@ if ($user_id > 0) {
                                         <i class="fas fa-money-bill-wave text-primary mt-1 mr-3"></i>
                                         <div>
                                             <p class="font-medium text-textdark">Prepare Exact Amount</p>
-                                            <p class="text-sm text-textlight">Please prepare ₱<?php echo number_format($final_total, 2); ?> in cash</p>
+                                            <p class="text-sm text-textlight">Please prepare ₱<?php echo number_format((float)$final_total, 2); ?> in cash</p>
                                         </div>
                                     </div>
                                     <div class="flex items-start">
@@ -415,7 +381,7 @@ if ($user_id > 0) {
                                         <i class="fas fa-store text-primary mt-1 mr-3"></i>
                                         <div>
                                             <p class="font-medium text-textdark">Visit Our Store</p>
-                                            <p class="text-sm text-textlight">Pick up your order at our main branch</p>
+                                            <p class="text-sm text-textlight">Pick up your order at <?php echo htmlspecialchars($branch_name); ?></p>
                                         </div>
                                     </div>
                                     <div class="flex items-start">
@@ -429,7 +395,7 @@ if ($user_id > 0) {
                                         <i class="fas fa-map-marker-alt text-primary mt-1 mr-3"></i>
                                         <div>
                                             <p class="font-medium text-textdark">Store Location</p>
-                                            <p class="text-sm text-textlight">123 Main Street, Quezon City, Metro Manila</p>
+                                            <p class="text-sm text-textlight"><?php echo htmlspecialchars($branch_address); ?></p>
                                         </div>
                                     </div>
                                     <div class="flex items-start">
@@ -495,17 +461,17 @@ if ($user_id > 0) {
                         <div class="space-y-3 mb-6">
                             <div class="flex justify-between">
                                 <span class="text-textlight">Subtotal (<?php echo count($order_items); ?> items)</span>
-                                <span class="font-medium text-textdark">₱<?php echo number_format($order_total, 2); ?></span>
+                                <span class="font-medium text-textdark">₱<?php echo number_format((float)$order_total, 2); ?></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-textlight">Shipping Fee</span>
-                                <span class="font-medium text-textdark">₱<?php echo number_format($shipping_fee, 2); ?></span>
+                                <span class="font-medium text-textdark">₱<?php echo number_format((float)$shipping_fee, 2); ?></span>
                             </div>
                         </div>
 
                         <div class="flex justify-between font-bold text-lg border-t border-gray-100 pt-4 mb-6">
                             <span class="text-primary">Total Amount</span>
-                            <span class="text-primary">₱<?php echo number_format($final_total, 2); ?></span>
+                            <span class="text-primary">₱<?php echo number_format((float)$final_total, 2); ?></span>
                         </div>
                         
                         <!-- Customer Information -->
@@ -530,7 +496,13 @@ if ($user_id > 0) {
                         <!-- Action Buttons -->
                         <div class="space-y-3 no-print">
                             <button onclick="printReceipt()" class="print-btn action-btn w-full py-3 rounded-xl font-semibold text-white text-base flex items-center justify-center">
-                                <i class="fas fa-print mr-2"></i> Print Receipt
+                                <i class="fas fa-print mr-2"></i> Print <?php 
+                                if ($is_receipt) {
+                                    echo 'Receipt';
+                                } else {
+                                    echo 'Invoice';
+                                }
+                                ?>
                             </button>
                             <a href="myProfile.php" class="continue-btn action-btn w-full py-3 rounded-xl font-semibold text-white text-base flex items-center justify-center">
                                 <i class="fas fa-shopping-bag mr-2"></i> Go to My Profile
@@ -541,7 +513,7 @@ if ($user_id > 0) {
                             <h3 class="font-semibold text-primary mb-3">Need Help?</h3>
                             <div class="flex items-center text-textlight mb-1">
                                 <i class="fas fa-phone-alt mr-2"></i>
-                                <span class="text-sm">+63 2 1234 5678</span>
+                                <span class="text-sm"><?php echo $branch_phone; ?></span>
                             </div>
                             <div class="flex items-center text-textlight">
                                 <i class="fas fa-envelope mr-2"></i>
@@ -552,85 +524,175 @@ if ($user_id > 0) {
                 </aside>
             </div>
             
-            <!-- Hidden Receipt for Printing -->
+            <!-- Hidden Receipt/Invoice for Printing -->
             <div class="print-receipt" style="display: none;">
-                <div class="receipt-container" style="border:2px solid #7d310a; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                    <div class="receipt-header" style="padding-bottom:0.5rem;">
+                <?php if ($is_receipt): ?>
+                <!-- Compact Receipt (thermal) -->
+                <div class="receipt-container" style="max-width: 80mm; margin: 0 auto; background: white; padding: 10mm 5mm; font-family: Arial, sans-serif;">
+                    <div class="receipt-header" style="background: #7d310a; color: white; padding: 1rem; text-align: center;">
                         <img src="../images/logologo.png" alt="Company Logo" style="height:48px; margin:0 auto 0.5rem; display:block;">
-                        <h1 class="text-xl font-bold" style="letter-spacing:1px;">RICH ANNE LEA TILES TRADING</h1>
-                        <p class="text-sm opacity-90 mt-1">Quality Tiles & Building Materials</p>
+                        <h1 style="font-size: 1.25rem; font-weight: bold; margin: 0;">RICH ANNE LEA TILES TRADING</h1>
+                        <p style="margin: 0.25rem 0 0; font-size: 0.875rem;">Quality Tiles & Building Materials</p>
                     </div>
-                    <div style="text-align:right; margin:-1.5rem 1.5rem 0 0;">
-                        <span style="display:inline-block; padding:0.25em 1.5em; border:2px solid #059669; color:#059669; font-weight:bold; font-size:1.1em; border-radius:8px; transform:rotate(-8deg); background:#e6f9f2; letter-spacing:2px; box-shadow:0 1px 4px #05966922;">
-                            <?php echo ($payment_method === 'gcash') ? 'PAID' : 'UNPAID'; ?>
+                    <div style="text-align: right; margin: -1.5rem 1.5rem 0 0;">
+                        <span style="display: inline-block; padding: 0.25em 1.5em; border: 2px solid #059669; color: #059669; font-weight: bold; font-size: 1.1em; border-radius: 8px; transform: rotate(-8deg); background: #e6f9f2; letter-spacing: 2px; box-shadow: 0 1px 4px rgba(5, 150, 105, 0.2);">
+                            PAID
                         </span>
                     </div>
-                    <div class="receipt-body" style="font-family: 'Fira Mono', 'Consolas', monospace;">
-                        <div class="text-center mb-4">
-                            <p class="font-semibold" style="font-size:1.1em;">OFFICIAL RECEIPT</p>
-                            <p class="text-sm text-gray-600">Order Confirmation</p>
+                    <div class="receipt-body" style="padding: 1rem; font-family: 'Courier New', monospace;">
+                        <div style="text-align: center; margin-bottom: 1rem;">
+                            <p style="font-weight: bold; font-size: 1.1rem;">OFFICIAL RECEIPT</p>
+                            <p style="font-size: 0.75rem;">This serves as your official receipt</p>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
                             <div>
-                                <strong>Customer:</strong> <?php echo htmlspecialchars($user_info['full_name']); ?>
+                                <div><strong>Receipt No:</strong> R-<?php echo $order_reference; ?></div>
+                                <div><strong>Date:</strong> <?php echo date('M d, Y', strtotime($order_date)); ?></div>
                             </div>
-                            <div class="text-right">
-                                <strong>Payment:</strong> <?php echo ucfirst(str_replace('-', ' ', $payment_method)); ?>
+                            <div style="text-align: right;">
+                                <strong>Terms:</strong> <?php echo ucfirst(str_replace('-', ' ', $payment_method)); ?><br>
+                                <strong>Status:</strong> PAID
                             </div>
                         </div>
-                        <div class="mb-4 text-xs text-center" style="color:#7d310a;">
-                            <strong>Order Reference:</strong> <?php echo $order_reference; ?><br>
-                            <span>Keep this reference. If you have any problem with your order, submit a <b>Customer Ticket</b> and provide this reference for support.</span>
-                        </div>
-                        <div class="border-t border-b border-gray-300 py-2 mb-4">
-                            <div class="grid grid-cols-12 gap-1 text-xs font-semibold mb-1">
-                                <div class="col-span-6">ITEM DESCRIPTION</div>
-                                <div class="col-span-2 text-center">QTY</div>
-                                <div class="col-span-2 text-right">PRICE</div>
-                                <div class="col-span-2 text-right">AMOUNT</div>
+                        <div style="border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; padding: 0.5rem 0; margin-bottom: 1rem;">
+                            <div style="display: grid; grid-template-columns: 6fr 2fr 2fr 2fr; gap: 0.25rem; font-size: 0.75rem; font-weight: bold;">
+                                <div>ITEM DESCRIPTION</div>
+                                <div style="text-align: center;">QTY</div>
+                                <div style="text-align: right;">UNIT</div>
+                                <div style="text-align: right;">AMT</div>
                             </div>
                         </div>
                         <?php foreach ($order_items as $item): ?>
-                        <div class="receipt-item">
-                            <div class="grid grid-cols-12 gap-1 text-xs">
-                                <div class="col-span-6 font-medium"><?php echo htmlspecialchars($item['product_name']); ?></div>
-                                <div class="col-span-2 text-center"><?php echo $item['quantity']; ?></div>
-                                <div class="col-span-2 text-right">₱<?php echo number_format($item['unit_price'], 2); ?></div>
-                                <div class="col-span-2 text-right font-medium">₱<?php echo number_format($item['unit_price'] * $item['quantity'], 2); ?></div>
+                        <div class="receipt-item" style="border-bottom: 1px dashed #e5e7eb; padding: 0.5rem 0;">
+                            <div style="display: grid; grid-template-columns: 6fr 2fr 2fr 2fr; gap: 0.25rem; font-size: 0.75rem;">
+                                <div style="font-weight: 500;"><?php echo htmlspecialchars($item['product_name']); ?></div>
+                                <div style="text-align: center;"><?php echo $item['quantity']; ?></div>
+                                <div style="text-align: right;">₱<?php echo number_format($item['unit_price'], 2); ?></div>
+                                <div style="text-align: right; font-weight: 500;">₱<?php echo number_format($item['unit_price'] * $item['quantity'], 2); ?></div>
                             </div>
                         </div>
                         <?php endforeach; ?>
-                        <div class="receipt-totals">
-                            <div class="flex justify-between text-sm mb-1">
+                        <div class="receipt-totals" style="border-top: 2px solid #111827; padding-top: 0.5rem; margin-top: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.25rem;">
                                 <span>Subtotal:</span>
-                                <span class="font-medium">₱<?php echo number_format($order_total, 2); ?></span>
+                                <span style="font-weight: 500;">₱<?php echo number_format((float)$order_total, 2); ?></span>
                             </div>
-                            <div class="flex justify-between text-sm mb-1">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.25rem;">
                                 <span>Shipping Fee:</span>
-                                <span class="font-medium">₱<?php echo number_format($shipping_fee, 2); ?></span>
+                                <span style="font-weight: 500;">₱<?php echo number_format((float)$shipping_fee, 2); ?></span>
                             </div>
-                            <?php if ($coins_redeemed > 0): ?>
-                            <div class="flex justify-between text-sm mb-1">
+                            <?php if ((float)$coins_redeemed > 0): ?>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.25rem;">
                                 <span>Coins Redeemed:</span>
-                                <span class="font-medium text-green-600">-₱<?php echo number_format($coins_redeemed, 2); ?></span>
+                                <span style="font-weight: 500; color: #059669;">-₱<?php echo number_format((float)$coins_redeemed, 2); ?></span>
                             </div>
                             <?php endif; ?>
-                            <div class="flex justify-between text-base font-bold mt-2">
-                                <span>TOTAL:</span>
-                                <span>₱<?php echo number_format($final_total, 2); ?></span>
+                            <div style="display: flex; justify-content: space-between; font-size: 1rem; font-weight: bold; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 2px solid #000;">
+                                <span>TOTAL AMOUNT PAID:</span>
+                                <span>₱<?php echo number_format((float)$final_total, 2); ?></span>
                             </div>
                         </div>
-                        <!-- Barcode and reference section removed -->
+                        <div style="margin-top: 1rem; font-size: 0.75rem;">
                             <div><strong>Served by:</strong> System</div>
-                            <div><strong>Contact:</strong> support@raltt.com | +63 2 1234 5678</div>
-                        <!-- QR code removed -->
+                        </div>
                     </div>
-                    <div class="receipt-footer" style="border-top:2px dashed #7d310a;">
-                        <p class="font-semibold mb-1">Thank you for choosing Rich Anne Lea Tiles Trading!</p>
-                        <p class="text-xs mb-1">For order support, please go to <b>Customer Ticket</b> and provide your order reference.</p>
-                        <p class="text-xs mb-1">This receipt is system generated. No signature is required.</p>
+                    <div class="receipt-footer" style="padding: 1rem; border-top: 2px dashed #7d310a; text-align: center; color: #6b7280; font-size: 0.75rem;">
+                        <p style="font-weight: bold; margin-bottom: 0.5rem;">Thank you for your payment!</p>
+                        <p style="margin-bottom: 0.5rem;">This is your official receipt. Please keep for your records.</p>
+                        <p>This document is system generated.</p>
                     </div>
                 </div>
+
+                <?php else: ?>
+                <!-- Formal Invoice (A4) -->
+                <div class="invoice-container" style="max-width: 210mm; margin: 0 auto; background: white; padding: 20mm 15mm; font-family: Arial, sans-serif; position: relative;">
+                    <?php if ($is_unpaid_invoice): ?>
+                        <div class="invoice-watermark" style="position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 5rem; color: rgba(185, 28, 28, 0.06); font-weight: 800; pointer-events: none; z-index: 0; letter-spacing: 6px;">UNPAID</div>
+                    <?php endif; ?>
+                    <div class="invoice-meta" style="background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <div class="meta-row" style="display: flex; justify-content: space-between; gap: 12px;">
+                            <div class="meta-left" style="color: #333;">
+                                <img src="../images/logologo.png" alt="Company Logo" style="height: 56px; margin-bottom: 6px;">
+                                <div style="font-weight: 700; color: #7d310a; font-size: 1.125rem;">RICH ANNE LEA TILES TRADING</div>
+                                <div style="color: #555; font-size: 0.95rem; font-weight: 600;">Branch: <?php echo htmlspecialchars($branch_name); ?></div>
+                                <div style="color: #555; font-size: 0.9rem;"><?php echo htmlspecialchars($branch_address); ?></div>
+                                <div style="color: #555; font-size: 0.9rem;">TIN: 123-456-789-000</div>
+                            </div>
+                            <div class="meta-right" style="text-align: right; color: #333;">
+                                <h2 style="font-size: 1.5rem; color: #7d310a; margin: 0 0 6px;">PURCHASE INVOICE</h2>
+                                <div>Invoice No: <strong>INV-<?php echo $order_reference; ?></strong></div>
+                                <div>Date: <?php echo date('F d, Y', strtotime($order_date)); ?></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                        <div>
+                            <div style="font-weight: 700; color: #7d310a; margin-bottom: 0.25rem;">Bill To:</div>
+                            <div style="font-weight: 600;"><?php echo htmlspecialchars($user_info['full_name']); ?></div>
+                            <div><?php echo htmlspecialchars($user_info['phone_number'] ?? 'N/A'); ?></div>
+                            <div><?php echo htmlspecialchars($user_info['full_address'] ?? 'N/A'); ?></div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: #7d310a; margin-bottom: 0.25rem;">Payment Details:</div>
+                            <div><strong>Method:</strong> <?php echo ucfirst(str_replace('-', ' ', $payment_method)); ?></div>
+                            <div><strong>Terms:</strong> Due upon <?php echo $payment_method === 'cod' ? 'delivery' : 'pickup'; ?></div>
+                            <div><strong>Status:</strong> <span style="color: #b91c1c; font-weight: 700;">UNPAID</span></div>
+                        </div>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding: 0.75rem; border-bottom: 2px solid #e5e7eb; background-color: #f3f4f6;">Item Description</th>
+                                <th style="text-align: center; padding: 0.75rem; border-bottom: 2px solid #e5e7eb; background-color: #f3f4f6; width: 90px;">Quantity</th>
+                                <th style="text-align: right; padding: 0.75rem; border-bottom: 2px solid #e5e7eb; background-color: #f3f4f6; width: 120px;">Unit Price</th>
+                                <th style="text-align: right; padding: 0.75rem; border-bottom: 2px solid #e5e7eb; background-color: #f3f4f6; width: 140px;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($order_items as $item): ?>
+                            <tr>
+                                <td style="padding: 0.75rem; vertical-align: top; border-bottom: 1px solid #e5e7eb;"><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb;"><?php echo $item['quantity']; ?></td>
+                                <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb;">₱<?php echo number_format($item['unit_price'], 2); ?></td>
+                                <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb;">₱<?php echo number_format($item['unit_price'] * $item['quantity'], 2); ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                        <div style="width: 320px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Subtotal:</span><span>₱<?php echo number_format((float)$order_total, 2); ?></span></div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Shipping Fee:</span><span>₱<?php echo number_format((float)$shipping_fee, 2); ?></span></div>
+                            <?php if ((float)$coins_redeemed > 0): ?>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Coins Redeemed:</span><span style="color: #059669;">-₱<?php echo number_format((float)$coins_redeemed, 2); ?></span></div>
+                            <?php endif; ?>
+                            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.125rem; border-top: 2px solid #000; padding-top: 0.5rem; margin-top: 0.5rem;"><span>TOTAL DUE:</span><span>₱<?php echo number_format((float)$final_total, 2); ?></span></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="width: 45%;">
+                            <p style="font-weight: 700; color: #7d310a;">Terms & Conditions</p>
+                            <ol style="font-size: 0.9rem; color: #555; padding-left: 1rem;">
+                                <li>Payment is due upon <?php echo $payment_method === 'cod' ? 'delivery' : 'pickup'; ?>.</li>
+                                <li>Official receipt will be issued upon full payment.</li>
+                                <li>Please contact support for disputes within 7 days.</li>
+                            </ol>
+                        </div>
+                        <div style="width: 45%; text-align: center;">
+                            <div style="border-top: 1px solid #ddd; padding-top: 1.5rem;">Authorized Signature</div>
+                            <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Rich Anne Lea Tiles Trading</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 2rem; font-size: 0.9rem; color: #666;">
+                        <p>For inquiries: support@raltt.com | <?php echo $branch_phone; ?></p>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
             
             <!-- Estimated Delivery -->
@@ -662,11 +724,11 @@ if ($user_id > 0) {
 
     <script>
         function printReceipt() {
-            // Create a new window for printing
-            const printWindow = window.open('', '_blank', 'width=400,height=600');
-            
             // Get the receipt HTML
             const receiptContent = document.querySelector('.print-receipt').innerHTML;
+            
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank');
             
             // Write the receipt content to the new window
             printWindow.document.write(`
@@ -675,6 +737,7 @@ if ($user_id > 0) {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Print Document</title>
                     <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
                     <style>
                         body {
@@ -685,49 +748,16 @@ if ($user_id > 0) {
                             color: #333;
                             font-size: 12px;
                         }
-                        .receipt-container {
-                            max-width: 400px;
-                            margin: 0 auto;
-                            background: white;
-                        }
-                        .receipt-header {
-                            background: #7d310a;
-                            color: white;
-                            padding: 1rem;
-                            text-align: center;
-                        }
-                        .receipt-body {
-                            padding: 1rem;
-                        }
-                        .receipt-footer {
-                            padding: 1rem;
-                            border-top: 2px dashed #ccc;
-                            text-align: center;
-                            color: #666;
-                            font-size: 0.75rem;
-                        }
-                        .receipt-item {
-                            border-bottom: 1px dashed #eee;
-                            padding: 0.5rem 0;
-                        }
-                        .receipt-totals {
-                            border-top: 2px solid #333;
-                            padding-top: 0.5rem;
-                            margin-top: 0.5rem;
-                        }
-                        .barcode {
-                            font-family: 'Libre Barcode 39', monospace;
-                            font-size: 2rem;
-                            letter-spacing: 2px;
-                        }
+                        
                         @media print {
                             body {
                                 margin: 0 !important;
                                 padding: 0 !important;
                             }
-                            .receipt-container {
-                                box-shadow: none !important;
-                                margin: 0 !important;
+                            
+                            @page {
+                                size: <?php echo $is_receipt ? '80mm 297mm' : 'A4'; ?>;
+                                margin: <?php echo $is_receipt ? '5mm' : '15mm'; ?>;
                             }
                         }
                     </style>

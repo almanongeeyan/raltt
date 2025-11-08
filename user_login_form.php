@@ -379,9 +379,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             <div class="login-right">
                 <div class="login-box">
                     <div class="logo"><span>RAL</span><span class="tt">TT</span></div>
-                    <form id="loginForm">
+                    <form id="loginForm" autocomplete="off">
                         <div class="form-group">
-                            <input type="tel" name="phone" placeholder="Enter your phone number" required>
+                            <input type="tel" id="login-phone" name="phone" placeholder="Enter your phone number" required>
                         </div>
                         <div class="form-group">
                             <input id="password-field" name="password" type="password" placeholder="Password" required>
@@ -390,11 +390,14 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
                         <div class="forgot-password">
                             <a href="forgot_password.php">Forgot password?</a>
                         </div>
-                        <button type="submit" class="btn btn-primary">Log in</button>
+                        <div class="form-group" id="login-verification-form" style="display:none;">
+                            <input type="text" id="login_verification_code" name="login_verification_code" placeholder="Enter the 6-digit code" maxlength="6" autocomplete="off">
+                            <div id="login-verify-status" style="font-size:0.9em;margin-top:4px;"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="login-submit-btn">Log in</button>
                         <div class="or-divider">OR</div>
                         <div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch; width: 100%; margin: 0 0 16px 0;">
                             <button type="button" class="btn btn-primary" style="background: #684330;" onclick="window.location.href='register.php'">Manual Register</button>
-                            
                             <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
                                 <div>
                                     <div id="g_id_onload"
@@ -455,26 +458,71 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             }
         });
 
-        // Handle manual login form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // --- Twilio login verification logic (all in login button) ---
+        const loginPhoneInput = document.getElementById('login-phone');
+        const loginVerificationForm = document.getElementById('login-verification-form');
+        const loginVerificationCodeInput = document.getElementById('login_verification_code');
+        const loginVerifyStatus = document.getElementById('login-verify-status');
+        const loginSubmitBtn = document.getElementById('login-submit-btn');
+        let loginCodeSent = false;
+        let loginPhone = '';
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Logging in...';
-            
-            fetch('connection/manual_login_process.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+            if (!loginCodeSent) {
+                // Step 1: Send code
+                loginPhone = loginPhoneInput.value.trim();
+                if (!/^\+639[0-9]{9}$/.test(loginPhone)) {
+                    Swal.fire({ icon: 'error', title: 'Invalid Phone', text: 'Enter a valid phone number (+639xxxxxxxxx)' });
+                    return;
                 }
-                return response.json();
-            })
-            .then(data => {
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending code...';
+                loginVerifyStatus.textContent = '';
+                try {
+                    const formData = new FormData();
+                    formData.append('phone', loginPhone);
+                    const response = await fetch('connection/send_verification_debug.php', { method: 'POST', body: formData });
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        loginVerificationForm.style.display = 'block';
+                        loginVerifyStatus.style.color = 'green';
+                        loginVerifyStatus.textContent = 'Code sent. Check your messages.';
+                        loginCodeSent = true;
+                        loginSubmitBtn.disabled = false;
+                        loginSubmitBtn.textContent = 'Verify Code';
+                    } else {
+                        loginVerifyStatus.style.color = 'red';
+                        loginVerifyStatus.textContent = data.message || 'Failed to send code.';
+                        loginSubmitBtn.disabled = false;
+                        loginSubmitBtn.textContent = 'Log in';
+                    }
+                } catch (err) {
+                    loginVerifyStatus.style.color = 'red';
+                    loginVerifyStatus.textContent = 'Error sending code.';
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Log in';
+                }
+                return;
+            }
+            // Step 2: Verify code and log in
+            const code = loginVerificationCodeInput.value.trim();
+            if (!/^\d{6}$/.test(code)) {
+                loginVerifyStatus.style.color = 'red';
+                loginVerifyStatus.textContent = 'Enter the 6-digit code sent to your phone.';
+                return;
+            }
+            loginSubmitBtn.disabled = true;
+            loginSubmitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Logging in...';
+            const formData = new FormData(this);
+            formData.append('code', code);
+            formData.set('phone', loginPhone); // always use the phone that was verified
+            try {
+                const response = await fetch('connection/manual_login_process_twilio.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
                 if (data.status === 'success') {
                     Swal.fire({
                         title: 'Success!',
@@ -494,11 +542,10 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Log in';
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Log in';
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
                 Swal.fire({
                     title: 'Error!',
@@ -506,9 +553,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Log in';
-            });
+                loginSubmitBtn.disabled = false;
+                loginSubmitBtn.textContent = 'Log in';
+            }
         });
 
         function handleCredentialResponse(response) {

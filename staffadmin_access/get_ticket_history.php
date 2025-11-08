@@ -12,7 +12,7 @@ if (!$branch_id) {
 }
 
 try {
-    // Fetch resolved and closed tickets for the branch using assigned_staff_id and branch_staff
+    // Fetch resolved and closed tickets for the branch using assigned_staff_id and users (staff)
     $stmt = $conn->prepare("
         SELECT 
             t.ticket_id AS id, 
@@ -28,8 +28,8 @@ try {
             u.full_address AS customerAddress
         FROM customer_tickets t
         LEFT JOIN users u ON t.user_id = u.id
-        LEFT JOIN branch_staff bs ON t.assigned_staff_id = bs.staff_id
-        WHERE (bs.branch_id = ? OR t.assigned_staff_id IS NULL)
+        LEFT JOIN users staff ON t.assigned_staff_id = staff.id
+        WHERE (staff.branch_id = ? OR t.assigned_staff_id IS NULL)
           AND (t.ticket_status = 'Resolved' OR t.ticket_status = 'Closed')
         ORDER BY t.updated_at DESC
     ");

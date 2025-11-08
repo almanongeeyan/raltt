@@ -523,12 +523,20 @@ if ($user_id > 0) {
             var warningDiv = document.getElementById('shipping-warning');
             var missingFieldsList = document.getElementById('missing-fields-list');
             if (allFilled) {
-                payBtn.disabled = false;
-                payBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                warningDiv.classList.add('hidden');
+                if (payBtn) {
+                    payBtn.disabled = false;
+                    payBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+                if (warningDiv) {
+                    // Use inline style to hide — PHP may set an inline display style which
+                    // cannot be overridden by toggling classes alone.
+                    warningDiv.style.display = 'none';
+                }
             } else {
-                payBtn.disabled = true;
-                payBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                if (payBtn) {
+                    payBtn.disabled = true;
+                    payBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
                 // Update missing fields list
                 var missing = [];
                 if (!event.data.info.fullName) missing.push('Full Name');
@@ -536,7 +544,9 @@ if ($user_id > 0) {
                 if (!event.data.info.houseAddress) missing.push('Shipping Address');
                 if (!event.data.info.fullAddress) missing.push('Full Address');
                 if (missingFieldsList) missingFieldsList.textContent = missing.join(', ');
-                warningDiv.classList.remove('hidden');
+                if (warningDiv) {
+                    warningDiv.style.display = 'block';
+                }
             }
         }
     });

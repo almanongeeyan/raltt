@@ -1,0 +1,66 @@
+{
+  "NCR": {
+    "Metro Manila (National Capital Region)": {
+      "Caloocan": {
+        "Bagong Silang": {
+          "barangays": ["Barangay 176", "Barangay 177", "Barangay 178", "Barangay 179", "Barangay 180", 
+                       "Barangay 181", "Barangay 182", "Barangay 183", "Barangay 184", "Barangay 185", 
+                       "Barangay 186", "Barangay 187", "Barangay 188"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6", "Zone 7", "Zone 8", "Zone 9", "Zone 10",
+                   "Zone 11", "Zone 12", "Zone 13", "Zone 14", "Zone 15", "Zone 16", "Zone 17", "Zone 18", "Zone 19", "Zone 20",
+                   "Zone 21", "Zone 22", "Zone 23", "Zone 24", "Zone 25", "Zone 26", "Zone 27", "Zone 28", "Zone 29", "Zone 30",
+                   "Zone 31", "Zone 32", "Zone 33", "Zone 34", "Zone 35", "Zone 36", "Zone 37", "Zone 38", "Zone 39", "Zone 40"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5", "Purok 6", "Purok 7", "Purok 8", "Purok 9", "Purok 10",
+                    "Purok 11", "Purok 12", "Purok 13", "Purok 14", "Purok 15", "Purok 16", "Purok 17", "Purok 18", "Purok 19", "Purok 20",
+                    "Purok 21", "Purok 22", "Purok 23", "Purok 24", "Purok 25", "Purok 26", "Purok 27", "Purok 28", "Purok 29", "Purok 30"]
+        },
+        "Deparo": {
+          "streets": ["Deparo Road"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3"]
+        },
+        "Camarin": {
+          "streets": ["Camarin Road"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5", "Purok 6", 
+                    "Purok 7", "Purok 8", "Purok 9", "Purok 10", "Purok 11", "Purok 12"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6", "Zone 7", "Zone 8"]
+        }
+      },
+      "Quezon City": {
+        "Bagbag": {
+          "streets": ["Quirino Highway"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5", "Purok 6", "Purok 7", "Purok 8",
+                    "Purok 9", "Purok 10", "Purok 11", "Purok 12", "Purok 13", "Purok 14", "Purok 15"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6", "Zone 7", "Zone 8", "Zone 9", "Zone 10"]
+        },
+        "Fairview": {
+          "streets": ["Regalado Avenue", "Commonwealth Avenue"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5", "Purok 6", "Purok 7", "Purok 8"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5", "Zone 6"]
+        },
+        "Baesa": {
+          "streets": ["Mindanao Avenue"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3"]
+        },
+        "Novaliches Proper": {
+          "streets": ["Quirino Highway"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5", "Purok 6", "Purok 7"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"]
+        }
+      },
+      "Valenzuela": {
+        "Karuhatan": {
+          "streets": ["MacArthur Highway"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5", "Purok 6"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3", "Zone 4"]
+        },
+        "Malinta": {
+          "streets": ["Malinta Road"],
+          "puroks": ["Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5"],
+          "zones": ["Zone 1", "Zone 2", "Zone 3"]
+        }
+      }
+    }
+  }
+}

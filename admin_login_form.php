@@ -36,8 +36,8 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
         </div>
         <form id="adminLoginForm" class="space-y-6">
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input type="text" id="username" name="username" required class="w-full px-4 py-2 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8A421D] focus:border-[#8A421D] bg-[#FAFAFA] text-[#684330] placeholder:text-[#9CA3AF] transition" placeholder="Enter admin username">
+                <label for="admin-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" id="admin-email" name="email" required class="w-full px-4 py-2 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8A421D] focus:border-[#8A421D] bg-[#FAFAFA] text-[#684330] placeholder:text-[#9CA3AF] transition" placeholder="Enter admin email">
             </div>
             <div class="relative">
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
@@ -46,7 +46,12 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
                     <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                 </button>
             </div>
-            <button type="submit" class="w-full py-2 px-4 bg-[#8A421D] hover:bg-[#6B3416] text-white font-semibold rounded-lg shadow transition duration-150">Log in</button>
+            <button type="button" id="sendAdminCodeBtn" class="w-full py-2 px-4 bg-[#8A421D] hover:bg-[#6B3416] text-white font-semibold rounded-lg shadow transition duration-150">Send Code to Email</button>
+            <div id="codeStep" class="hidden">
+                <label for="admin-code" class="block text-sm font-medium text-gray-700 mb-1 mt-2">Enter Code</label>
+                <input type="text" id="admin-code" name="code" maxlength="6" pattern="\d{6}" class="w-full px-4 py-2 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8A421D] focus:border-[#8A421D] bg-[#FAFAFA] text-[#684330] placeholder:text-[#9CA3AF] transition" placeholder="6-digit code">
+                <button type="submit" class="w-full mt-3 py-2 px-4 bg-[#8A421D] hover:bg-[#6B3416] text-white font-semibold rounded-lg shadow transition duration-150">Log in</button>
+            </div>
         </form>
         
     </div>
@@ -70,16 +75,58 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
                 : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
         });
 
-        // Handle admin login form submission
-        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+        // Admin login with email, password, and code step
+        const sendAdminCodeBtn = document.getElementById('sendAdminCodeBtn');
+        const codeStep = document.getElementById('codeStep');
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        let adminEmail = '';
+        let adminPassword = '';
+
+        sendAdminCodeBtn.addEventListener('click', function() {
+            adminEmail = document.getElementById('admin-email').value.trim();
+            adminPassword = document.getElementById('admin-password-field').value;
+            if (!adminEmail || !adminPassword) {
+                Swal.fire({ title: 'Error!', text: 'Email and password are required.', icon: 'error', confirmButtonText: 'OK' });
+                return;
+            }
+            sendAdminCodeBtn.disabled = true;
+            sendAdminCodeBtn.textContent = 'Sending...';
+            fetch('connection/admin_email_code.php', {
+                method: 'POST',
+                body: new URLSearchParams({ email: adminEmail })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({ title: 'Code Sent!', text: data.message, icon: 'success', confirmButtonText: 'OK' });
+                    codeStep.classList.remove('hidden');
+                    sendAdminCodeBtn.classList.add('hidden');
+                } else {
+                    Swal.fire({ title: 'Error!', text: data.message, icon: 'error', confirmButtonText: 'OK' });
+                }
+            })
+            .catch(() => {
+                Swal.fire({ title: 'Error!', text: 'Failed to send code. Try again.', icon: 'error', confirmButtonText: 'OK' });
+            })
+            .finally(() => {
+                sendAdminCodeBtn.disabled = false;
+                sendAdminCodeBtn.textContent = 'Send Code to Email';
+            });
+        });
+
+        adminLoginForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button[type="submit"]');
+            const code = document.getElementById('admin-code').value.trim();
+            if (!adminEmail || !adminPassword || !code) {
+                Swal.fire({ title: 'Error!', text: 'All fields are required.', icon: 'error', confirmButtonText: 'OK' });
+                return;
+            }
+            const submitBtn = adminLoginForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Logging in...';
             fetch('connection/manual_login_process.php?admin=1', {
                 method: 'POST',
-                body: formData
+                body: new URLSearchParams({ email: adminEmail, password: adminPassword, code: code })
             })
             .then(response => response.json())
             .then(data => {
@@ -104,10 +151,10 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
                     submitBtn.textContent = 'Log in';
                 }
             })
-            .catch(error => {
+            .catch(() => {
                 Swal.fire({
                     title: 'Error!',
-                    text: 'Wrong Username or Password. Please try again.',
+                    text: 'Login failed. Please try again.',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });

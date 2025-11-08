@@ -23,6 +23,17 @@ try {
         $stmt->execute([$status, $ticket_id]);
     }
     if ($stmt->rowCount() > 0) {
+        // Fetch user_id and order_id for notification
+        $infoStmt = $conn->prepare("SELECT user_id, order_id FROM customer_tickets WHERE ticket_id = ? LIMIT 1");
+        $infoStmt->execute([$ticket_id]);
+        $ticketInfo = $infoStmt->fetch(PDO::FETCH_ASSOC);
+        if ($ticketInfo) {
+            $user_id = $ticketInfo['user_id'];
+            $order_id = $ticketInfo['order_id'];
+            $notifMsg = 'Your support ticket status has been updated to: ' . $status;
+            $notifStmt = $conn->prepare("INSERT INTO user_notifications (user_id, notification_type, notification_message, related_order_id, related_ticket_id, is_read, created_at) VALUES (?, 'TICKET_UPDATE', ?, ?, ?, 0, NOW())");
+            $notifStmt->execute([$user_id, $notifMsg, $order_id, $ticket_id]);
+        }
         echo json_encode(['success' => true, 'message' => 'Ticket status updated.']);
     } else {
         echo json_encode(['success' => false, 'error' => 'No rows updated. Ticket may not exist or status is unchanged.']);

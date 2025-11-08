@@ -70,7 +70,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $userExists = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($userExists) {
-            // User exists, update their details and last_login
+            // Check if account is active
+            if (isset($userExists['account_status']) && strtolower($userExists['account_status']) !== 'active') {
+                $db_connection->rollBack();
+                echo json_encode(['success' => false, 'message' => 'Your account is inactive. Please contact admin to reactivate your account.']);
+                exit;
+            }
+            // User exists and is active, update their details and last_login
             $stmt_update = $db_connection->prepare("UPDATE users SET full_name = ?, email = ?, last_login = NOW() WHERE google_id = ?");
             $stmt_update->execute([$fullName, $email, $googleId]);
             $userId = $userExists['id'];

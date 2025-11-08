@@ -7,28 +7,59 @@ require_once '../connection/connection.php';
 // -----------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
-    $response = ['success' => false, 'salesData' => [], 'totalSales' => 0, 'totalUnits' => 0, 'averageOrderValue' => 0];
+    $response = [
+        'success' => false, 
+        'salesData' => [], 
+        'totalSales' => 0, 
+        'totalUnits' => 0, 
+        'averageOrderValue' => 0,
+        'totalOrders' => 0
+    ];
     
     try {
         $branch_id = isset($_SESSION['branch_id']) ? (int)$_SESSION['branch_id'] : null;
-
+        
         // Get filters from POST
         $dateFilter = $_POST['dateFilter'] ?? '';
         $dateStart = $_POST['dateStart'] ?? '';
         $dateEnd = $_POST['dateEnd'] ?? '';
         $search = $_POST['search'] ?? '';
+        $sortOrder = $_POST['sortOrder'] ?? 'desc'; // 'asc' or 'desc'
+
+        // Validate date inputs
+        if ($dateFilter === 'custom') {
+            if (empty($dateStart) || empty($dateEnd)) {
+                throw new Exception("Custom date range requires both start and end dates.");
+            }
+            
+            // Validate date format and logical order
+            $startTimestamp = strtotime($dateStart);
+            $endTimestamp = strtotime($dateEnd);
+            
+            if (!$startTimestamp || !$endTimestamp) {
+                throw new Exception("Invalid date format provided.");
+            }
+            
+            if ($startTimestamp > $endTimestamp) {
+                throw new Exception("Start date cannot be after end date.");
+            }
+            
+            // Ensure dates are not in the future
+            $today = strtotime(date('Y-m-d'));
+            if ($startTimestamp > $today || $endTimestamp > $today) {
+                throw new Exception("Date range cannot include future dates.");
+            }
+        }
 
         // --- Build WHERE clauses ---
         $params = [];
         $orderWhere = "o.order_status = 'completed'";
         
-        // Branch filtering
         if ($branch_id) {
             $orderWhere .= " AND o.branch_id = ?";
             $params[] = $branch_id;
         }
-
-        // Date filtering
+        
         $dateWhere = "";
         if ($dateFilter === 'today') {
             $dateWhere = " AND DATE(o.order_date) = CURDATE()";
@@ -41,17 +72,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $params[] = $dateStart;
             $params[] = $dateEnd;
         }
+        
         $orderWhere .= $dateWhere;
-
-        // Search filtering
+        
         $searchWhere = "";
         if (!empty($search)) {
-            $searchWhere = " AND p.product_name LIKE ?";
+            $searchWhere = " AND (p.product_name LIKE ? OR p.product_id LIKE ?)";
+            $params[] = '%' . $search . '%';
             $params[] = '%' . $search . '%';
         }
 
         // --- Query 1: Summary Metrics ---
-        // We run a separate, simpler query for the main summary cards
         $summarySql = "
             SELECT 
                 COALESCE(SUM(o.total_amount), 0) AS totalSales,
@@ -59,63 +90,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             FROM orders o
             WHERE $orderWhere
         ";
-        // Re-bind params for summary (it has fewer params than the main query)
-        $summaryParams = [];
-        if ($branch_id) $summaryParams[] = $branch_id;
-        if ($dateFilter === 'custom' && !empty($dateStart) && !empty($dateEnd)) {
-            $summaryParams[] = $dateStart;
-            $summaryParams[] = $dateEnd;
-        }
         
         $summaryStmt = $db_connection->prepare($summarySql);
-        $summaryStmt->execute($summaryParams);
+        $summaryStmt->execute($params);
         $summary = $summaryStmt->fetch(PDO::FETCH_ASSOC);
-
+        
         $response['totalSales'] = (float)$summary['totalSales'];
-        $totalOrders = (int)$summary['totalOrders'];
-
+        $response['totalOrders'] = (int)$summary['totalOrders'];
 
         // --- Query 2: Detailed Product Sales List ---
         $salesSql = "
             SELECT 
+                p.product_id,
                 p.product_name,
                 SUM(oi.quantity) AS total_units,
                 SUM(oi.quantity * oi.unit_price) AS total_revenue,
-                MAX(o.order_date) AS last_sale_date
+                MAX(o.order_date) AS last_sale_date,
+                GROUP_CONCAT(DISTINCT u.full_name ORDER BY u.full_name SEPARATOR ', ') AS customer_names,
+                COUNT(DISTINCT o.user_id) AS unique_customers,
+                b.branch_name AS top_branch_name
             FROM order_items oi
             JOIN orders o ON oi.order_id = o.order_id
             JOIN products p ON oi.product_id = p.product_id
+            JOIN users u ON o.user_id = u.id
+            LEFT JOIN branches b ON o.branch_id = b.branch_id
             WHERE $orderWhere $searchWhere
             GROUP BY p.product_id, p.product_name
-            ORDER BY total_revenue DESC
+            ORDER BY total_revenue " . ($sortOrder === 'asc' ? 'ASC' : 'DESC') . "
         ";
-
+        
         $salesStmt = $db_connection->prepare($salesSql);
         $salesStmt->execute($params);
-        $response['salesData'] = $salesStmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Calculate Total Units from the detailed query
-        $totalUnits = 0;
-        foreach ($response['salesData'] as $row) {
-            $totalUnits += (int)$row['total_units'];
-        }
-        $response['totalUnits'] = $totalUnits;
-
-        // Calculate AOV
-        $response['averageOrderValue'] = ($totalOrders > 0) ? ($response['totalSales'] / $totalOrders) : 0;
+        $salesData = $salesStmt->fetchAll(PDO::FETCH_ASSOC);
         
+        $response['salesData'] = $salesData;
+        $response['totalUnits'] = array_sum(array_column($salesData, 'total_units'));
+        $response['averageOrderValue'] = ($response['totalOrders'] > 0) ? 
+            ($response['totalSales'] / $response['totalOrders']) : 0;
         $response['success'] = true;
-
+        
     } catch (PDOException $e) {
         $response['error'] = "Database error: " . $e->getMessage();
         error_log($response['error']);
     } catch (Exception $e) {
-        $response['error'] = "General error: " . $e->getMessage();
+        $response['error'] = $e->getMessage();
         error_log($response['error']);
     }
-
+    
     echo json_encode($response);
-    exit; // Stop script execution
+    exit;
 }
 
 // -----------------------------------------------------------------
@@ -165,13 +188,12 @@ $filter_search = $_GET['search'] ?? '';
         body {
             display: flex;
             min-height: 100vh;
-            background-color: #f8fafc; /* Tailwind gray-50 */
+            background-color: #f8fafc;
         }
         
-        /* Responsive layout that works with sidebar.js */
         .main-content-wrapper {
             flex: 1;
-            margin-left: var(--sidebar-width); /* Default for open sidebar */
+            margin-left: var(--sidebar-width);
             transition: margin-left var(--transition-speed);
             padding: 2rem;
             width: calc(100% - var(--sidebar-width));
@@ -203,7 +225,7 @@ $filter_search = $_GET['search'] ?? '';
         .table-header-sticky th {
             position: sticky;
             top: 0;
-            background-color: #f9fafb; /* gray-50 */
+            background-color: #f9fafb;
             z-index: 10;
         }
 
@@ -219,28 +241,145 @@ $filter_search = $_GET['search'] ?? '';
         /* Print styles */
         @media print {
             body > * { display: none !important; }
-            #reportModal, #modalPrintArea { display: block !important; }
-            #reportModal {
-                position: relative; inset: 0; padding: 0; margin: 0;
-                background: none; border: none; box-shadow: none;
-                overflow: visible; width: 100%; max-width: 100%;
+            #reportModal, #modalPrintArea { 
+                display: block !important; 
+                position: relative !important;
+                inset: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: white !important;
+                border: none !important;
+                box-shadow: none !important;
+                overflow: visible !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
             }
-            .modal-header, .modal-footer { display: none !important; }
+            
+            .modal-header, .modal-footer, .no-print { 
+                display: none !important; 
+            }
+            
             #modalPrintArea {
-                max-width: 100%; margin: 0; padding: 1in;
-                box-shadow: none; border: none;
+                max-width: 100% !important; 
+                margin: 0 !important; 
+                padding: 0.5in !important;
+                box-shadow: none !important; 
+                border: none !important;
             }
-            table { width: 100%; border-collapse: collapse; font-size: 10pt; }
-            th, td { border: 1px solid #999; padding: 8px; color: #000; }
-            h1, h2, h3, p, div { color: #000 !important; }
-            .print-header { display: block !important; text-align: center; margin-bottom: 2rem; }
-            .print-header h1 { font-size: 24pt; font-weight: bold; }
-            .print-header p { font-size: 12pt; color: #333 !important; }
-            .print-summary { margin-bottom: 1.5rem; display: flex; justify-content: space-around; }
-            .print-summary > div { border: 1px solid #ccc; padding: 1rem; border-radius: 8px; text-align: center; }
-            .print-summary-label { font-size: 11pt; color: #333 !important; margin-bottom: 0.5rem; }
-            .print-summary-value { font-size: 16pt; font-weight: bold; color: #000 !important; }
-            .no-print-in-modal { display: none !important; }
+            
+            table { 
+                width: 100% !important; 
+                border-collapse: collapse !important; 
+                font-size: 10pt !important; 
+            }
+            
+            th, td { 
+                border: 1px solid #333 !important; 
+                padding: 6px !important; 
+                color: #000 !important; 
+                background: white !important;
+            }
+            
+            h1, h2, h3, p, div, span { 
+                color: #000 !important; 
+            }
+            
+            .print-header { 
+                display: block !important; 
+                text-align: center !important; 
+                margin-bottom: 1rem !important;
+                border-bottom: 2px solid #333 !important;
+                padding-bottom: 0.5rem !important;
+            }
+            
+            .print-header h1 { 
+                font-size: 20pt !important; 
+                font-weight: bold !important; 
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .print-header p { 
+                font-size: 11pt !important; 
+                color: #333 !important; 
+                margin: 0.25rem 0 !important;
+            }
+            
+            .print-summary { 
+                margin-bottom: 1rem !important; 
+                display: flex !important; 
+                justify-content: space-between !important;
+                flex-wrap: wrap !important;
+            }
+            
+            .print-summary > div { 
+                border: 1px solid #333 !important; 
+                padding: 0.75rem !important; 
+                border-radius: 4px !important; 
+                text-align: center !important;
+                flex: 1 !important;
+                margin: 0 0.25rem 0.5rem !important;
+                min-width: 30% !important;
+            }
+            
+            .print-summary-label { 
+                font-size: 10pt !important; 
+                color: #333 !important; 
+                margin-bottom: 0.25rem !important;
+                font-weight: bold !important;
+            }
+            
+            .print-summary-value { 
+                font-size: 14pt !important; 
+                font-weight: bold !important; 
+                color: #000 !important; 
+            }
+            
+            .no-print-in-modal { 
+                display: none !important; 
+            }
+            
+            .customer-names-print {
+                max-width: 150px !important;
+                word-break: break-word !important;
+            }
+            
+            /* Ensure tables don't break across pages */
+            table { page-break-inside: auto !important; }
+            tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+            thead { display: table-header-group !important; }
+            tfoot { display: table-footer-group !important; }
+        }
+        
+        /* Loading animation */
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error message styling */
+        .error-message {
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Success message styling */
+        .success-message {
+            background-color: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
@@ -259,82 +398,145 @@ $filter_search = $_GET['search'] ?? '';
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 flex items-center summary-card">
-                        <div class="rounded-full bg-yellow-100 p-5 mr-5">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 border-l-4 border-yellow-500 flex items-center summary-card">
+                        <div class="rounded-full bg-yellow-50 p-5 mr-5">
                             <i class="fas fa-coins text-yellow-500 text-3xl"></i>
                         </div>
                         <div>
-                            <div class="text-gray-600 text-base font-semibold">Total Sales</div>
-                            <div class="font-bold text-3xl text-gray-800" id="summaryTotalSales">₱0.00</div>
+                            <div class="text-gray-500 text-sm font-bold uppercase tracking-wider">Total Sales</div>
+                            <div class="font-extrabold text-3xl text-gray-900 mt-1" id="summaryTotalSales">₱0.00</div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 flex items-center summary-card">
-                        <div class="rounded-full bg-blue-100 p-5 mr-5">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 border-l-4 border-blue-500 flex items-center summary-card">
+                        <div class="rounded-full bg-blue-50 p-5 mr-5">
                             <i class="fas fa-cubes text-blue-500 text-3xl"></i>
                         </div>
                         <div>
-                            <div class="text-gray-600 text-base font-semibold">Total Units Sold</div>
-                            <div class="font-bold text-3xl text-gray-800" id="summaryTotalUnits">0</div>
+                            <div class="text-gray-500 text-sm font-bold uppercase tracking-wider">Total Units Sold</div>
+                            <div class="font-extrabold text-3xl text-gray-900 mt-1" id="summaryTotalUnits">0</div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 flex items-center summary-card">
-                        <div class="rounded-full bg-purple-100 p-5 mr-5">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 border-l-4 border-purple-500 flex items-center summary-card">
+                        <div class="rounded-full bg-purple-50 p-5 mr-5">
                             <i class="fas fa-file-invoice-dollar text-purple-500 text-3xl"></i>
                         </div>
                         <div>
-                            <div class="text-gray-600 text-base font-semibold">Avg. Order Value</div>
-                            <div class="font-bold text-3xl text-gray-800" id="summaryAOV">₱0.00</div>
+                            <div class="text-gray-500 text-sm font-bold uppercase tracking-wider">Avg. Order Value</div>
+                            <div class="font-extrabold text-3xl text-gray-900 mt-1" id="summaryAOV">₱0.00</div>
                         </div>
                     </div>
                 </div>
 
-                <form id="filterForm" class="bg-white rounded-xl shadow-md p-6 mb-8 no-print" autocomplete="off">
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div class="relative flex-1 min-w-[250px]">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
+                <form id="filterForm" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 no-print" autocomplete="off">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6">
+                        <div class="xl:col-span-4">
+                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-2">Search Product</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" name="search" id="searchInput" placeholder="By product name or ID..." 
+                                       class="pl-10 w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block transition-colors" 
+                                       value="<?php echo htmlspecialchars($filter_search); ?>" />
                             </div>
-                            <input type="text" name="search" id="searchInput" placeholder="Search product name..." class="pl-10 w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" value="<?php echo htmlspecialchars($filter_search); ?>" />
                         </div>
-                        <div class="flex gap-2 items-center flex-wrap">
-                            <select id="dateFilter" name="dateFilter" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none min-w-[130px]">
-                                <option value="" <?php echo ($filter_date == '') ? 'selected' : ''; ?>>All Time</option>
-                                <option value="today" <?php echo ($filter_date == 'today') ? 'selected' : ''; ?>>Today</option>
-                                <option value="week" <?php echo ($filter_date == 'week') ? 'selected' : ''; ?>>This Week</option>
-                                <option value="month" <?php echo ($filter_date == 'month') ? 'selected' : ''; ?>>This Month</option>
-                                <option value="custom" <?php echo ($filter_date == 'custom') ? 'selected' : ''; ?>>Custom Range</option>
-                            </select>
-                            <input type="date" id="dateStart" name="dateStart" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" value="<?php echo htmlspecialchars($filter_start); ?>" />
-                            <span id="dateSeparator" class="mx-1 text-gray-400">-</span>
-                            <input type="date" id="dateEnd" name="dateEnd" class="px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none" value="<?php echo htmlspecialchars($filter_end); ?>" />
-                            <button type="button" id="generateReportBtn" class="px-4 py-2.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                <i class="fas fa-file-alt mr-2"></i>Generate Report
+
+                        <div class="xl:col-span-3">
+                            <label for="dateFilter" class="block text-sm font-medium text-gray-700 mb-2">Timeframe</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="far fa-calendar-alt text-gray-400"></i>
+                                </div>
+                                <select id="dateFilter" name="dateFilter" class="pl-10 w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block transition-colors appearance-none">
+                                    <option value="" <?php echo ($filter_date == '') ? 'selected' : ''; ?>>All Time</option>
+                                    <option value="today" <?php echo ($filter_date == 'today') ? 'selected' : ''; ?>>Today</option>
+                                    <option value="week" <?php echo ($filter_date == 'week') ? 'selected' : ''; ?>>This Week</option>
+                                    <option value="month" <?php echo ($filter_date == 'month') ? 'selected' : ''; ?>>This Month</option>
+                                    <option value="custom" <?php echo ($filter_date == 'custom') ? 'selected' : ''; ?>>Custom Range</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="xl:col-span-3">
+                            <label for="sortOrder" class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-sort-amount-down text-gray-400"></i>
+                                </div>
+                                <select id="sortOrder" name="sortOrder" class="pl-10 w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block transition-colors appearance-none">
+                                    <option value="desc">Highest Sales First</option>
+                                    <option value="asc">Lowest Sales First</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="xl:col-span-2 flex items-end">
+                            <button type="button" id="generateReportBtn" class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg shadow hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 active:scale-95 flex items-center justify-center">
+                                <i class="fas fa-sync-alt mr-2"></i> Refresh
                             </button>
                         </div>
                     </div>
-                    <div id="filterText" class="mt-4 text-blue-700 font-semibold text-lg"></div>
+
+                    <div id="customDateRow" class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 pt-6 border-t border-gray-100 hidden opacity-0 transform -translate-y-4 transition-all duration-300 ease-in-out">
+                         <div>
+                            <label for="dateStart" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <input type="date" id="dateStart" name="dateStart" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block transition-colors" value="<?php echo htmlspecialchars($filter_start); ?>" />
+                        </div>
+                        <div>
+                            <label for="dateEnd" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <input type="date" id="dateEnd" name="dateEnd" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block transition-colors" value="<?php echo htmlspecialchars($filter_end); ?>" />
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div id="filterText" class="text-blue-800 bg-blue-50 px-3 py-1.5 rounded-full text-sm font-medium flex items-center">
+                             <i class="fas fa-info-circle mr-2"></i>
+                             <span>Showing all sales</span>
+                        </div>
+                        <div id="errorMessage" class="hidden w-full sm:w-auto"></div>
+                    </div>
                 </form>
 
-                <div class="bg-white rounded-xl shadow-md p-6 overflow-x-auto print-table">
-                    <div class="max-h-[600px] overflow-y-auto">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden print-table">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                         <h2 class="text-lg font-semibold text-gray-800">Product Sales Details</h2>
+                         <div class="text-sm text-gray-500">
+                             <i class="fas fa-table mr-1"></i> Sales Data
+                         </div>
+                    </div>
+                    <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="table-header-sticky">
+                            <thead class="table-header-sticky bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Units Sold</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sales</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sale Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Product</th>
+                                    <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Units Sold</th>
+                                    <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total Sales</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Last Sale Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Customers</th>
+                                    <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider"># of Customers</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Top Branch</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100" id="salesTableBody">
+                            <tbody class="divide-y divide-gray-100 bg-white" id="salesTableBody">
                                 <tr id="loading-row">
-                                    <td colspan="4" class="px-4 py-6 text-center text-gray-500">
-                                        <i class="fas fa-spinner fa-spin text-3xl text-gray-300 mb-2"></i>
-                                        <p>Loading sales data...</p>
+                                    <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                                        <i class="fas fa-spinner fa-spin text-4xl text-blue-200 mb-4"></i>
+                                        <p class="text-gray-500 font-medium">Loading sales data...</p>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div class="px-6 py-3 border-t border-gray-200 bg-gray-50 text-right">
+                        <button id="openReportModalBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                             <i class="fas fa-expand mr-2"></i> View Full Report
+                        </button>
                     </div>
                 </div>
                 
@@ -343,7 +545,7 @@ $filter_search = $_GET['search'] ?? '';
     </div>
 
     <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-overlay hidden">
-        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col modal-content">
+        <div class="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col modal-content">
             <div class="modal-header flex justify-between items-center p-5 border-b">
                 <h2 class="text-2xl font-bold text-gray-800">Sales Report</h2>
                 <button id="modalCloseBtn1" class="text-gray-400 hover:text-gray-600 text-3xl focus:outline-none">&times;</button>
@@ -354,6 +556,7 @@ $filter_search = $_GET['search'] ?? '';
                     <h1>Sales Report</h1>
                     <p>Branch: <span id="modalBranchName"><?php echo htmlspecialchars($branch_name); ?></span></p>
                     <p>Report for: <span id="modalFilterTimeframe"></span></p>
+                    <p>Generated on: <span id="modalGeneratedDate"></span></p>
                 </div>
                 
                 <h3 class="text-xl font-semibold text-gray-700 mb-4">Report Summary</h3>
@@ -381,10 +584,13 @@ $filter_search = $_GET['search'] ?? '';
                                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Units Sold</th>
                                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Sales</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sale Date</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customers</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"># of Customers</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Top Branch</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100" id="modalSalesTableBody">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
                 <p class="text-sm text-gray-500 mt-4 no-print-in-modal">
@@ -395,7 +601,7 @@ $filter_search = $_GET['search'] ?? '';
             </div>
             
             <div class="modal-footer flex justify-end gap-3 p-5 border-t bg-gray-50 rounded-b-xl">
-                <button id="modalCloseBtn2" class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg shadow-sm hover:bg-gray-300 transition focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">Close</button>
+                <button id="modalCloseBtn2" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">Close</button>
                 <button id="modalExportExcelBtn" class="px-5 py-2.5 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                     <i class="fas fa-file-excel mr-2"></i>Export to Excel
                 </button>
@@ -406,331 +612,341 @@ $filter_search = $_GET['search'] ?? '';
         </div>
     </div>
 
-    <script>
-        // This is a placeholder for your sidebar.js
-        // It assumes your sidebar toggle adds/removes a 'sidebar-collapsed' class to the <html> tag
-        document.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('sidebar-toggle'); // Assuming your button has this ID
-            if (toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    document.documentElement.classList.toggle('sidebar-collapsed');
-                });
-            }
-        });
-    </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM Elements
-        const filterText = document.getElementById('filterText');
-        const dateFilter = document.getElementById('dateFilter');
-        const dateStart = document.getElementById('dateStart');
-        const dateEnd = document.getElementById('dateEnd');
-        const dateSeparator = document.getElementById('dateSeparator');
-        const searchInput = document.getElementById('searchInput');
-        const salesTableBody = document.getElementById('salesTableBody');
-        const summaryTotalSales = document.getElementById('summaryTotalSales');
-        const summaryTotalUnits = document.getElementById('summaryTotalUnits');
-        const summaryAOV = document.getElementById('summaryAOV');
-        
-        // --- *** NEW: Date Filter and Validation Logic *** ---
-        function setupDateInputs() {
-            const today = new Date().toISOString().split('T')[0];
-            
-            // Prevent selecting future dates
-            dateStart.max = today;
-            dateEnd.max = today;
+    <div id="customerNamesModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-overlay hidden z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] flex flex-col modal-content">
+            <div class="modal-header flex justify-between items-center p-5 border-b">
+                <h2 class="text-xl font-bold text-gray-800">Customer Names</h2>
+                <button id="modalCloseBtnCustomer" class="text-gray-400 hover:text-gray-600 text-3xl focus:outline-none">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <ul id="customerNamesList" class="list-disc pl-6 text-gray-700"></ul>
+            </div>
+        </div>
+    </div>
 
-            dateFilter.addEventListener('change', () => {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const filterText = document.getElementById('filterText').querySelector('span');
+            const dateFilter = document.getElementById('dateFilter');
+            const dateStart = document.getElementById('dateStart');
+            const dateEnd = document.getElementById('dateEnd');
+            const customDateRow = document.getElementById('customDateRow');
+            const searchInput = document.getElementById('searchInput');
+            const salesTableBody = document.getElementById('salesTableBody');
+            const summaryTotalSales = document.getElementById('summaryTotalSales');
+            const summaryTotalUnits = document.getElementById('summaryTotalUnits');
+            const summaryAOV = document.getElementById('summaryAOV');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // --- Date Filter and Validation Logic ---
+            function setupDateInputs() {
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Prevent selecting future dates
+                dateStart.max = today;
+                dateEnd.max = today;
+
+                dateFilter.addEventListener('change', () => {
+                    updateDateInputs();
+                    fetchSalesReport();
+                });
+                
+                dateStart.addEventListener('change', () => {
+                    dateEnd.min = dateStart.value;
+                    if (dateEnd.value && dateStart.value > dateEnd.value) {
+                        dateEnd.value = dateStart.value;
+                    }
+                    if (dateFilter.value === 'custom') fetchSalesReport();
+                });
+
+                dateEnd.addEventListener('change', () => {
+                    dateStart.max = dateEnd.value || today;
+                    if (dateStart.value && dateStart.value > dateEnd.value) {
+                        dateStart.value = dateEnd.value;
+                    }
+                    if (dateFilter.value === 'custom') fetchSalesReport();
+                });
+
                 updateDateInputs();
-                fetchSalesReport(); // Fetch when the dropdown changes
-            });
-            
-            dateStart.addEventListener('change', () => {
-                // Set the minimum selectable date for the end date picker
-                dateEnd.min = dateStart.value;
-                
-                // Auto-correct if end is before start
-                if (dateEnd.value && dateStart.value > dateEnd.value) {
-                    dateEnd.value = dateStart.value;
-                }
-                fetchSalesReport();
-            });
-
-            dateEnd.addEventListener('change', () => {
-                // Set the maximum selectable date for the start date picker
-                dateStart.max = dateEnd.value || today; // Use end date, or fallback to today
-                
-                // Auto-correct if start is after end
-                if (dateStart.value && dateStart.value > dateEnd.value) {
-                    dateStart.value = dateEnd.value;
-                }
-                fetchSalesReport();
-            });
-
-            updateDateInputs(); // Set initial state
-        }
-        
-        function updateDateInputs() {
-            if (dateFilter.value === 'custom') {
-                dateStart.style.display = 'inline-block';
-                dateSeparator.style.display = 'inline-block';
-                dateEnd.style.display = 'inline-block';
-            } else {
-                dateStart.style.display = 'none';
-                dateSeparator.style.display = 'none';
-                dateEnd.style.display = 'none';
-            }
-        }
-        
-        setupDateInputs();
-        // --- *** END OF DATE FIX *** ---
-
-        // Filter Text Update
-        function updateFilterText(filterVal, startVal, endVal, searchVal) {
-            let text = '';
-            if (filterVal === 'today') text = 'Showing sales for today';
-            else if (filterVal === 'week') text = 'Showing sales for this week';
-            else if (filterVal === 'month') text = 'Showing sales for this month';
-            else if (filterVal === 'custom' && startVal && endVal) {
-                text = `Showing sales from ${startVal} to ${endVal}`;
-            } else {
-                text = 'Showing all sales';
-            }
-            if (searchVal) {
-                text += ` | Searching for "${searchVal}"`;
-            }
-            filterText.textContent = text;
-            document.getElementById('modalFilterTimeframe').textContent = text;
-        }
-
-        // AJAX Filtering
-        let currentRequest = null;
-        let searchDebounce = null;
-        let currentSalesData = null; // Store the full data object
-        
-        function fetchSalesReport() {
-            if (currentRequest) {
-                currentRequest.abort();
             }
             
-            // Use FormData to send data as POST
-            const formData = new FormData();
-            formData.append('dateFilter', dateFilter.value);
-            formData.append('dateStart', dateStart.value);
-            formData.append('dateEnd', dateEnd.value);
-            formData.append('search', searchInput.value);
-
-            salesTableBody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-gray-500"><i class="fas fa-spinner fa-spin text-xl"></i> Loading...</td></tr>`;
-            // Also reset summary cards on load
-            summaryTotalSales.textContent = '...';
-            summaryTotalUnits.textContent = '...';
-            summaryAOV.textContent = '...';
-
-            currentRequest = new AbortController();
-            const signal = currentRequest.signal;
-
-            // Fetch from the current file (admin_salesreports.php) using POST
-            fetch('<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>', { 
-                method: 'POST',
-                body: formData,
-                signal: signal 
-            })
-            .then(res => res.json())
-            .then(data => {
-                currentRequest = null;
-                
-                if (!data.success) {
-                    salesTableBody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-red-600">${data.error || 'Error loading data.'}</td></tr>`;
-                    summaryTotalSales.textContent = '₱0.00';
-                    summaryTotalUnits.textContent = '0';
-                    summaryAOV.textContent = '₱0.00';
-                    return;
-                }
-                
-                currentSalesData = data; // Store the entire response
-                
-                // *** THIS IS WHERE THE METRICS ARE UPDATED ***
-                summaryTotalSales.textContent = '₱' + parseFloat(data.totalSales).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-                summaryTotalUnits.textContent = data.totalUnits;
-                summaryAOV.textContent = '₱' + parseFloat(data.averageOrderValue).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-                // *** END OF METRICS UPDATE ***
-
-                if (!data.salesData || data.salesData.length === 0) {
-                    salesTableBody.innerHTML = `<tr id="no-orders-row"><td colspan="4" class="px-4 py-6 text-center text-gray-500"><i class="fas fa-box-open text-3xl text-gray-300 mb-2"></i><p>No sales data found for the selected filters.</p></td></tr>`;
+            function updateDateInputs() {
+                if (dateFilter.value === 'custom') {
+                    customDateRow.classList.remove('hidden');
+                    // Trigger reflow to ensure transition works
+                    void customDateRow.offsetWidth; 
+                    customDateRow.classList.remove('opacity-0', '-translate-y-4');
+                    
+                    if (!dateStart.value) {
+                        const today = new Date();
+                        const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        dateStart.value = oneWeekAgo.toISOString().split('T')[0];
+                    }
+                    if (!dateEnd.value) {
+                        dateEnd.value = new Date().toISOString().split('T')[0];
+                    }
                 } else {
-                    salesTableBody.innerHTML = data.salesData.map(row => `
-                        <tr class="hover:bg-blue-50 transition sales-row">
-                            <td class="px-4 py-3 font-semibold text-gray-800">${escapeHTML(row.product_name)}</td>
-                            <td class="px-4 py-3 text-blue-700 font-bold text-right">${row.total_units}</td>
-                            <td class="px-4 py-3 text-green-700 font-bold text-right">₱${parseFloat(row.total_revenue).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                            <td class="px-4 py-3 text-gray-500">${row.last_sale_date ? (new Date(row.last_sale_date)).toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'}) : 'N/A'}</td>
-                        </tr>
-                    `).join('');
+                    customDateRow.classList.add('opacity-0', '-translate-y-4');
+                    // Wait for transition to finish before hiding
+                    setTimeout(() => {
+                         if (dateFilter.value !== 'custom') {
+                             customDateRow.classList.add('hidden');
+                         }
+                    }, 300);
                 }
-                updateFilterText(dateFilter.value, dateStart.value, dateEnd.value, searchInput.value);
-            })
-            .catch(err => {
-                if (err.name === 'AbortError') {
-                    return; // Request was cancelled, do nothing
-                }
-                console.error('Fetch Error:', err); // Log error for debugging
-                salesTableBody.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-red-600">An error occurred while fetching data. Please check the console.</td></tr>`;
-                summaryTotalSales.textContent = '₱0.00';
-                summaryTotalUnits.textContent = '0';
-                summaryAOV.textContent = '₱0.00';
-                currentRequest = null;
-            });
-        }
-        
-        function escapeHTML(str) {
-            if (typeof str !== 'string') return '';
-            return str.replace(/[&<>"']/g, function(m) {
-                return {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#39;'
-                }[m];
-            });
-        }
+            }
+            
+            setupDateInputs();
 
-        // Event listeners for filters
-        // The date filter/picker listeners already call fetchSalesReport
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchDebounce);
-            searchDebounce = setTimeout(fetchSalesReport, 400); // 400ms debounce
+            // Filter Text Update
+            function updateFilterText(filterVal, startVal, endVal, searchVal) {
+                let text = '';
+                if (filterVal === 'today') text = 'Showing sales for today';
+                else if (filterVal === 'week') text = 'Showing sales for this week';
+                else if (filterVal === 'month') text = 'Showing sales for this month';
+                else if (filterVal === 'custom' && startVal && endVal) {
+                    text = `Showing sales from ${startVal} to ${endVal}`;
+                } else {
+                    text = 'Showing all sales';
+                }
+                if (searchVal) {
+                    text += ` | Searching for "${searchVal}"`;
+                }
+                filterText.textContent = text;
+                document.getElementById('modalFilterTimeframe').textContent = text;
+            }
+
+            // AJAX Filtering
+            let currentRequest = null;
+            let searchDebounce = null;
+            let currentSalesData = null;
+            
+            function showError(message) {
+                errorMessage.innerHTML = `<div class="error-message">${message}</div>`;
+                errorMessage.classList.remove('hidden');
+                setTimeout(() => { errorMessage.classList.add('hidden'); }, 5000);
+            }
+            
+            function showSuccess(message) {
+                errorMessage.innerHTML = `<div class="success-message">${message}</div>`;
+                errorMessage.classList.remove('hidden');
+                setTimeout(() => { errorMessage.classList.add('hidden'); }, 3000);
+            }
+            
+            function fetchSalesReport() {
+                if (currentRequest) currentRequest.abort();
+                
+                // Validate custom date range
+                if (dateFilter.value === 'custom') {
+                    if (!dateStart.value || !dateEnd.value) {
+                        showError('Please select both start and end dates.');
+                        return;
+                    }
+                    if (dateStart.value > dateEnd.value) {
+                        showError('Start date cannot be after end date.');
+                        return;
+                    }
+                }
+                
+                const formData = new FormData();
+                formData.append('dateFilter', dateFilter.value);
+                formData.append('dateStart', dateStart.value);
+                formData.append('dateEnd', dateEnd.value);
+                formData.append('search', searchInput.value);
+                const sortOrder = document.getElementById('sortOrder').value;
+                formData.append('sortOrder', sortOrder);
+
+                salesTableBody.innerHTML = `
+                    <tr id="loading-row">
+                        <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-4xl text-blue-200 mb-4 loading-spinner"></i>
+                            <p class="text-gray-500 font-medium">Loading sales data...</p>
+                        </td>
+                    </tr>
+                `;
+                
+                // Animate summary values to show loading state
+                [summaryTotalSales, summaryTotalUnits, summaryAOV].forEach(el => el.classList.add('opacity-50'));
+
+                currentRequest = new AbortController();
+                
+                fetch('<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>', { 
+                    method: 'POST', body: formData, signal: currentRequest.signal 
+                })
+                .then(res => res.ok ? res.json() : Promise.reject(`HTTP error! status: ${res.status}`))
+                .then(data => {
+                    currentRequest = null;
+                    [summaryTotalSales, summaryTotalUnits, summaryAOV].forEach(el => el.classList.remove('opacity-50'));
+                    
+                    if (!data.success) {
+                        showError(data.error || 'Error loading data.');
+                        salesTableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-red-500"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>${data.error || 'Error loading data.'}</p></td></tr>`;
+                        return;
+                    }
+                    
+                    currentSalesData = data;
+                    summaryTotalSales.textContent = '₱' + parseFloat(data.totalSales).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+                    summaryTotalUnits.textContent = data.totalUnits.toLocaleString();
+                    summaryAOV.textContent = '₱' + parseFloat(data.averageOrderValue).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+                    
+                    if (!data.salesData || data.salesData.length === 0) {
+                        salesTableBody.innerHTML = `
+                            <tr id="no-orders-row">
+                                <td colspan="7" class="px-6 py-16 text-center text-gray-400">
+                                    <i class="fas fa-search text-5xl mb-4 opacity-20"></i>
+                                    <p class="text-lg font-medium">No sales found</p>
+                                    <p class="text-sm">Try adjusting your filters</p>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        salesTableBody.innerHTML = data.salesData.map((row, idx) => {
+                            const names = (row.customer_names || '').split(', ').filter(Boolean);
+                            let customerSummary = '';
+                            if (names.length === 0) {
+                                customerSummary = '<span class="text-gray-400 italic">None</span>';
+                            } else if (names.length <= 2) {
+                                customerSummary = names.map(escapeHTML).join(', ');
+                            } else {
+                                customerSummary = `${names.length} customers: ${names.slice(0,2).map(escapeHTML).join(', ')}, <span class=\"text-blue-600 font-medium\">View All</span>`;
+                            }
+                            // Make the cell clickable if there are customers
+                            const customerCell = names.length === 0
+                                ? `<td class=\"px-6 py-4 text-sm text-gray-400 italic\">None</td>`
+                                : `<td class=\"px-6 py-4 text-sm text-gray-600 cursor-pointer hover:bg-blue-100/60 rounded-lg transition view-all-customers-cell\" data-names=\"${encodeURIComponent(row.customer_names)}\">${customerSummary}</td>`;
+                            return `
+                            <tr class=\"hover:bg-blue-50/50 transition sales-row\">
+                                <td class=\"px-6 py-4 text-sm font-medium text-gray-900\">${escapeHTML(row.product_name)}</td>
+                                <td class=\"px-6 py-4 text-sm text-right text-gray-600 font-semibold\">${parseInt(row.total_units).toLocaleString()}</td>
+                                <td class=\"px-6 py-4 text-sm text-right text-green-700 font-bold\">₱${parseFloat(row.total_revenue).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                                <td class=\"px-6 py-4 text-sm text-gray-500\">${row.last_sale_date ? (new Date(row.last_sale_date)).toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'}) : '-'}</td>
+                                ${customerCell}
+                                <td class=\"px-6 py-4 text-sm text-right text-gray-500\">${parseInt(row.unique_customers).toLocaleString()}</td>
+                                <td class=\"px-6 py-4 text-sm text-gray-600\">${escapeHTML(row.top_branch_name || '-')}</td>
+                            </tr>`;
+                        }).join('');
+                    }
+                    updateFilterText(dateFilter.value, dateStart.value, dateEnd.value, searchInput.value);
+                })
+                .catch(err => { if (err.name !== 'AbortError') { console.error(err); showError('Connection error. Please try again.'); } });
+            }
+            
+            function escapeHTML(str) {
+                return (str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+            }
+
+            // Event listeners
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(fetchSalesReport, 400);
+            });
+            document.getElementById('sortOrder').addEventListener('change', fetchSalesReport);
+            document.getElementById('generateReportBtn').addEventListener('click', () => {
+                 // Add a small rotation animation on click
+                 const icon = this.querySelector('.fa-sync-alt');
+                 if(icon) icon.classList.add('fa-spin');
+                 fetchSalesReport();
+                 setTimeout(() => { if(icon) icon.classList.remove('fa-spin'); }, 1000);
+            });
+            document.getElementById('openReportModalBtn').addEventListener('click', showReportModal);
+
+            // Modal Logic
+            const reportModal = document.getElementById('reportModal');
+            const hideReportModal = () => reportModal.classList.add('hidden');
+            
+            function showReportModal() {
+                if (!currentSalesData) { showError('Please wait for data to load.'); return; }
+                
+                document.getElementById('modalTotalSales').textContent = summaryTotalSales.textContent;
+                document.getElementById('modalTotalUnits').textContent = summaryTotalUnits.textContent;
+                document.getElementById('modalAOV').textContent = summaryAOV.textContent;
+                document.getElementById('modalGeneratedDate').textContent = new Date().toLocaleString();
+                
+                const modalBody = document.getElementById('modalSalesTableBody');
+                if (!currentSalesData.salesData || currentSalesData.salesData.length === 0) {
+                    modalBody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">No data available for this report.</td></tr>';
+                } else {
+                    modalBody.innerHTML = currentSalesData.salesData.map(row => {
+                        const names = (row.customer_names || '').split(', ').filter(Boolean);
+                        return `<tr>
+                            <td class="px-4 py-3 font-medium text-gray-800">${escapeHTML(row.product_name)}</td>
+                            <td class="px-4 py-3 text-right">${parseInt(row.total_units).toLocaleString()}</td>
+                            <td class="px-4 py-3 text-right font-semibold">₱${parseFloat(row.total_revenue).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                            <td class="px-4 py-3 text-gray-600">${row.last_sale_date ? (new Date(row.last_sale_date)).toLocaleDateString() : '-'}</td>
+                            <td class="px-4 py-3 text-sm customer-names-print">${names.length ? names.map(escapeHTML).join('<br>') : '-'}</td>
+                            <td class="px-4 py-3 text-right">${parseInt(row.unique_customers).toLocaleString()}</td>
+                            <td class="px-4 py-3 text-gray-600">${escapeHTML(row.top_branch_name || '-')}</td>
+                        </tr>`;
+                    }).join('');
+                }
+                reportModal.classList.remove('hidden');
+            }
+            
+            document.getElementById('modalCloseBtn1').addEventListener('click', hideReportModal);
+            document.getElementById('modalCloseBtn2').addEventListener('click', hideReportModal);
+            document.getElementById('modalPrintBtn').addEventListener('click', () => {
+                document.querySelectorAll('.print-header').forEach(el => el.classList.remove('hidden'));
+                window.print();
+                setTimeout(() => document.querySelectorAll('.print-header').forEach(el => el.classList.add('hidden')), 500);
+            });
+
+             document.getElementById('modalExportExcelBtn').addEventListener('click', () => {
+                if (!currentSalesData) { showError('No data to export.'); return; }
+                const wb = XLSX.utils.book_new();
+                
+                // Summary Sheet
+                const ws_summary = XLSX.utils.aoa_to_sheet([
+                    ["Sales Report Summary"], [],
+                    ["Branch:", "<?php echo htmlspecialchars($branch_name); ?>"],
+                    ["Timeframe:", document.getElementById('modalFilterTimeframe').textContent],
+                    ["Generated:", new Date().toLocaleString()], [],
+                    ["Metric", "Value"],
+                    ["Total Sales", currentSalesData.totalSales],
+                    ["Total Units", currentSalesData.totalUnits],
+                    ["Avg Order Value", currentSalesData.averageOrderValue]
+                ]);
+                XLSX.utils.book_append_sheet(wb, ws_summary, 'Summary');
+
+                // Data Sheet
+                if (currentSalesData.salesData?.length > 0) {
+                    const ws_data = XLSX.utils.json_to_sheet(currentSalesData.salesData.map(row => ({
+                        "Product ID": row.product_id, "Product Name": row.product_name,
+                        "Units Sold": parseInt(row.total_units), "Total Sales": parseFloat(row.total_revenue),
+                        "Last Sale": row.last_sale_date, "Customers": row.customer_names,
+                        "Customer Count": parseInt(row.unique_customers), "Branch": row.top_branch_name
+                    })));
+                    XLSX.utils.book_append_sheet(wb, ws_data, 'Sales Data');
+                }
+                XLSX.writeFile(wb, `SalesReport_${new Date().toISOString().slice(0,10)}.xlsx`);
+                showSuccess('Excel file downloaded.');
+            });
+
+            // Customer Modal
+            document.addEventListener('click', e => {
+                // If click is on the new customer cell or its child, open modal
+                let cell = e.target;
+                // Traverse up to the cell if a child is clicked
+                while (cell && !cell.classList?.contains('view-all-customers-cell') && cell !== document.body) {
+                    cell = cell.parentElement;
+                }
+                if (cell && cell.classList?.contains('view-all-customers-cell')) {
+                    e.preventDefault();
+                    const list = document.getElementById('customerNamesList');
+                    list.innerHTML = decodeURIComponent(cell.getAttribute('data-names')).split(', ').filter(Boolean)
+                        .map(n => `<li class="py-1.5 border-b border-gray-100 last:border-0">${escapeHTML(n)}</li>`).join('');
+                    document.getElementById('customerNamesModal').classList.remove('hidden');
+                }
+            });
+            document.getElementById('modalCloseBtnCustomer').onclick = () => document.getElementById('customerNamesModal').classList.add('hidden');
+            window.onclick = e => {
+                if (e.target === reportModal) hideReportModal();
+                if (e.target === document.getElementById('customerNamesModal')) document.getElementById('customerNamesModal').classList.add('hidden');
+            };
+
+            // Initial load
+            fetchSalesReport();
         });
-
-        // Modal Logic
-        const generateReportBtn = document.getElementById('generateReportBtn');
-        const reportModal = document.getElementById('reportModal');
-        const modalCloseBtn1 = document.getElementById('modalCloseBtn1');
-        const modalCloseBtn2 = document.getElementById('modalCloseBtn2');
-        const modalPrintBtn = document.getElementById('modalPrintBtn');
-        const modalExportExcelBtn = document.getElementById('modalExportExcelBtn');
-        
-        const showReportModal = () => {
-            if (!currentSalesData) {
-                alert('Please wait for the data to load before generating a report.');
-                return;
-            }
-            document.getElementById('modalTotalSales').textContent = summaryTotalSales.textContent;
-            document.getElementById('modalTotalUnits').textContent = summaryTotalUnits.textContent;
-            document.getElementById('modalAOV').textContent = summaryAOV.textContent;
-            document.getElementById('modalSalesTableBody').innerHTML = salesTableBody.innerHTML;
-            reportModal.classList.remove('hidden');
-        };
-        
-        const hideReportModal = () => {
-            reportModal.classList.add('hidden');
-        };
-        
-        const printModal = () => {
-            window.print();
-        };
-
-        // --- *** ENHANCED EXCEL EXPORT FUNCTION *** ---
-        const exportToExcel = () => {
-            if (!currentSalesData) {
-                alert('No sales data available to export.');
-                return;
-            }
-
-            const wb = XLSX.utils.book_new();
-
-            // --- 2. Create Summary Sheet ---
-            const summary_data = [
-                ["Sales Report Summary"],
-                [],
-                ["Branch:", "<?php echo htmlspecialchars($branch_name); ?>"],
-                ["Report Timeframe:", document.getElementById('modalFilterTimeframe').textContent],
-                ["Generated On:", new Date().toLocaleString()],
-                [],
-                ["Metric", "Value"],
-                ["Total Sales", { v: currentSalesData.totalSales, t: 'n', z: '₱#,##0.00' }],
-                ["Total Units Sold", { v: currentSalesData.totalUnits, t: 'n' }],
-                ["Average Order Value", { v: currentSalesData.averageOrderValue, t: 'n', z: '₱#,##0.00' }]
-            ];
-            
-            const ws_summary = XLSX.utils.aoa_to_sheet(summary_data);
-
-            ws_summary['!cols'] = [{ wch: 25 }, { wch: 25 }];
-            ws_summary['A1'].s = { font: { bold: true, sz: 16 }, alignment: { horizontal: "center" } };
-            ws_summary['A7'].s = { font: { bold: true }, fill: { fgColor: { rgb: "DDEEFF" } }, border: { bottom: { style: "thin" } } };
-            ws_summary['B7'].s = { font: { bold: true }, fill: { fgColor: { rgb: "DDEEFF" } }, border: { bottom: { style: "thin" } } };
-            ws_summary['A3'].s = { font: { bold: true } };
-            ws_summary['A4'].s = { font: { bold: true } };
-            ws_summary['A5'].s = { font: { bold: true } };
-            ws_summary['A8'].s = { font: { bold: true } };
-            ws_summary['A9'].s = { font: { bold: true } };
-            ws_summary['A10'].s = { font: { bold: true } };
-            ws_summary['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
-            
-            XLSX.utils.book_append_sheet(wb, ws_summary, 'Summary');
-
-            // --- 3. Create Product Details Sheet ---
-            if (currentSalesData.salesData && currentSalesData.salesData.length > 0) {
-                const product_data = currentSalesData.salesData.map(row => ({
-                    "Product": row.product_name,
-                    "Units Sold": { v: parseInt(row.total_units), t: 'n', z: '0' },
-                    "Total Sales": { v: parseFloat(row.total_revenue), t: 'n', z: '₱#,##0.00' },
-                    "Last Sale Date": row.last_sale_date ? new Date(row.last_sale_date) : null
-                }));
-
-                const ws_details = XLSX.utils.json_to_sheet(product_data, {
-                    header: ["Product", "Units Sold", "Total Sales", "Last Sale Date"],
-                    cellDates: true 
-                });
-
-                ws_details['!cols'] = [{ wch: 60 }, { wch: 15 }, { wch: 20 }, { wch: 20 }];
-                ws_details['!autofilter'] = { ref: "A1:D1" };
-                
-                ['A1', 'B1', 'C1', 'D1'].forEach(cell => {
-                    if (ws_details[cell]) {
-                        ws_details[cell].s = {
-                            font: { bold: true, color: { rgb: "FFFFFF" } },
-                            fill: { fgColor: { rgb: "4F81BD" } },
-                            alignment: { horizontal: "center" }
-                        };
-                    }
-                });
-                
-                product_data.forEach((row, index) => {
-                    const cellRef = 'D' + (index + 2); 
-                    if (ws_details[cellRef] && ws_details[cellRef].v) {
-                        ws_details[cellRef].t = 'd';
-                        ws_details[cellRef].z = 'yyyy-mm-dd';
-                    }
-                });
-
-                XLSX.utils.book_append_sheet(wb, ws_details, 'Product Details');
-            }
-
-            // --- 4. (Optional) Add Raw Data Sheet ---
-            const ws_raw = XLSX.utils.json_to_sheet(currentSalesData.salesData);
-            XLSX.utils.book_append_sheet(wb, ws_raw, 'Raw Data');
-            if(wb.Sheets['Raw Data']) {
-                wb.Sheets['Raw Data'].Hidden = 1;
-            }
-
-            // --- 5. Generate and Download File ---
-            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-            const filename = `SalesReport_<?php echo preg_replace("/[^a-zA-Z0-9]/", "_", $branch_name); ?>_${timestamp}.xlsx`;
-            
-            XLSX.writeFile(wb, filename);
-        };
-        // --- End of Excel function ---
-        
-        if (generateReportBtn) generateReportBtn.addEventListener('click', showReportModal);
-        if (modalCloseBtn1) modalCloseBtn1.addEventListener('click', hideReportModal);
-        if (modalCloseBtn2) modalCloseBtn2.addEventListener('click', hideReportModal);
-        if (modalPrintBtn) modalPrintBtn.addEventListener('click', printModal);
-        if (modalExportExcelBtn) modalExportExcelBtn.addEventListener('click', exportToExcel);
-
-        // Initial data load
-        fetchSalesReport();
-    });
     </script>
 </body>
 </html>

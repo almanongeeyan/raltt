@@ -156,6 +156,34 @@
             box-shadow: 0 0 0 3px rgba(220, 130, 84, 0.2);
         }
 
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--input-border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            background: #fff;
+            color: var(--text-color);
+            margin-bottom: 4px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        .input-group select:focus:not(:disabled) {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(220, 130, 84, 0.2);
+        }
+        .input-group select:disabled {
+            background-color: #e9ecef;
+            color: #aaa;
+        }
+        .input-group select option {
+            color: #333;
+        }
+
         .input-group input::placeholder {
             color: #bbb;
         }
@@ -458,10 +486,9 @@
             
             <h2>Sign Up</h2>
             
-            <!-- Step 1: Name and Phone Number -->
+            <!-- Step 1: Name, Email (optional), and Phone Number -->
             <div class="step-content active" id="step-one">
                 <p>Enter your name and phone number</p>
-                
                 <div class="form-group">
                     <label for="fullname">Name</label>
                     <div class="input-group">
@@ -469,12 +496,11 @@
                     </div>
                     <div id="name-validation" class="validation-message"></div>
                 </div>
-                
                 <div class="form-group">
                     <label for="phone">Phone Number</label>
                     <div class="input-group">
-                        <input type="tel" id="phone" name="phone" autocomplete="off" placeholder="(e.g., +639171234567)" pattern="\+639[0-9]{9}" title="Phone number must be in the format +639xxxxxxxxx" maxlength="13" required>
-                        <button type="button" class="verify-btn" id="send-code-btn">Verify</button>
+                        <input type="tel" id="phone" autocomplete="off" placeholder="(e.g., +639171234567)" pattern="\+639[0-9]{9}" title="Phone number must be in the format +639xxxxxxxxx" maxlength="13" required>
+                        <button type="button" class="verify-btn" id="send-code-btn" disabled>Verify</button>
                     </div>
                     <div id="verify-status"></div>
                     <div id="verification-form">
@@ -485,7 +511,6 @@
                         </div>
                     </div>
                 </div>
-                
                 <button type="button" class="btn-submit" id="step-one-btn" disabled>Continue</button>
             </div>
             
@@ -494,11 +519,24 @@
                 <p>Enter your address and location</p>
                 
                 <div class="form-group">
-                    <label for="house_address">House Address</label>
-                    <div class="input-group">
-                        <input type="text" id="house_address" name="house_address" autocomplete="off" placeholder="Enter your house number, street, etc." required>
+                    <label for="regionSelect">House Address</label>
+                    <div class="input-group" style="flex-direction:column;align-items:stretch;gap:8px;">
+                        <select id="regionSelect" name="region" required style="margin-bottom:4px;"></select>
+                        <select id="provinceSelect" name="province" required style="margin-bottom:4px;"></select>
+                        <select id="citySelect" name="city" required style="margin-bottom:4px;"></select>
+                        <select id="barangaySelect" name="barangay" required style="margin-bottom:4px;"></select>
+                        <input type="text" id="houseNumber" name="detailed_address" autocomplete="off" placeholder="House/Unit #, Building, Street Name" required style="margin-bottom:4px;" disabled />
                     </div>
                     <div id="address-validation" class="validation-message"></div>
+                <style>
+                /* Add a custom arrow for selects */
+                .input-group select {
+                    background-image: url('data:image/svg+xml;utf8,<svg fill="%23DC8254" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+                    background-repeat: no-repeat;
+                    background-position: right 12px center;
+                    background-size: 20px 20px;
+                }
+                </style>
                 </div>
                 
                 <div class="form-group">
@@ -562,6 +600,144 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+    // --- Step navigation buttons (define early so all functions can use them) ---
+    const stepOneBtn = document.getElementById('step-one-btn');
+    const stepTwoBtn = document.getElementById('step-two-btn');
+    const stepThreeBtn = document.getElementById('step-three-btn');
+    // --- Address dropdown data & helpers (from shipping_info_modal.php, NCR only, region disabled) ---
+        let addressData = {
+            "NCR": {
+                "Metro Manila (National Capital Region)": {
+                    "Caloocan": [
+                        "Bagumbong", "Bagong Silang", "Camarin", "Deparo", "Llano", 
+                        "Pangarap Village", "Tala", "Grace Park North", "Grace Park East"
+                    ],
+                    "Quezon City": [
+                        "Baesa", "Bagbag", "Fairview", "Greater Lagro", "Kaligayahan", 
+                        "Nagkaisang Nayon", "North Fairview", "Novaliches Proper", "Pasong Putik", 
+                        "San Agustin", "San Bartolome", "Santa Lucia", "Santa Monica", "Talipapa"
+                    ],
+                    "Valenzuela": [
+                        "Arkong Bato", "Dalandanan", "Gen. T. de Leon", "Karuhatan", 
+                        "Malinta", "Marulas", "Maysan", "Pariancillo Villa", "Paso de Blas", "Polo"
+                    ],
+                    "Manila": [
+                        "Gagalangin", "Tondo I", "Tondo II"
+                    ],
+                    "Malabon": [
+                        "Catmon", "Concepcion", "Flores", "Longos", "Tugatog"
+                    ]
+                }
+            }
+        };
+
+        function populateRegions() {
+            const regionSel = document.getElementById('regionSelect');
+            regionSel.innerHTML = '<option value="NCR">NCR</option>';
+            regionSel.value = 'NCR';
+            regionSel.disabled = true; // NCR only
+            populateProvinces('NCR');
+        }
+        function populateProvinces(region) {
+            const provSel = document.getElementById('provinceSelect');
+            provSel.innerHTML = '<option value="">Select Province</option>';
+            if (!region || !addressData[region]) return;
+            Object.keys(addressData[region]).forEach(p => {
+                const opt = document.createElement('option'); opt.value = p; opt.textContent = p; provSel.appendChild(opt);
+            });
+            provSel.disabled = false;
+        }
+        function populateCities(region, province) {
+            const citySel = document.getElementById('citySelect');
+            citySel.innerHTML = '<option value="">Select City / Municipality</option>';
+            if (!region || !province || !addressData[region] || !addressData[region][province]) return;
+            Object.keys(addressData[region][province]).forEach(c => {
+                const opt = document.createElement('option'); opt.value = c; opt.textContent = c; citySel.appendChild(opt);
+            });
+            citySel.disabled = false;
+        }
+        function populateBarangays(region, province, city) {
+            const barangaySel = document.getElementById('barangaySelect');
+            barangaySel.innerHTML = '<option value="">Select Barangay</option>';
+            if (!region || !province || !city) return;
+            const node = addressData[region] && addressData[region][province] && addressData[region][province][city];
+            if (!node) return;
+            if (Array.isArray(node)) {
+                node.forEach(b => {
+                    const opt = document.createElement('option'); opt.value = b; opt.textContent = b; barangaySel.appendChild(opt);
+                });
+            } else if (typeof node === 'object') {
+                Object.keys(node).forEach(b => {
+                    const opt = document.createElement('option'); opt.value = b; opt.textContent = b; barangaySel.appendChild(opt);
+                });
+            }
+            barangaySel.disabled = false;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            populateRegions();
+            const regionSel = document.getElementById('regionSelect');
+            const provinceSel = document.getElementById('provinceSelect');
+            const citySel = document.getElementById('citySelect');
+            const barangaySel = document.getElementById('barangaySelect');
+            const houseInput = document.getElementById('houseNumber');
+
+            regionSel.addEventListener('change', function() {
+                populateProvinces(this.value);
+                citySel.innerHTML = '<option value="">Select City / Municipality</option>';
+                barangaySel.innerHTML = '<option value="">Select Barangay</option>';
+                houseInput.value = '';
+                houseInput.disabled = true;
+            });
+            provinceSel.addEventListener('change', function() {
+                populateCities(regionSel.value, this.value);
+                barangaySel.innerHTML = '<option value="">Select Barangay</option>';
+                houseInput.value = '';
+                houseInput.disabled = true;
+            });
+            citySel.addEventListener('change', function() {
+                populateBarangays(regionSel.value, provinceSel.value, this.value);
+                houseInput.value = '';
+                houseInput.disabled = true;
+            });
+            barangaySel.addEventListener('change', function() {
+                houseInput.value = '';
+                houseInput.disabled = !this.value;
+            });
+            // Enable house input only if barangay is selected
+            houseInput.disabled = true;
+        });
+
+        // Address validation (update for dropdowns)
+        function validateAddress() {
+            const region = document.getElementById('regionSelect').value;
+            const province = document.getElementById('provinceSelect').value;
+            const city = document.getElementById('citySelect').value;
+            const barangay = document.getElementById('barangaySelect').value;
+            const house = document.getElementById('houseNumber').value.trim();
+            const validationMsg = document.getElementById('address-validation');
+            // Remove all address validation messages
+            validationMsg.textContent = '';
+            if (!region || !province || !city || !barangay || !house) {
+                return false;
+            }
+            return true;
+        }
+
+        // Update step 2 completion check to use dropdowns
+        function checkStepTwoCompletion() {
+            const isAddressValid = validateAddress();
+            const isLocationSet = document.getElementById('address').value.trim() !== '';
+            stepTwoBtn.disabled = !(isAddressValid && isLocationSet);
+        }
+
+        // Listen for address dropdown changes
+        document.addEventListener('DOMContentLoaded', function() {
+            ['regionSelect','provinceSelect','citySelect','barangaySelect','houseNumber'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', checkStepTwoCompletion);
+            });
+        });
         document.addEventListener('DOMContentLoaded', function() {
             // Back button function
             window.goBack = function() {
@@ -695,21 +871,6 @@
                 return true;
             }
 
-            // Validate address
-            function validateAddress(address) {
-                const validationMsg = document.getElementById('address-validation');
-                if (address.length === 0) {
-                    validationMsg.textContent = '';
-                    return false;
-                }
-                if (address.trim().length < 5) {
-                    validationMsg.textContent = 'Please enter a valid address';
-                    validationMsg.style.color = 'red';
-                    return false;
-                }
-                validationMsg.textContent = '';
-                return true;
-            }
 
             // Geolocation functions
             async function fetchAddress(latitude, longitude) {
@@ -830,7 +991,7 @@
             const passwordInput = document.getElementById('password');
             const confirmPasswordInput = document.getElementById('confirm_password');
             const fullnameInput = document.getElementById('fullname');
-            const houseAddressInput = document.getElementById('house_address');
+            // No houseAddressInput: use dropdowns and houseNumber
             const stepOneBtn = document.getElementById('step-one-btn');
             const stepTwoBtn = document.getElementById('step-two-btn');
             const stepThreeBtn = document.getElementById('step-three-btn');
@@ -844,6 +1005,7 @@
             const step3Indicator = document.getElementById('step3');
 
             let isNumberVerified = false;
+            // Phone must be verified before continuing
             let resendTimer = null;
             let resendCountdown = 0;
 
@@ -873,21 +1035,19 @@
             // Step 1 completion check
             function checkStepOneCompletion() {
                 const isNameValid = validateName(fullnameInput.value);
+                // Only allow continue if name is valid and phone is verified
                 stepOneBtn.disabled = !(isNameValid && isNumberVerified);
             }
 
             // Step 2 completion check
-            function checkStepTwoCompletion() {
-                const isAddressValid = validateAddress(houseAddressInput.value);
-                const isLocationSet = document.getElementById('address').value.trim() !== '';
-                stepTwoBtn.disabled = !(isAddressValid && isLocationSet);
-            }
+            // checkStepTwoCompletion is now defined above and used for dropdowns
 
             // Step 3 completion check
             function checkStepThreeCompletion() {
+                // Only enable Sign Up if all validations pass and phone is verified
                 const isPasswordValid = validatePassword(passwordInput.value);
                 const isPasswordMatch = validateConfirmPassword(passwordInput.value, confirmPasswordInput.value);
-                stepThreeBtn.disabled = !(isPasswordValid && isPasswordMatch);
+                stepThreeBtn.disabled = !(isPasswordValid && isPasswordMatch && isNumberVerified);
             }
 
             // Navigation functions
@@ -917,8 +1077,26 @@
 
             // Step 1 navigation
             stepOneBtn.addEventListener('click', () => {
+                if (!isNumberVerified) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Phone Not Verified',
+                        text: 'Please verify your phone number before continuing.'
+                    });
+                    return;
+                }
                 goToStep(2);
             });
+        // Enable Verify button if phone is valid
+        document.getElementById('phone').addEventListener('input', function() {
+            const phoneVal = this.value;
+            const verifyBtn = document.getElementById('send-code-btn');
+            if (/^\+639[0-9]{9}$/.test(phoneVal)) {
+                verifyBtn.disabled = false;
+            } else {
+                verifyBtn.disabled = true;
+            }
+        });
 
             // Step 2 navigation
             stepTwoPrevBtn.addEventListener('click', () => {
@@ -1053,13 +1231,11 @@
                         sendCodeBtn.disabled = true;
                         if (resendTimer) clearInterval(resendTimer);
 
-                        // Add hidden field for verified phone number
-                        const hiddenPhoneInput = document.createElement('input');
-                        hiddenPhoneInput.type = 'hidden';
-                        hiddenPhoneInput.name = 'verified_phone';
-                        hiddenPhoneInput.value = phoneNumber;
-                        signupForm.appendChild(hiddenPhoneInput);
-
+                        // Always update the hidden input for verified_phone
+                        const hiddenPhoneInput = document.getElementById('verified_phone');
+                        if (hiddenPhoneInput) {
+                            hiddenPhoneInput.value = phoneNumber;
+                        }
                         checkStepOneCompletion();
                     } else {
                         throw new Error(data.message);
@@ -1080,11 +1256,7 @@
                 checkStepOneCompletion();
             });
 
-            // Address validation
-            houseAddressInput.addEventListener('input', function() {
-                validateAddress(this.value);
-                checkStepTwoCompletion();
-            });
+            // Address validation is handled by dropdown listeners above
 
             // Password validation on input
             passwordInput.addEventListener('input', function() {
@@ -1102,7 +1274,27 @@
 
             // Form submission
             signupForm.addEventListener('submit', async (e) => {
+                // Require phone verification
+                if (!isNumberVerified) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Phone Not Verified',
+                        text: 'Please verify your phone number before signing up.'
+                    });
+                    return;
+                }
                 e.preventDefault();
+                // Defensive: ensure hidden input is set
+                const hiddenPhoneInput = document.getElementById('verified_phone');
+                if (isNumberVerified && hiddenPhoneInput) {
+                    hiddenPhoneInput.value = phoneInput.value;
+                }
+                // Always set region to NCR before submit (in case dropdown is disabled)
+                const regionSel = document.getElementById('regionSelect');
+                if (regionSel) {
+                    regionSel.disabled = false;
+                    regionSel.value = 'NCR';
+                }
 
                 // Clear previous validation messages
                 document.getElementById('name-validation').textContent = '';
@@ -1111,14 +1303,7 @@
                 document.getElementById('password-match-status').textContent = '';
 
                 // Final validation check
-                if (!isNumberVerified) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Verification Required',
-                        text: 'Please verify your phone number before signing up.'
-                    });
-                    return;
-                }
+                // TEMP: skip phone verification check
 
                 if (passwordInput.value !== confirmPasswordInput.value) {
                     Swal.fire({
@@ -1131,7 +1316,7 @@
                 
                 // Final check on all validations
                 if (!validateName(fullnameInput.value) || 
-                    !validateAddress(houseAddressInput.value) ||
+                    !validateAddress() ||
                     !validatePassword(passwordInput.value) ||
                     document.getElementById('address').value.trim() === '') {
                         
@@ -1151,8 +1336,19 @@
                 try {
                     const formData = new FormData(signupForm);
 
+                    // Always set verified_phone if verified
                     if (isNumberVerified && phoneInput.dataset.verifiedPhone) {
                         formData.set('verified_phone', phoneInput.dataset.verifiedPhone);
+                    } else {
+                        // Defensive: block submission if not verified
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Phone Not Verified',
+                            text: 'Please verify your phone number before signing up.'
+                        });
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Sign Up';
+                        return;
                     }
 
                     if (userLocation) {

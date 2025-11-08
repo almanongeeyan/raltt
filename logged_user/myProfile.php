@@ -15,7 +15,7 @@ $userPassword = null;
 if ($user_id) {
     try {
         // Fetch main user data
-        $stmt = $db_connection->prepare("SELECT full_name, house_address, full_address, phone_number, email, created_at, referral_code FROM users WHERE id = ? LIMIT 1");
+        $stmt = $db_connection->prepare("SELECT full_name, house_address, full_address, phone_number, email, created_at, referral_code, referral_coins FROM users WHERE id = ? LIMIT 1");
         $stmt->execute([$user_id]);
         $userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -514,7 +514,14 @@ if ($user_id) {
                                 <div class="flex flex-col items-center gap-2">
                                     <?php
                                     $referralCode = $userData && $userData['referral_code'] ? $userData['referral_code'] : null;
+                                    $referralCoins = $userData && isset($userData['referral_coins']) ? $userData['referral_coins'] : 0;
                                     ?>
+                                    <div class="mb-3">
+                                        <div class="inline-flex items-center bg-amber-100 border-2 border-amber-300 rounded-full px-4 py-1.5" style="box-shadow: 0 1px 4px rgba(251, 191, 36, 0.1);">
+                                            <i class="fa-solid fa-coins mr-2 text-amber-500"></i>
+                                            <span class="font-semibold text-amber-700"><?php echo number_format($referralCoins); ?> Coins</span>
+                                        </div>
+                                    </div>
                                     <span id="referralCode" style="font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: 600; letter-spacing: 1.5px; color: #333; background: #f5f5f5; border-radius: 6px; padding: 0.5rem 1.2rem; border: 1px dashed #e0e0e0;">
                                         <?php echo $referralCode ? htmlspecialchars($referralCode) : 'No data'; ?>
                                     </span>
@@ -873,11 +880,57 @@ if ($user_id) {
                         <div class="space-y-2">
                             <label for="editHouseAddress" class="block text-sm font-semibold text-gray-700">House Address</label>
                             <div class="relative">
+                                <!-- Readonly display -->
                                 <input type="text" id="editHouseAddress" name="house_address" value="<?php echo htmlspecialchars($userData['house_address'] ?? ''); ?>" class="input-focus mt-1 block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm text-gray-900 bg-white" required readonly>
                                 <div id="addressCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
                                     <i class="fa-solid fa-check text-green-500"></i>
                                 </div>
                                 <button type="button" id="editAddressBtn" class="absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-400 edit-icon"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                            <!-- Dropdowns container, hidden by default -->
+                            <div id="detailedAddressContainer" class="hidden space-y-4 mt-2">
+                                <div class="bg-gray-50/80 rounded-lg p-4 space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1.5">Region</label>
+                                            <select id="regionSelect" class="input-focus text-black block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-3 py-2.5 text-sm bg-white transition-all" required disabled>
+                                                <option value="">Select Region</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1.5">Province</label>
+                                            <select id="provinceSelect" class="input-focus text-black block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-3 py-2.5 text-sm bg-white transition-all" required disabled>
+                                                <option value="">Select Province</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1.5">City / Municipality</label>
+                                            <select id="citySelect" class="input-focus text-black block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-3 py-2.5 text-sm bg-white transition-all" required disabled>
+                                                <option value="">Select City / Municipality</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1.5">Barangay</label>
+                                            <select id="barangaySelect" class="input-focus text-black block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-3 py-2.5 text-sm bg-white transition-all" required disabled>
+                                                <option value="">Select Barangay</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-start">
+                                        <div class="mt-1 mr-2">
+                                            <i class="fa-solid fa-house text-primary"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <label for="houseNumber" class="block text-xs font-medium text-gray-500 mb-1.5">Complete Address</label>
+                                            <input id="houseNumber" name="houseNumber" type="text" placeholder="House/Unit #, Building Name, Street Name" class="input-focus block w-full rounded-lg border border-gray-300 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm transition-all duration-200 text-gray-900 bg-white" disabled>
+                                            <p class="text-xs text-gray-500 mt-1">Example: Unit 1234, Green Building, 123 Maple Street</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="space-y-2">
@@ -914,6 +967,167 @@ if ($user_id) {
             let originalProfile = {};
             let isNumberVerified = true;
             document.addEventListener('DOMContentLoaded', function() {
+                // --- Address dropdown logic for Edit Profile Modal ---
+                // Default NCR location data (will be overridden by JSON file if available)
+                let addressData = {
+                    "NCR": {
+                        "Metro Manila (National Capital Region)": {
+                            "Caloocan": ["Bagumbong", "Bagong Silang", "Camarin", "Deparo", "Llano", "Pangarap Village", "Tala", "Grace Park North", "Grace Park East"],
+                            "Quezon City": ["Baesa", "Bagbag", "Fairview", "Greater Lagro", "Kaligayahan", "Nagkaisang Nayon", "North Fairview", "Novaliches Proper", "Pasong Putik", "San Agustin", "San Bartolome", "Santa Lucia", "Santa Monica", "Talipapa"],
+                            "Valenzuela": ["Arkong Bato", "Dalandanan", "Gen. T. de Leon", "Karuhatan", "Malinta", "Marulas", "Maysan", "Pariancillo Villa", "Paso de Blas", "Polo"],
+                            "Manila": ["Gagalangin", "Tondo I", "Tondo II"],
+                            "Malabon": ["Catmon", "Concepcion", "Flores", "Longos", "Tugatog"]
+                        }
+                    }
+                };
+
+                function populateRegions() {
+                    const regionSel = document.getElementById('regionSelect');
+                    if (!regionSel) return;
+                    regionSel.innerHTML = '<option value="NCR">NCR</option>';
+                    regionSel.value = 'NCR';
+                    regionSel.disabled = true;
+                    populateProvinces('NCR');
+                }
+                function populateProvinces(region) {
+                    const provSel = document.getElementById('provinceSelect');
+                    provSel.innerHTML = '<option value="">Select Province</option>';
+                    if (!region || !addressData[region]) return;
+                    Object.keys(addressData[region]).forEach(p => {
+                        const opt = document.createElement('option'); opt.value = p; opt.textContent = p; provSel.appendChild(opt);
+                    });
+                }
+                function populateCities(region, province) {
+                    const citySel = document.getElementById('citySelect');
+                    citySel.innerHTML = '<option value="">Select City / Municipality</option>';
+                    if (!region || !province || !addressData[region] || !addressData[region][province]) return;
+                    Object.keys(addressData[region][province]).forEach(c => {
+                        const opt = document.createElement('option'); opt.value = c; opt.textContent = c; citySel.appendChild(opt);
+                    });
+                }
+                function populateBarangays(region, province, city) {
+                    const barangaySel = document.getElementById('barangaySelect');
+                    barangaySel.innerHTML = '<option value="">Select Barangay</option>';
+                    if (!region || !province || !city) return;
+                    const node = addressData[region] && addressData[region][province] && addressData[region][province][city];
+                    if (!node) return;
+                    if (Array.isArray(node)) {
+                        node.forEach(b => {
+                            const opt = document.createElement('option'); opt.value = b; opt.textContent = b; barangaySel.appendChild(opt);
+                        });
+                    } else if (typeof node === 'object') {
+                        Object.keys(node).forEach(b => {
+                            const opt = document.createElement('option'); opt.value = b; opt.textContent = b; barangaySel.appendChild(opt);
+                        });
+                    }
+                }
+
+                // Edit Address button logic for modal
+                document.getElementById('editAddressBtn').addEventListener('click', function() {
+                    // Hide readonly input, show dropdowns
+                    document.getElementById('editHouseAddress').classList.add('hidden');
+                    document.getElementById('detailedAddressContainer').classList.remove('hidden');
+                    document.getElementById('detailedAddressContainer').style.display = 'block';
+                    // Enable selects
+                    document.getElementById('provinceSelect').disabled = false;
+                    document.getElementById('citySelect').disabled = false;
+                    document.getElementById('barangaySelect').disabled = false;
+                    // Prepopulate dropdowns with user data if available
+                    populateRegions();
+                    // Try to parse the current address for preselection
+                    const current = document.getElementById('editHouseAddress').value;
+                    let region = 'NCR', province = '', city = '', barangay = '', houseNumber = '';
+                    if (current) {
+                        // Try to split by comma and match to dropdowns
+                        const parts = current.split(',').map(s => s.trim());
+                        if (parts.length >= 5) {
+                            houseNumber = parts[0];
+                            barangay = parts[1];
+                            city = parts[2];
+                            province = parts[3];
+                            region = parts[4];
+                        }
+                    }
+                    // Set selects
+                    document.getElementById('regionSelect').value = region;
+                    populateProvinces(region);
+                    if (province) document.getElementById('provinceSelect').value = province;
+                    populateCities(region, province);
+                    if (city) document.getElementById('citySelect').value = city;
+                    populateBarangays(region, province, city);
+                    if (barangay) document.getElementById('barangaySelect').value = barangay;
+                    // Set house/unit/street
+                    const houseInput = document.getElementById('houseNumber');
+                    if (houseInput) {
+                        houseInput.value = houseNumber;
+                        houseInput.disabled = !barangay;
+                    }
+                    this.style.display = 'none';
+                });
+
+                // Dropdown change listeners
+                document.getElementById('provinceSelect').addEventListener('change', function() {
+                    populateCities('NCR', this.value);
+                    document.getElementById('barangaySelect').innerHTML = '<option value="">Select Barangay</option>';
+                    document.getElementById('houseNumber').value = '';
+                    document.getElementById('houseNumber').disabled = true;
+                });
+                document.getElementById('citySelect').addEventListener('change', function() {
+                    populateBarangays('NCR', document.getElementById('provinceSelect').value, this.value);
+                    document.getElementById('houseNumber').value = '';
+                    document.getElementById('houseNumber').disabled = true;
+                });
+                document.getElementById('barangaySelect').addEventListener('change', function() {
+                    document.getElementById('houseNumber').value = '';
+                    document.getElementById('houseNumber').disabled = !this.value;
+                });
+
+                // Save logic: on submit, if dropdowns are visible, combine values
+                document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+                    const detailed = document.getElementById('detailedAddressContainer');
+                    if (!detailed.classList.contains('hidden')) {
+                        // Combine dropdowns into address string
+                        const house = document.getElementById('houseNumber').value.trim();
+                        const barangay = document.getElementById('barangaySelect').value;
+                        const city = document.getElementById('citySelect').value;
+                        const province = document.getElementById('provinceSelect').value;
+                        const region = document.getElementById('regionSelect').value;
+                        const combined = [house, barangay, city, province, region].filter(Boolean).join(', ');
+                        document.getElementById('editHouseAddress').value = combined;
+                        // Hide dropdowns, show readonly
+                        document.getElementById('editHouseAddress').classList.remove('hidden');
+                        detailed.classList.add('hidden');
+                        detailed.style.display = 'none';
+                        document.getElementById('editAddressBtn').style.display = '';
+                    }
+                });
+
+                // Hide dropdowns and show readonly on modal close
+                window.closeModal = (function(orig) {
+                    return function(modalId) {
+                        if (modalId === 'editProfileModal') {
+                            document.getElementById('editHouseAddress').classList.remove('hidden');
+                            document.getElementById('detailedAddressContainer').classList.add('hidden');
+                            document.getElementById('detailedAddressContainer').style.display = 'none';
+                            document.getElementById('editAddressBtn').style.display = '';
+                        }
+                        return orig.apply(this, arguments);
+                    };
+                })(window.closeModal);
+
+                // Load full address data if available
+                (async function loadFullAddressData() {
+                    try {
+                        const resp = await fetch('/raltt/data/ph_locations.json', { cache: 'no-cache' });
+                        if (!resp.ok) throw new Error('No full dataset found');
+                        const json = await resp.json();
+                        if (json && typeof json === 'object') {
+                            addressData = json;
+                        }
+                    } catch (err) {
+                        // fallback to default
+                    }
+                })();
                 // Store initial values
                 originalProfile.full_name = document.getElementById('editFullName').value;
                 originalProfile.phone_number = document.getElementById('editPhoneNumber').value;
@@ -1146,6 +1360,7 @@ if ($user_id) {
                 };
 
                 // Validate on input
+
                 document.getElementById('editFullName').addEventListener('input', validateProfileForm);
                 document.getElementById('editPhoneNumber').addEventListener('input', function() {
                     document.getElementById('phoneFormatError').style.display = 'none';
@@ -1153,6 +1368,11 @@ if ($user_id) {
                 });
                 document.getElementById('editHouseAddress').addEventListener('input', validateProfileForm);
                 document.getElementById('editFullAddress').addEventListener('input', validateProfileForm);
+                // Address dropdowns and house/unit/street field
+                document.getElementById('provinceSelect').addEventListener('change', validateProfileForm);
+                document.getElementById('citySelect').addEventListener('change', validateProfileForm);
+                document.getElementById('barangaySelect').addEventListener('change', validateProfileForm);
+                document.getElementById('houseNumber').addEventListener('input', validateProfileForm);
 
 
                 function getChangedFields() {
@@ -1181,8 +1401,21 @@ if ($user_id) {
                     addressCheck.classList.toggle('hidden', address === originalProfile.house_address || address === '');
                     locationCheck.classList.toggle('hidden', location === originalProfile.full_address || location === '');
 
+                    // Check for changes in dropdowns/houseNumber if address dropdowns are visible
                     let hasChanges = Object.keys(getChangedFields()).length > 0;
-                    if (hasChanges && isNumberVerified) {
+                    const detailed = document.getElementById('detailedAddressContainer');
+                    if (detailed && !detailed.classList.contains('hidden')) {
+                        // If any dropdown or house/unit/street is filled, enable save
+                        const house = document.getElementById('houseNumber').value.trim();
+                        const barangay = document.getElementById('barangaySelect').value;
+                        const city = document.getElementById('citySelect').value;
+                        const province = document.getElementById('provinceSelect').value;
+                        // Only require at least one field to be changed/filled
+                        if (house || barangay || city || province) {
+                            hasChanges = true;
+                        }
+                    }
+                    if (hasChanges) {
                         saveBtn.disabled = false;
                         saveBtn.classList.remove('bg-gray-300', 'text-gray-500');
                         saveBtn.classList.add('bg-primary', 'text-white', 'hover:bg-secondary');
