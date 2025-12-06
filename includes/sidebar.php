@@ -28,6 +28,7 @@ if ($branch_id && isset($branch_names[$branch_id])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Admin Page</title>
+    <link rel="icon" type="../image/admin.png" href="../images/admin.png">
     <style>
         :root {
             /* Updated color scheme */
@@ -508,6 +509,27 @@ if ($branch_id && isset($branch_names[$branch_id])) {
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" fill="none"/></svg>
                             <span>Dashboard</span>
                         </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <div class="sidebar-nav-link dropdown-menu-parent">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-4M12 17v-7M17 17v-2" stroke="currentColor" stroke-width="2"/></svg>
+                            <span>Sales</span>
+                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/admin_orders.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17v-4M12 17v-7M17 17v-2" stroke="currentColor" stroke-width="2"/></svg>
+                                    <span>Orders</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-item">
+                                <a href="../staffadmin_access/admin_transactions.php" class="dropdown-link">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                                    <span>Transactions</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="sidebar-nav-item">
                         <div class="sidebar-nav-link dropdown-menu-parent">

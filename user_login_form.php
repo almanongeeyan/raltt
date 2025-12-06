@@ -602,5 +602,185 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']) {
             });
         }
     </script>
+</div>
+<!-- Floating Request Activation Button -->
+<button id="request-activation-btn" title="Request Account Activation">
+    <i class="fa fa-key"></i>
+</button>
+
+<script>
+    // Floating button styles
+    const style = document.createElement('style');
+    style.innerHTML = `
+        #request-activation-btn {
+            position: fixed;
+            bottom: 1.3rem;
+            right: 1.3rem;
+            z-index: 1000;
+            background: linear-gradient(135deg, #8A421D 60%, #684330 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(138, 66, 29, 0.18);
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
+            max-width: 48px;
+            max-height: 48px;
+            padding: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+        }
+        #request-activation-btn i {
+            font-size: 1.5rem;
+        }
+        #request-activation-btn:hover {
+            background: linear-gradient(135deg, #684330 60%, #8A421D 100%);
+            box-shadow: 0 8px 24px rgba(138, 66, 29, 0.25);
+            transform: translateY(-2px) scale(1.08);
+        }
+        @media (max-width: 600px) {
+            #request-activation-btn {
+                right: 0.7rem;
+                bottom: 0.7rem;
+                width: 38px;
+                height: 38px;
+                min-width: 38px;
+                min-height: 38px;
+                max-width: 38px;
+                max-height: 38px;
+                font-size: 1.1rem;
+            }
+            #request-activation-btn i {
+                font-size: 1.1rem;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Floating button logic
+    document.getElementById('request-activation-btn').addEventListener('click', async function() {
+        const { value: formValues } = await Swal.fire({
+            title: '<div style="font-size:1.5rem;font-weight:700;color:#8A421D;letter-spacing:0.5px;">Request Account Activation</div>',
+            html:
+                '<div style="margin-bottom:1.2rem;font-size:1.08rem;color:#684330;">Only <b>customer</b> accounts can request activation.<br><span style="color:#8A421D;font-size:0.97rem;">Use your registered phone number or email.</span></div>' +
+                '<div style="display:flex;flex-direction:column;gap:0.7rem;align-items:center;">' +
+                    '<input id="swal-input-contact" class="swal2-input" style="width:92%;max-width:340px;font-size:1.08rem;" placeholder="Phone Number or Email">' +
+                    '<textarea id="swal-input-reason" class="swal2-textarea" style="width:92%;max-width:340px;min-height:80px;resize:vertical;font-size:1.08rem;" placeholder="Reason for reactivation (required)"></textarea>' +
+                '</div>',
+            focusConfirm: false,
+            confirmButtonText: '<i class="fa fa-paper-plane"></i> Request',
+            confirmButtonColor: '#8A421D',
+            background: 'linear-gradient(120deg, #fff 70%, #ffe3d1 100%)',
+            showCancelButton: true,
+            cancelButtonColor: '#aaa',
+            customClass: {
+                popup: 'swal2-activation-modal',
+                confirmButton: 'swal2-activation-confirm',
+                cancelButton: 'swal2-activation-cancel'
+            },
+            preConfirm: () => {
+                const contact = document.getElementById('swal-input-contact').value.trim();
+                const reason = document.getElementById('swal-input-reason').value.trim();
+                if (!contact) {
+                    Swal.showValidationMessage('Please enter your phone number or email.');
+                    return false;
+                }
+                if (!reason) {
+                    Swal.showValidationMessage('Please provide a reason for reactivation.');
+                    return false;
+                }
+                const isPhone = /^\+639[0-9]{9}$/.test(contact);
+                const isEmail = /^\S+@\S+\.\S+$/.test(contact);
+                if (!isPhone && !isEmail) {
+                    Swal.showValidationMessage('Enter a valid phone number (+639xxxxxxxxx) or email address.');
+                    return false;
+                }
+                return { contact, reason };
+            }
+        });
+        if (formValues) {
+            try {
+                const formData = new FormData();
+                formData.append('contact', formValues.contact);
+                formData.append('reason', formValues.reason);
+                const response = await fetch('connection/request_activation.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Activation request sent!',
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true,
+                        background: '#fdf7f4',
+                        customClass: { popup: 'swal2-activation-modal' }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to submit request.',
+                        confirmButtonColor: '#8A421D',
+                        background: '#fdf7f4',
+                    });
+                }
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to submit request. Please try again.',
+                    confirmButtonColor: '#8A421D',
+                    background: '#fdf7f4',
+                });
+            }
+        }
+    });
+    // Custom modal styles
+    const modalStyle = document.createElement('style');
+    modalStyle.innerHTML = `
+        .swal2-activation-modal {
+            border-radius: 1.3rem !important;
+            box-shadow: 0 10px 36px rgba(138,66,29,0.13) !important;
+            border: 2px solid #f3e3d6 !important;
+            background: linear-gradient(120deg, #fff 70%, #ffe3d1 100%) !important;
+        }
+        .swal2-activation-confirm {
+            background: linear-gradient(90deg, #8A421D 60%, #684330 100%) !important;
+            color: #fff !important;
+            font-weight: 700 !important;
+            border-radius: 0.8rem !important;
+            font-size: 1.12rem !important;
+            padding: 0.7rem 2rem !important;
+            box-shadow: 0 2px 8px rgba(138,66,29,0.10) !important;
+        }
+        .swal2-activation-cancel {
+            border-radius: 0.8rem !important;
+            font-size: 1.12rem !important;
+            padding: 0.7rem 2rem !important;
+        }
+        .swal2-popup.swal2-activation-modal .swal2-input, .swal2-popup.swal2-activation-modal .swal2-textarea {
+            border-radius: 0.7rem !important;
+            border: 1.5px solid #e2c7b3 !important;
+            background: #fff7f2 !important;
+            color: #8A421D !important;
+            font-size: 1.08rem !important;
+        }
+        .swal2-popup.swal2-activation-modal .swal2-input:focus, .swal2-popup.swal2-activation-modal .swal2-textarea:focus {
+            border-color: #8A421D !important;
+        }
+    `;
+    document.head.appendChild(modalStyle);
+</script>
 </body>
 </html>

@@ -78,14 +78,19 @@ if (isset($_GET['admin']) && $_GET['admin'] == 1) {
         // Mark code as used
         $db_connection->prepare('UPDATE email_verifications SET is_used = 1 WHERE verification_id = ?')->execute([$codeRow['verification_id']]);
         // Set session for admin
-    $_SESSION['admin_logged_in'] = true;
-    $_SESSION['admin_id'] = $user['id'];
-    $_SESSION['admin_email'] = $user['email'];
-    $_SESSION['admin_name'] = $user['full_name'];
-    $_SESSION['user_role'] = strtoupper($user['user_role']);
-    if (isset($user['branch_id'])) {
-        $_SESSION['branch_id'] = $user['branch_id'];
-    }
+        $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_id'] = $user['id'];
+        $_SESSION['admin_email'] = $user['email'];
+        $_SESSION['admin_name'] = $user['full_name'];
+        $_SESSION['user_role'] = strtoupper($user['user_role']);
+        if (isset($user['branch_id'])) {
+            $_SESSION['branch_id'] = $user['branch_id'];
+        }
+        // Always set user_id and user_email for staff users (ADMIN, ENCODER, CASHIER, DRIVER)
+        if (in_array(strtoupper($user['user_role']), ['ADMIN', 'ENCODER', 'CASHIER', 'DRIVER'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_email'] = $user['email'];
+        }
         $response['status'] = 'success';
         $response['message'] = 'Admin login successful.';
         // Redirect based on user_role
@@ -156,15 +161,19 @@ if (!(isset($_GET['admin']) && $_GET['admin'] == 1)) {
     }
 
     // Login successful - set session variables
-    $_SESSION['logged_in'] = true;
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['phone_number'] = $user['phone_number'];
-    $_SESSION['full_name'] = $user['full_name'];
-    $_SESSION['account_type'] = 'manual';
-    $_SESSION['user_role'] = strtoupper($user['user_role']);
-    if (isset($user['branch_id'])) {
-        $_SESSION['branch_id'] = $user['branch_id'];
-    }
+        $_SESSION['logged_in'] = true;
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['phone_number'] = $user['phone_number'];
+        $_SESSION['full_name'] = $user['full_name'];
+        $_SESSION['account_type'] = 'manual';
+        $_SESSION['user_role'] = strtoupper($user['user_role']);
+        if (isset($user['branch_id'])) {
+            $_SESSION['branch_id'] = $user['branch_id'];
+        }
+        // Always set user_email if available
+        if (isset($user['email'])) {
+            $_SESSION['user_email'] = $user['email'];
+        }
     // You can add more session variables as needed
 
     // Update last login time

@@ -100,6 +100,38 @@ if ($user_id) {
         .tab.active { color: #7d310a; font-weight: 600; }
         .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: #7d310a; }
         .tab:hover { color: #7d310a; }
+
+        /* Order count badge overlay styles */
+        .tab-badge-wrap {
+            position: relative;
+            display: inline-block;
+            padding-right: 18px;
+        }
+        .order-count-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            min-width: 16px;
+            height: 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #e8a56a 0%, #cf8756 100%);
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(125,49,10,0.13);
+            border: 1.5px solid #fff3e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .tab.active .order-count-badge {
+            background: linear-gradient(135deg, #7d310a 0%, #cf8756 100%);
+            color: #fff;
+            border-color: #e8a56a;
+            box-shadow: 0 4px 12px rgba(125,49,10,0.18);
+        }
         .order-columns { background: #fef8f4; border-radius: 6px; }
         .orders-drawer { background: white; border: 1px solid #f0e6df; border-radius: 8px; transition: all 0.3s ease; }
         .orders-drawer:hover { border-color: #e8a56a; box-shadow: 0 2px 8px rgba(125, 49, 10, 0.05); }
@@ -590,12 +622,73 @@ if ($user_id) {
                                 <span>Order History</span>
                             </div>
 
+                            <?php
+                            // --- Order counts for each tab ---
+                            $orderCounts = [
+                                'all-orders' => 0,
+                                'pending' => 0,
+                                'to-ship' => 0,
+                                'to-receive' => 0,
+                                'completed' => 0,
+                                'cancelled' => 0
+                            ];
+                            if ($user_id) {
+                                // All Orders (any status)
+                                $stmt = $db_connection->prepare("SELECT COUNT(DISTINCT order_id) FROM orders WHERE user_id = ?");
+                                $stmt->execute([$user_id]);
+                                $orderCounts['all-orders'] = $stmt->fetchColumn();
+
+                                // Pending
+                                $stmt = $db_connection->prepare("SELECT COUNT(DISTINCT order_id) FROM orders WHERE user_id = ? AND order_status = 'pending'");
+                                $stmt->execute([$user_id]);
+                                $orderCounts['pending'] = $stmt->fetchColumn();
+
+                                // To Ship (processing, paid)
+                                $stmt = $db_connection->prepare("SELECT COUNT(DISTINCT order_id) FROM orders WHERE user_id = ? AND order_status IN ('processing','paid')");
+                                $stmt->execute([$user_id]);
+                                $orderCounts['to-ship'] = $stmt->fetchColumn();
+
+                                // To Receive (ready_for_pickup, otw)
+                                $stmt = $db_connection->prepare("SELECT COUNT(DISTINCT order_id) FROM orders WHERE user_id = ? AND order_status IN ('ready_for_pickup','otw')");
+                                $stmt->execute([$user_id]);
+                                $orderCounts['to-receive'] = $stmt->fetchColumn();
+
+                                // Completed
+                                $stmt = $db_connection->prepare("SELECT COUNT(DISTINCT order_id) FROM orders WHERE user_id = ? AND order_status = 'completed'");
+                                $stmt->execute([$user_id]);
+                                $orderCounts['completed'] = $stmt->fetchColumn();
+
+                                // Cancelled
+                                $stmt = $db_connection->prepare("SELECT COUNT(DISTINCT order_id) FROM orders WHERE user_id = ? AND order_status = 'cancelled'");
+                                $stmt->execute([$user_id]);
+                                $orderCounts['cancelled'] = $stmt->fetchColumn();
+                            }
+                            ?>
                             <div class="order-tabs flex flex-wrap gap-4 md:gap-6 mb-6">
-                                <div class="tab active py-2 px-1" data-tab="all-orders">All Orders</div>
-                                <div class="tab py-2 px-1" data-tab="to-ship">To Ship</div>
-                                <div class="tab py-2 px-1" data-tab="to-receive">To Receive</div>
-                                <div class="tab py-2 px-1" data-tab="completed">Completed</div>
-                                <div class="tab py-2 px-1" data-tab="cancelled">Cancelled</div>
+                                <div class="tab active py-2 px-1 tab-badge-wrap" data-tab="all-orders">
+                                    All Orders
+                                    <span class="order-count-badge"><?php echo $orderCounts['all-orders']; ?></span>
+                                </div>
+                                <div class="tab py-2 px-1 tab-badge-wrap" data-tab="pending">
+                                    Pending
+                                    <span class="order-count-badge"><?php echo $orderCounts['pending']; ?></span>
+                                </div>
+                                <div class="tab py-2 px-1 tab-badge-wrap" data-tab="to-ship">
+                                    To Ship
+                                    <span class="order-count-badge"><?php echo $orderCounts['to-ship']; ?></span>
+                                </div>
+                                <div class="tab py-2 px-1 tab-badge-wrap" data-tab="to-receive">
+                                    To Receive
+                                    <span class="order-count-badge"><?php echo $orderCounts['to-receive']; ?></span>
+                                </div>
+                                <div class="tab py-2 px-1 tab-badge-wrap" data-tab="completed">
+                                    Completed
+                                    <span class="order-count-badge"><?php echo $orderCounts['completed']; ?></span>
+                                </div>
+                                <div class="tab py-2 px-1 tab-badge-wrap" data-tab="cancelled">
+                                    Cancelled
+                                    <span class="order-count-badge"><?php echo $orderCounts['cancelled']; ?></span>
+                                </div>
                             </div>
 
                             <hr class="order-line border-gray-200 mb-6">
@@ -625,10 +718,10 @@ if ($user_id) {
 
                                 $orderTabs = [
                                     'all-orders' => '',
-                                    // 'to-ship' should NOT include 'ready_for_pickup'
-                                    'to-ship' => "order_status IN ('pending','processing','paid')",
-                                    // 'to-receive' should include 'ready_for_pickup' and 'otw'
-                                    'to-receive' => "order_status IN ('paid','ready_for_pickup','otw')",
+                                    'pending' => "order_status = 'pending'",
+                                    // 'to-ship' now only includes 'processing' and 'paid'
+                                    'to-ship' => "order_status IN ('processing','paid')",
+                                    'to-receive' => "order_status IN ('ready_for_pickup','otw')",
                                     'completed' => "order_status = 'completed'",
                                     'cancelled' => "order_status = 'cancelled'"
                                 ];
@@ -704,10 +797,10 @@ if ($user_id) {
                                                         $statusText = ($order['order_status'] === 'otw') ? 'Out for Delivery' : ucfirst($order['order_status']);
                                                         echo '<span class="status-badge ' . getStatusClass($order['order_status']) . '">' . $statusText . '</span>';
                                                     echo '</div>';
-                                                    // Cancel button for to-ship only, but not for 'processing' orders
-                                                    if ($tab === "to-ship") {
+                                                    // Cancel button only for pending tab
+                                                    if ($tab === "pending") {
                                                         echo '<div class="col-span-8 flex justify-end mt-2">';
-                                                        if ($cancelCount >= 3 || strtolower($order['order_status']) === 'processing') {
+                                                        if ($cancelCount >= 3) {
                                                             echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-gray-400 text-white text-xs font-semibold shadow cursor-not-allowed" disabled>Cancel</button>';
                                                         } else {
                                                             echo '<button type="button" class="cancel-btn px-3 py-1 rounded bg-red-500 text-white text-xs font-semibold shadow hover:bg-red-600 transition" onclick="openCancelModal(' . htmlspecialchars(json_encode($order['order_reference'])) . ');event.preventDefault();event.stopPropagation();">Cancel</button>';
@@ -968,18 +1061,7 @@ if ($user_id) {
             let isNumberVerified = true;
             document.addEventListener('DOMContentLoaded', function() {
                 // --- Address dropdown logic for Edit Profile Modal ---
-                // Default NCR location data (will be overridden by JSON file if available)
-                let addressData = {
-                    "NCR": {
-                        "Metro Manila (National Capital Region)": {
-                            "Caloocan": ["Bagumbong", "Bagong Silang", "Camarin", "Deparo", "Llano", "Pangarap Village", "Tala", "Grace Park North", "Grace Park East"],
-                            "Quezon City": ["Baesa", "Bagbag", "Fairview", "Greater Lagro", "Kaligayahan", "Nagkaisang Nayon", "North Fairview", "Novaliches Proper", "Pasong Putik", "San Agustin", "San Bartolome", "Santa Lucia", "Santa Monica", "Talipapa"],
-                            "Valenzuela": ["Arkong Bato", "Dalandanan", "Gen. T. de Leon", "Karuhatan", "Malinta", "Marulas", "Maysan", "Pariancillo Villa", "Paso de Blas", "Polo"],
-                            "Manila": ["Gagalangin", "Tondo I", "Tondo II"],
-                            "Malabon": ["Catmon", "Concepcion", "Flores", "Longos", "Tugatog"]
-                        }
-                    }
-                };
+                // addressData is now loaded from js/addressData.js
 
                 function populateRegions() {
                     const regionSel = document.getElementById('regionSelect');
@@ -1531,6 +1613,7 @@ if ($user_id) {
     </style>
     </div>
 
+    <script src="../js/addressData.js"></script>
     <script>
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
@@ -2022,7 +2105,24 @@ if ($user_id) {
                     if (xhr.status === 200 && res.success) {
                         closeModal('cancelModal');
                         showCancelToast();
-                        refreshOrderTabs();
+                        // Fetch and update order history tables in real time
+                        fetch('../connection/fetch_orders.php')
+                            .then(resp => resp.json())
+                            .then(data => {
+                                if (data.success && data.html) {
+                                    document.querySelector('.orders-tab-content-container').innerHTML = data.html;
+                                }
+                            });
+                    } else if (xhr.status === 200 && res.success !== false) {
+                        closeModal('cancelModal');
+                        showCancelToast();
+                        fetch('../connection/fetch_orders.php')
+                            .then(resp => resp.json())
+                            .then(data => {
+                                if (data.success && data.html) {
+                                    document.querySelector('.orders-tab-content-container').innerHTML = data.html;
+                                }
+                            });
                     } else {
                         alert(res.error || 'Failed to cancel order.');
                     }
@@ -2030,14 +2130,6 @@ if ($user_id) {
             };
             xhr.send(formData);
         });
-
-        // AJAX function to refresh order tabs after cancel
-        function refreshOrderTabs() {
-            var xhr = new XMLHttpRequest();
-            // This logic is simplified; ideally, you'd fetch only the order tab content
-            // For now, it reloads the page to show the change, which is robust.
-            location.reload(); 
-        }
 
         function showCancelToast() {
             var toast = document.getElementById('cancelToast');

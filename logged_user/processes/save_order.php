@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : '';
     $applied_coins = isset($_POST['applied_coins']) ? intval($_POST['applied_coins']) : 0;
     
-    if ($user_id > 0 && !empty($selected_cart_items) && in_array($payment_method, ['cod', 'self-pickup'])) {
+    if ($user_id > 0 && !empty($selected_cart_items) && in_array($payment_method, ['cod', 'self-pickup', 'gcash'])) {
         try {
             // Calculate total and get cart items
             $in = str_repeat('?,', count($selected_cart_items) - 1) . '?';
@@ -34,6 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $order_reference = 'RAL-' . strtoupper(bin2hex(random_bytes(4)));
             // Get branch_id from session (set by headeruser.php)
             $branch_id = isset($_SESSION['branch_id']) ? intval($_SESSION['branch_id']) : 1;
+            // Set order_status: 'paid' for gcash, 'pending' for others
+            $order_status = ($payment_method === 'gcash') ? 'paid' : 'pending';
             $stmt = $conn->prepare("INSERT INTO orders (order_reference, user_id, branch_id, total_amount, original_subtotal, coins_redeemed, payment_method, order_status, shipping_fee, order_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
             $stmt->execute([
                 $order_reference,
@@ -43,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $subtotal,
                 $max_coins_applicable,
                 ($payment_method === 'self-pickup' ? 'pick_up' : $payment_method),
-                'pending',
+                $order_status,
                 $shipping
             ]);
             $order_id = $conn->lastInsertId();
@@ -52,6 +54,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)");
             foreach ($cartItems as $item) {
                 $stmt->execute([$order_id, $item['product_id'], $item['quantity'], $item['product_price']]);
+                // Deduct stock from product_branches
+                // If you want to support multiple branches per product, you must store branch_id in cart_items and fetch it here
+                // For now, we use the user's current branch
+                $branchId = $branch_id;
+                $productId = $item['product_id'];
+                $qty = $item['quantity'];
+                $stmtCheckStock = $conn->prepare("SELECT stock_count FROM product_branches WHERE product_id = ? AND branch_id = ?");
+                $stmtCheckStock->execute([$productId, $branchId]);
+                $currentStock = $stmtCheckStock->fetchColumn();
+                if ($currentStock !== false && $currentStock >= $qty) {
+                    $stmtUpdateStock = $conn->prepare("UPDATE product_branches SET stock_count = stock_count - ? WHERE product_id = ? AND branch_id = ?");
+                    $stmtUpdateStock->execute([$qty, $productId, $branchId]);
+                } else {
+                    // Optionally handle out-of-stock error here
+                    // For now, skip deduction if not enough stock
+                }
             }
 
             // Deduct only the coins actually used from the user's referral_coins

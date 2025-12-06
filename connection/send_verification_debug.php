@@ -138,9 +138,10 @@ try {
     }
     
     http_response_code(400);
+    // Expose the real Twilio error for debugging
     echo json_encode([
-        'status' => 'error', 
-        'message' => $errorMessage,
+        'status' => 'error',
+        'message' => $errorMessage . ' [Twilio: ' . $e->getMessage() . ']',
         'debug' => $debugInfo
     ]);
     

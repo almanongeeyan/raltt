@@ -26,11 +26,11 @@ $error_message = '';
 try {
     // Build query based on branch access
     $query = "SELECT DISTINCT o.*, b.branch_name, u.full_name as customer_name, 
-                     u.phone_number as customer_phone, u.email as customer_email
-              FROM orders o 
-              JOIN branches b ON o.branch_id = b.branch_id 
-              JOIN users u ON o.user_id = u.id 
-              WHERE 1=1";
+            u.phone_number as customer_phone, u.email as customer_email, u.full_address as customer_full_address
+        FROM orders o 
+        JOIN branches b ON o.branch_id = b.branch_id 
+        JOIN users u ON o.user_id = u.id 
+        WHERE 1=1";
     
     $params = [];
     
@@ -48,16 +48,20 @@ try {
     // Filter orders based on date and status
     $today = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('Y-m-d');
     
+    $userRole = isset($_SESSION['user_role']) ? strtoupper($_SESSION['user_role']) : '';
     foreach ($rawOrders as $order) {
         $orderDate = (new DateTime($order['order_date'], new DateTimeZone('Asia/Manila')))->format('Y-m-d');
         $orderStatus = $order['order_status'];
-        
+        $isPickUpOrder = strtolower($order['payment_method']) === 'pick_up';
+        // If user is DRIVER, skip pick up orders
+        if ($userRole === 'DRIVER' && $isPickUpOrder) {
+            continue;
+        }
         // Always show orders from today
         if ($orderDate === $today) {
             $orders[] = $order;
             continue;
         }
-        
         // For previous days, only show if status is NOT completed or cancelled
         if ($orderDate < $today) {
             if (!in_array($orderStatus, ['completed', 'cancelled'])) {
@@ -65,7 +69,6 @@ try {
             }
             continue;
         }
-        
         // Future dates (if any) - show all
         $orders[] = $order;
     }
@@ -379,6 +382,13 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                             if ($currentStatusIndex === false) {
                                 $currentStatusIndex = count($statusFlow) - 1;
                             }
+                            // Check if already reported by this driver for this order
+                            $alreadyReported = false;
+                            if (isset($_SESSION['user_role']) && strtoupper($_SESSION['user_role']) === 'DRIVER' && isset($_SESSION['user_id'])) {
+                                $reportCheckStmt = $db_connection->prepare("SELECT warning_id FROM buyer_warnings WHERE user_id = ? AND order_id = ? AND staff_user_id = ? LIMIT 1");
+                                $reportCheckStmt->execute([$order['user_id'], $order['order_id'], $_SESSION['user_id']]);
+                                $alreadyReported = $reportCheckStmt->fetch() ? true : false;
+                            }
                             ?>
                             <div class="<?php echo $orderCardClass; ?> p-6 fade-in" 
                                  id="order-<?php echo $order['order_id']; ?>" 
@@ -495,10 +505,52 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                                             <button class="action-btn btn-view" onclick="viewOrderDetails(<?php echo $order['order_id']; ?>)">
                                                 <i class="fas fa-eye"></i> View
                                             </button>
-                                            
+                                            <?php if (isset($_SESSION['user_role']) && strtoupper($_SESSION['user_role']) === 'CASHIER'): ?>
                                             <button class="action-btn btn-print" onclick="printOrder(<?php echo $order['order_id']; ?>)">
                                                 <i class="fas fa-print"></i> Print
                                             </button>
+                                            <?php endif; ?>
+                                            <?php if (isset($_SESSION['user_role']) && strtoupper($_SESSION['user_role']) === 'DRIVER'): ?>
+                                            <?php
+                                            $canShowDriverActions = false;
+                                            // Find if the 'completed' button is enabled for this order
+                                            foreach ($statusFlow as $index => $nextStatus) {
+                                                $isCurrent = ($index === $currentStatusIndex);
+                                                $isNext = ($index === $currentStatusIndex + 1);
+                                                $isPast = ($index < $currentStatusIndex);
+                                                $isDisabled = !$isNext;
+                                                $method = strtolower($order['payment_method']);
+                                                $canPress = false;
+                                                if ($method === 'cod' || $method === 'gcash') {
+                                                    if ($nextStatus === 'completed' && $userRole === 'DRIVER') $canPress = true;
+                                                } elseif ($method === 'pick_up') {
+                                                    if ($nextStatus === 'completed' && $userRole === 'CASHIER') $canPress = true;
+                                                }
+                                                $finalDisabled = $isDisabled || (!$canPress && $isNext);
+                                                if ($nextStatus === 'completed' && !$finalDisabled) {
+                                                    $canShowDriverActions = true;
+                                                    break;
+                                                }
+                                            }
+                                            ?>
+                                            <button class="action-btn btn-view" style="<?php echo !$canShowDriverActions ? 'background:#d1d5db;color:#6b7280;cursor:not-allowed;' : 'background:#10b981;color:white;'; ?>" onclick="<?php echo !$canShowDriverActions ? 'return false;' : 'openRouteModalForOrder(' . $order['order_id'] . ')'; ?>" <?php echo !$canShowDriverActions ? 'disabled' : ''; ?>>
+                                                <i class="fas fa-route"></i> Route
+                                            </button>
+                                            <?php
+                                            // Check if already reported by this staff for this order and user
+                                            $alreadyReported = false;
+                                            try {
+                                                $checkStmt = $db_connection->prepare("SELECT warning_id FROM buyer_warnings WHERE user_id = ? AND order_id = ? AND staff_user_id = ? LIMIT 1");
+                                                $checkStmt->execute([$order['user_id'], $order['order_id'], $_SESSION['user_id']]);
+                                                if ($checkStmt->fetch()) {
+                                                    $alreadyReported = true;
+                                                }
+                                            } catch (Exception $e) {}
+                                            ?>
+                                            <button class="action-btn btn-view" style="<?php echo ($alreadyReported || !$canShowDriverActions) ? 'background:#d1d5db;color:#6b7280;cursor:not-allowed;' : 'background:#ef4444;color:white;'; ?>" onclick="<?php echo ($alreadyReported || !$canShowDriverActions) ? 'return false;' : 'openReportModal(' . $order['order_id'] . ', ' . $order['user_id'] . ')'; ?>" <?php echo ($alreadyReported || !$canShowDriverActions) ? 'disabled' : ''; ?>>
+                                                <i class="fas fa-flag"></i> <?php echo $alreadyReported ? 'Reported' : 'Report User'; ?>
+                                            </button>
+                                            <?php endif; ?>
                                         </div>
                                         
                                         <div class="mt-2 text-sm text-gray-500">
@@ -528,11 +580,129 @@ function getStatusFlow($paymentMethod, $currentStatus) {
         </div>
     </div>
 
+        <!-- Report Modal -->
+        <div id="reportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay hidden" style="display:none;">
+            <div class="modal-content w-full max-w-md">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800">Report Buyer</h3>
+                    <button id="closeReportModal" class="text-gray-400 hover:text-gray-600 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="reportForm" class="p-6 space-y-4">
+                    <input type="hidden" id="report_order_id" name="order_id">
+                    <input type="hidden" id="report_user_id" name="user_id">
+                    <div>
+                        <label for="warning_type" class="block text-sm font-medium text-gray-700 mb-2">Warning Type</label>
+                        <select id="warning_type" name="warning_type" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-400 focus:border-red-400" required>
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="warning_notes" class="block text-sm font-medium text-gray-700 mb-2">Notes (optional)</label>
+                        <textarea id="warning_notes" name="warning_notes" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-400 focus:border-red-400"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" id="cancelReportBtn" class="action-btn" style="background:#e5e7eb;color:#374151;">Cancel</button>
+                        <button type="submit" class="action-btn" style="background:#ef4444;color:white;">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    <!-- Leaflet CSS/JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="/raltt/js/leaflet-route-modal.js"></script>
     <script>
-        // Global variables
-        let currentOrders = <?php echo json_encode($orders, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-        let currentFilter = 'all';
-        let currentSearch = '';
+    // Global variables
+    let currentOrders = <?php echo json_encode($orders, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+    let currentFilter = 'all';
+    let currentSearch = '';
+    let pollingInterval = null;
+    // Example: Set this to your branch/driver location (should be dynamic in real app)
+    let driverLocation = { lat: 14.5995, lng: 120.9842 }; // Default: Manila
+        // Route modal for drivers (uses device geolocation)
+        function openRouteModalForOrder(orderId) {
+            const order = currentOrders.find(o => parseInt(o.order_id) === parseInt(orderId));
+            if (!order) return;
+            const destAddress = order.customer_full_address || '';
+            if (!destAddress) {
+                showRouteModal(0, 0, 0, 0, 'No destination address found for this order.');
+                return;
+            }
+            // Show modal immediately in loading state
+            showRouteModal(0, 0, 0, 0, destAddress + ' (Loading...)');
+
+            // Helper: always show the address string, even on error
+            function showRouteError(msg) {
+                showRouteModal(14.5995, 120.9842, 14.6091, 121.0223, destAddress + '<br><span style="color:#b91c1c">' + msg + '</span>');
+            }
+
+            // Helper to generate multiple simplified address versions
+            function getAddressVariants(address) {
+                let variants = [address];
+                // Remove postal code
+                let v1 = address.replace(/,?\s*\d{4,5},?/g, '').trim();
+                if (v1 !== address) variants.push(v1);
+                // Remove zone
+                let v2 = v1.replace(/,?\s*Zone\s*\d+/gi, '').trim();
+                if (v2 !== v1) variants.push(v2);
+                // Remove district
+                let v3 = v2.replace(/,?\s*District\s*\d+/gi, '').trim();
+                if (v3 !== v2) variants.push(v3);
+                // Remove Northern Manila District
+                let v4 = v3.replace(/,?\s*Northern Manila District,?/gi, '').trim();
+                if (v4 !== v3) variants.push(v4);
+                // Remove Metro Manila
+                let v5 = v4.replace(/,?\s*Metro Manila,?/gi, '').trim();
+                if (v5 !== v4) variants.push(v5);
+                // Remove Philippines
+                let v6 = v5.replace(/,?\s*Philippines,?/gi, '').trim();
+                if (v6 !== v5) variants.push(v6);
+                // Remove all after city
+                let v7 = v6.replace(/,?\s*Caloocan.*$/i, ', Caloocan').trim();
+                if (v7 !== v6) variants.push(v7);
+                // Remove all after road
+                let v8 = v7.replace(/,?\s*Road.*$/i, ' Road').trim();
+                if (v8 !== v7) variants.push(v8);
+                return variants.filter((v, i, arr) => v && arr.indexOf(v) === i);
+            }
+
+            function tryGeocodeVariants(variants, idx) {
+                if (idx >= variants.length) {
+                    showRouteError('Map marker is approximate. Address not found by geocoding.');
+                    return;
+                }
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(variants[idx])}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            const destLat = parseFloat(data[0].lat);
+                            const destLng = parseFloat(data[0].lon);
+                            if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition(function(position) {
+                                    const driverLat = position.coords.latitude;
+                                    const driverLng = position.coords.longitude;
+                                    showRouteModal(driverLat, driverLng, destLat, destLng, destAddress);
+                                }, function(error) {
+                                    showRouteError('Could not get your current location. Please allow location access.');
+                                }, {timeout: 10000});
+                            } else {
+                                showRouteError('Geolocation is not supported by your browser.');
+                            }
+                        } else {
+                            tryGeocodeVariants(variants, idx + 1);
+                        }
+                    })
+                    .catch(() => {
+                        showRouteError('Error finding destination location for this address.');
+                    });
+            }
+
+            // Try all address variants for geocoding
+            tryGeocodeVariants(getAddressVariants(destAddress), 0);
+        }
 
         // DOM elements
         const ordersContainer = document.getElementById('orders-container');
@@ -541,10 +711,12 @@ function getStatusFlow($paymentMethod, $currentStatus) {
 
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Orders loaded:', currentOrders.length);
-            console.log('Orders data:', currentOrders);
-            setupEventListeners();
-            updateStats();
+        console.log('Orders loaded:', currentOrders.length);
+        console.log('Orders data:', currentOrders);
+        setupEventListeners();
+        updateStats();
+        setupReportModalEvents();
+        startOrdersPolling();
         });
 
         // Set up event listeners
@@ -591,35 +763,170 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                     closeOrderModal();
                 }
             });
+
+                // Report modal close/cancel
+                document.getElementById('closeReportModal').addEventListener('click', closeReportModal);
+                document.getElementById('cancelReportBtn').addEventListener('click', closeReportModal);
+
+                // Submit report
+                document.getElementById('reportForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitReportForm();
+                });
+
+                // Close modal when clicking outside
+                document.getElementById('reportModal').addEventListener('click', function(e) {
+                    if (e.target === this) closeReportModal();
+                });
+        }
+        // Setup report modal events (for page load)
+        function setupReportModalEvents() {
+            // Preload warning types
+            fetch('../connection/get_buyer_warning_types.php')
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById('warning_type');
+                    select.innerHTML = '';
+                    if (data.success && Array.isArray(data.types)) {
+                        select.innerHTML = '<option value="">Select warning type</option>' +
+                            data.types.map(type => `<option value="${type}">${formatWarningType(type)}</option>`).join('');
+                    } else {
+                        select.innerHTML = '<option value="">Unable to load types</option>';
+                    }
+                });
+        }
+
+        // Open report modal
+        function openReportModal(orderId, userId) {
+            document.getElementById('report_order_id').value = orderId;
+            document.getElementById('report_user_id').value = userId;
+            document.getElementById('warning_type').value = '';
+            document.getElementById('warning_notes').value = '';
+            document.getElementById('reportModal').classList.remove('hidden');
+            document.getElementById('reportModal').style.display = 'flex';
+        }
+
+        // Close report modal
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.add('hidden');
+            document.getElementById('reportModal').style.display = 'none';
+        }
+
+        // Format warning type for display
+        function formatWarningType(type) {
+            const map = {
+                'NO_SHOW_PICKUP': 'Missed Pickup (Buyer did not arrive)',
+                'BOGUS_BUYER_COD': 'Suspicious Cash on Delivery Activity',
+                'FAKE_ACCOUNT': 'Potential Fake Account',
+                'EXCESSIVE_CANCELLATION': 'Frequent Order Cancellations'
+            };
+            return map[type] || type;
+        }
+
+        // Submit report form
+        function submitReportForm() {
+            const orderId = document.getElementById('report_order_id').value;
+            const userId = document.getElementById('report_user_id').value;
+            const warningType = document.getElementById('warning_type').value;
+            const warningNotes = document.getElementById('warning_notes').value;
+            if (!orderId || !userId || !warningType) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Incomplete Report',
+                    text: 'Please choose a warning type to continue.',
+                    position: 'top-end',
+                    toast: true,
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+            formData.append('user_id', userId);
+            formData.append('warning_type', warningType);
+            formData.append('warning_notes', warningNotes);
+            fetch('../connection/report_buyer_warning.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeReportModal();
+                    // Real-time UI update: disable button and set order as cancelled
+                    const orderId = document.getElementById('report_order_id').value;
+                    // Disable the report button and set gray color
+                    const reportBtn = document.querySelector('button[onclick*="openReportModal(' + orderId + '"]');
+                    if (reportBtn) {
+                        reportBtn.disabled = true;
+                        reportBtn.style.background = '#d1d5db';
+                        reportBtn.style.color = '#6b7280';
+                        reportBtn.textContent = '';
+                        reportBtn.innerHTML = '<i class="fas fa-flag"></i> Reported';
+                        reportBtn.style.cursor = 'not-allowed';
+                    }
+                    // Set order card as cancelled
+                    const orderCard = document.getElementById('order-' + orderId);
+                    if (orderCard) {
+                        orderCard.classList.remove('pending','paid','processing','ready_for_pickup','completed','otw','to_receive');
+                        orderCard.classList.add('cancelled');
+                        orderCard.dataset.status = 'cancelled';
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Report Submitted',
+                        text: 'Thank you for submitting the report. The buyer warning has been recorded and the order has been cancelled.',
+                        position: 'top-end',
+                        toast: true,
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Submission Failed',
+                        text: data.error || 'Unable to submit your report at this time. Please try again later.',
+                        position: 'top-end',
+                        toast: true,
+                        timer: 4000,
+                        showConfirmButton: false
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Issue',
+                    text: 'A network error occurred. Please check your connection and try again.',
+                    position: 'top-end',
+                    toast: true,
+                    timer: 4000,
+                    showConfirmButton: false
+                });
+            });
         }
 
         // Filter orders based on current filter and search
         function filterOrders() {
             let hasVisibleOrders = false;
-            
             // Remove any existing "no results" message
             const noResultsMsg = document.getElementById('no-orders-message-dynamic');
             if (noResultsMsg) noResultsMsg.remove();
-            
             // Hide the initial "no orders" message if it exists
             const initialNoOrdersMsg = document.getElementById('no-orders-message-initial');
             if (initialNoOrdersMsg) initialNoOrdersMsg.style.display = 'none';
-
             document.querySelectorAll('.order-card').forEach(card => {
                 const status = card.dataset.status;
                 const orderId = parseInt(card.dataset.orderId);
-                
                 // Find the order in currentOrders
                 const order = currentOrders.find(o => parseInt(o.order_id) === orderId);
-                
                 if (!order) {
                     card.style.display = 'none';
                     return;
                 }
-
                 // Check status filter
                 const statusMatch = (currentFilter === 'all') || (status === currentFilter);
-
                 // Check search filter
                 const searchMatch = (currentSearch === '') ||
                     (order.order_reference && order.order_reference.toLowerCase().includes(currentSearch)) ||
@@ -628,7 +935,6 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                     (order.items && Array.isArray(order.items) && order.items.some(item => 
                         item.product_name && item.product_name.toLowerCase().includes(currentSearch)
                     ));
-
                 if (statusMatch && searchMatch) {
                     card.style.display = 'block';
                     hasVisibleOrders = true;
@@ -636,8 +942,6 @@ function getStatusFlow($paymentMethod, $currentStatus) {
                     card.style.display = 'none';
                 }
             });
-
-            // Show 'No orders found' message if no orders are visible
             if (!hasVisibleOrders && currentOrders.length > 0) {
                 ordersContainer.innerHTML += `
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center" id="no-orders-message-dynamic">
@@ -649,6 +953,131 @@ function getStatusFlow($paymentMethod, $currentStatus) {
             } else if (currentOrders.length === 0 && initialNoOrdersMsg) {
                 initialNoOrdersMsg.style.display = 'block';
             }
+        }
+
+        // Real-time polling for new orders
+        function startOrdersPolling() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(fetchLatestOrders, 5000); // every 5 seconds
+        }
+
+        function fetchLatestOrders() {
+            fetch('fetch_admin_orders.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && Array.isArray(data.orders)) {
+                        // Only update if there are changes
+                        if (JSON.stringify(currentOrders) !== JSON.stringify(data.orders)) {
+                            currentOrders = data.orders;
+                            renderOrdersList();
+                            updateStats();
+                            filterOrders();
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Polling error:', err);
+                });
+        }
+
+        // Render orders list in the DOM
+        function renderOrdersList() {
+            let html = '';
+            if (!currentOrders.length) {
+                html = `<div class=\"bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center\" id=\"no-orders-message-initial\">\n` +
+                    `<i class=\"fas fa-box-open text-4xl text-gray-300 mb-4\"></i>\n` +
+                    `<h3 class=\"text-lg font-semibold text-gray-700 mb-2\">No Orders Found</h3>\n` +
+                    `<p class=\"text-gray-500\">There are no orders for your branch at the moment.</p>\n` +
+                `</div>`;
+            } else {
+                currentOrders.forEach(order => {
+                    const statusClass = 'status-' + order.order_status;
+                    const orderCardClass = 'order-card ' + order.order_status;
+                    const paymentClass = 'payment-' + (order.payment_method || '').toLowerCase();
+                    const itemsHTML = (order.items || []).map(item => `
+                        <div class=\"flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0\">\n` +
+                            `<div class=\"flex items-center\">\n` +
+                                (item.product_image ? `<img src=\"data:image/jpeg;base64,${item.product_image}\" alt=\"${item.product_name}\" class=\"w-10 h-10 rounded-lg object-cover mr-3\">` : `<div class=\"w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mr-3\"><i class=\"fas fa-box text-gray-400\"></i></div>`) +
+                                `<div>\n` +
+                                    `<p class=\"font-medium text-sm\">${item.product_name}</p>\n` +
+                                    `<p class=\"text-xs text-gray-500\">Qty: ${item.quantity} × ₱${parseFloat(item.unit_price).toFixed(2)}</p>\n` +
+                                `</div>\n` +
+                            `</div>\n` +
+                            `<p class=\"font-semibold text-sm\">₱${(parseFloat(item.unit_price) * parseInt(item.quantity)).toFixed(2)}</p>\n` +
+                        `</div>`
+                    ).join('');
+                    html += `<div class=\"${orderCardClass} p-6 fade-in\" id=\"order-${order.order_id}\" data-status=\"${order.order_status}\" data-order-id=\"${order.order_id}\">\n` +
+                        `<div class=\"flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4\">\n` +
+                            `<div class=\"flex-1\">\n` +
+                                `<div class=\"flex flex-wrap items-center gap-4 mb-3\">\n` +
+                                    `<h3 class=\"text-lg font-semibold text-gray-800\">Order #${order.order_reference}</h3>\n` +
+                                    `<span class=\"${statusClass} status-badge\" id=\"status-${order.order_id}\">${formatOrderStatusText(order.order_status)}</span>\n` +
+                                    `<span class=\"${paymentClass} payment-badge\">${formatPaymentMethodText(order.payment_method)}</span>\n` +
+                                `</div>\n` +
+                                `<div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm\">\n` +
+                                    `<div><span class=\"text-gray-500\">Customer:</span><p class=\"font-medium\">${order.customer_name}</p></div>\n` +
+                                    `<div><span class=\"text-gray-500\">Date:</span><p class=\"font-medium\">${new Date(order.order_date).toLocaleString()}</p></div>\n` +
+                                    `<div><span class=\"text-gray-500\">Branch:</span><p class=\"font-medium\">${order.branch_name}</p></div>\n` +
+                                    `<div><span class=\"text-gray-500\">Total:</span><p class=\"font-medium text-green-600\">₱${parseFloat(order.total_amount).toFixed(2)}</p></div>\n` +
+                                `</div>\n` +
+                                `<div class=\"mt-4\">\n` +
+                                    `<h4 class=\"text-sm font-semibold text-gray-700 mb-2\">Order Items:</h4>\n` +
+                                    `<div class=\"space-y-2\">${itemsHTML}</div>\n` +
+                                `</div>\n` +
+                                `<div class=\"mt-4\">\n` +
+                                    `<h4 class=\"text-sm font-semibold text-gray-700 mb-2\">Quick Status Update:</h4>\n` +
+                                    `<div class=\"flex flex-wrap gap-2\" id=\"quick-status-${order.order_id}\">${renderQuickStatusButtons(order)}</div>\n` +
+                                `</div>\n` +
+                            `</div>\n` +
+                            `<div class=\"lg:text-right\">\n` +
+                                `<div class=\"order-actions justify-end\">\n` +
+                                    `<button class=\"action-btn btn-view\" onclick=\"viewOrderDetails(${order.order_id})\"><i class=\"fas fa-eye\"></i> View</button>\n` +
+                                    `<button class=\"action-btn btn-print\" onclick=\"printOrder(${order.order_id})\"><i class=\"fas fa-print\"></i> Print</button>\n` +
+                                `</div>\n` +
+                                `<div class=\"mt-2 text-sm text-gray-500\">Last updated: <span id=\"updated-${order.order_id}\">${new Date(order.updated_at || order.order_date).toLocaleString()}</span></div>\n` +
+                            `</div>\n` +
+                        `</div>\n` +
+                    `</div>`;
+                });
+            }
+            ordersContainer.innerHTML = html;
+        }
+
+        // Render quick status buttons for each order
+        function renderQuickStatusButtons(order) {
+            const statusFlow = getStatusFlow(order.payment_method, order.order_status);
+            const currentStatusIndex = statusFlow.indexOf(order.order_status);
+            const userRole = (document.body.getAttribute('data-user-role') || '').toUpperCase();
+            let buttonsHTML = '';
+            statusFlow.forEach((status, index) => {
+                const isCurrent = (index === currentStatusIndex);
+                const isNext = (index === currentStatusIndex + 1);
+                const isPast = (index < currentStatusIndex);
+                let canPress = false;
+                const method = (order.payment_method || '').toLowerCase();
+                if (method === 'cod') {
+                    if (status === 'processing' && userRole === 'CASHIER') canPress = true;
+                    if (status === 'otw' && userRole === 'ENCODER') canPress = true;
+                    if (status === 'completed' && userRole === 'DRIVER') canPress = true;
+                } else if (method === 'gcash') {
+                    if (status === 'processing' && userRole === 'CASHIER') canPress = true;
+                    if (status === 'otw' && userRole === 'ENCODER') canPress = true;
+                    if (status === 'completed' && userRole === 'DRIVER') canPress = true;
+                } else if (method === 'pick_up') {
+                    if (status === 'processing' && userRole === 'CASHIER') canPress = true;
+                    if (status === 'ready_for_pickup' && userRole === 'ENCODER') canPress = true;
+                    if (status === 'completed' && userRole === 'CASHIER') canPress = true;
+                }
+                const isDisabled = !isNext || (!canPress && isNext);
+                const isActive = (isCurrent || isPast);
+                buttonsHTML += `
+                    <button class=\"status-update-btn ${isActive ? 'active' : ''}\" data-order-id=\"${order.order_id}\" data-status=\"${status}\" ${isDisabled ? 'disabled' : ''}>
+                        ${formatOrderStatusText(status)}
+                        ${isCurrent ? '<i class=\"fas fa-check ml-1\"></i>' : ''}
+                    </button>
+                `;
+            });
+            return buttonsHTML;
         }
 
         // Quick status update

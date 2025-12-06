@@ -93,7 +93,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
             sendAdminCodeBtn.textContent = 'Sending...';
             fetch('connection/admin_email_code.php', {
                 method: 'POST',
-                body: new URLSearchParams({ email: adminEmail })
+                body: new URLSearchParams({ email: adminEmail, password: adminPassword })
             })
             .then(res => res.json())
             .then(data => {
@@ -101,6 +101,18 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
                     Swal.fire({ title: 'Code Sent!', text: data.message, icon: 'success', confirmButtonText: 'OK' });
                     codeStep.classList.remove('hidden');
                     sendAdminCodeBtn.classList.add('hidden');
+                    document.getElementById('admin-email').disabled = true;
+                    document.getElementById('admin-password-field').disabled = true;
+                    if (!document.getElementById('resendCodeBtn')) {
+                        const resendBtn = document.createElement('button');
+                        resendBtn.type = 'button';
+                        resendBtn.id = 'resendCodeBtn';
+                        resendBtn.className = 'w-full mt-2 py-2 px-4 bg-gray-400 text-white font-semibold rounded-lg shadow transition duration-150';
+                        resendBtn.textContent = 'Resend Code (2:00)';
+                        resendBtn.disabled = true;
+                        codeStep.appendChild(resendBtn);
+                    }
+                    startResendTimer();
                 } else {
                     Swal.fire({ title: 'Error!', text: data.message, icon: 'error', confirmButtonText: 'OK' });
                 }
@@ -112,6 +124,70 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
                 sendAdminCodeBtn.disabled = false;
                 sendAdminCodeBtn.textContent = 'Send Code to Email';
             });
+                const emailInput = document.getElementById('admin-email');
+                const passwordInput = document.getElementById('admin-password-field');
+                emailInput.disabled = true;
+                passwordInput.disabled = true;
+                emailInput.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                passwordInput.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                // Disable eye toggle
+                togglePassword.disabled = true;
+                togglePassword.classList.add('cursor-not-allowed', 'text-gray-400', 'hover:text-gray-400');
+                togglePassword.classList.remove('hover:text-[#8A421D]');
+                // Optionally, visually indicate eye is disabled
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /><line x1="3" y1="21" x2="21" y2="3" stroke="gray" stroke-width="2" />';
+
+        function startResendTimer() {
+            let timer = 120;
+            const resendBtn = document.getElementById('resendCodeBtn');
+            resendBtn.disabled = true;
+            resendBtn.classList.add('bg-gray-400');
+            resendBtn.classList.remove('bg-[#8A421D]', 'hover:bg-[#6B3416]');
+            resendBtn.textContent = `Resend Code (2:00)`;
+            let interval = setInterval(() => {
+                timer--;
+                const min = Math.floor(timer / 60);
+                const sec = (timer % 60).toString().padStart(2, '0');
+                resendBtn.textContent = `Resend Code (${min}:${sec})`;
+                if (timer <= 0) {
+                    clearInterval(interval);
+                    resendBtn.disabled = false;
+                    resendBtn.textContent = 'Resend Code';
+                    resendBtn.classList.remove('bg-gray-400');
+                    resendBtn.classList.add('bg-[#8A421D]', 'hover:bg-[#6B3416]');
+                }
+            }, 1000);
+            resendBtn.onclick = function() {
+                resendBtn.disabled = true;
+                resendBtn.textContent = 'Sending...';
+                fetch('connection/admin_email_code.php', {
+                    method: 'POST',
+                    body: new URLSearchParams({ email: adminEmail, password: adminPassword })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({ title: 'Code Sent!', text: data.message, icon: 'success', confirmButtonText: 'OK' });
+                        startResendTimer();
+                    } else {
+                        Swal.fire({ title: 'Error!', text: data.message, icon: 'error', confirmButtonText: 'OK' });
+                        resendBtn.disabled = false;
+                        resendBtn.textContent = 'Resend Code';
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({ title: 'Error!', text: 'Failed to send code. Try again.', icon: 'error', confirmButtonText: 'OK' });
+                    resendBtn.disabled = false;
+                    resendBtn.textContent = 'Resend Code';
+                });
+                if (togglePassword.disabled) return;
+                passwordVisible = !passwordVisible;
+                passwordField.type = passwordVisible ? 'text' : 'password';
+                eyeIcon.innerHTML = passwordVisible
+                    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.042-3.292m1.528-1.68A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.956 9.956 0 01-4.043 5.197M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" />'
+                    : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+            };
+        }
         });
 
         adminLoginForm.addEventListener('submit', function(e) {
